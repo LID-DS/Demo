@@ -1,33 +1,24 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
-import rethinkdb from 'rethinkdb'
+import { w3cwebsocket as W3CWebSocket } from "websocket";
+
 
 class App extends React.PureComponent{
-    constructor(){
-	super()
-	this.state = {
-	    sum : 0
-	}
+    constructor(props){
+		super(props)
+		this.state = {
+	    	sum : 0
+		}
+		this.client = new W3CWebSocket('ws://0.0.0.0:8015');
     }
+
     render(){
-	return(
-		<div>{this.state.sum}</div>
-	)
+		return(
+			<div>{this.state.sum}</div>
+		)
     }
     componentDidMount(){
-	// create listener
-	rethinkdb.connect({host: 'http://localhost', port: 28015}, function(err, conn) {
-	    if (err) throw err
-	    rethinkdb.table('statistics').changes().run(conn, function(err, cursor) {
-		    if (err) throw err
-		    cursor.each(function(err, row) {
-			if (err) throw err
-			console.log(JSON.stringify(row, null, 2))
-		    })
-	    })
-	})
-    }
+	}
 }
 
 
