@@ -16,13 +16,12 @@ class SysdigHandling:
     data_handling = None
 
     def __init__(self):
-
-        self.data_handling = DataHandling.DataHandling()
-        self.rethink_db = self.data_handling.get_db().get("sum") 
-  
+        #Initiate syscall deque
         self.deque_syscall = collections.deque()
+        #Initiate write deque thread
         self.write_thread = threading.Thread(target=self.write_syscalls, args=())
         self.write_thread.start()
+        #Initiate read deque thread
         self.read_thread = threading.Thread(target=self.read_syscall, args=())
         self.read_thread.start()
         
@@ -69,12 +68,14 @@ class SysdigHandling:
                 self.deque_syscall.append(self.syscall_parser(line))
 
     def read_syscall(self):
+        #Initiate DB
+        self.data_handling = DataHandling.DataHandling()
+        self.rethink_db = self.data_handling.get_table()
         while True:
             #check if deque is empty
             if self.deque_syscall:
                 #send to IDS
                 #send to statistics
-                #self.calc_new_statistic()
                 self.calc_new_statistic()
                 #print("Read syscall: ", self.deque_syscall.popleft())
                 #print("Entries left: ", len(self.deque_syscall))
@@ -84,12 +85,13 @@ class SysdigHandling:
     def calc_new_statistic(self):
         #tmp_count = rethink_db.table("statistics").filter
         #rethink_db.table("statistics").update({"sum": global_test_counter})
-        self.data_handling.get_db() 
+        sum_syscalls = self.data_handling.get_sum() 
+        print("calc")
+        print(sum_syscalls)
+        self.data_handling.update_statistics(sum_syscalls + 1)
+
         return None
     
-    def print_table(self):
-        print(testlist)
-
 if __name__ == "__main__":
     sysdig_handling = SysdigHandling()
     print("initialize threads")
