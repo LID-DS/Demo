@@ -5,7 +5,31 @@ from rethinkdb import RethinkDB
 import time
 import threading
 import data_handling as DataHandling
+from flask import Flask, render_template
+from flask_socketio import SocketIO, emit
 
+def webserver():
+    app = Flask(__name__)
+    app.config['SECRET_KEY'] = 'secret!'
+    socketio = SocketIO(app)
+    socketio.run(app)
+    sysdig_handling = SysdigHandling()
+
+    @app.route('/')
+    def index():
+        return render_template('index.html')
+
+    @socketio.on('read', namespace='/stats')
+    def test_message(message):
+        emit('stats_sum', {'data': sysdig_handling.sum})
+
+    @socketio.on('connect', namespace='/stats')
+    def test_disconnect():
+        emit('hejo')
+
+    @socketio.on('disconnect', namespace='/stats')
+    def test_disconnect():
+        print('Client disconnected')
 
 class SysdigHandling:
 
@@ -24,6 +48,7 @@ class SysdigHandling:
         #Initiate read deque thread
         self.read_thread = threading.Thread(target=self.read_syscall, args=())
         self.read_thread.start()
+        self.sum = 0
         
     @contextmanager
     def start_sysdig_and_read_data(self):
@@ -89,11 +114,14 @@ class SysdigHandling:
         print("calc")
         print(sum_syscalls)
         self.data_handling.update_statistics(sum_syscalls + 1)
+        self.sum = sum_syscalls + 1
+
 
         return None
     
 if __name__ == "__main__":
-    sysdig_handling = SysdigHandling()
     print("initialize threads")
     print("start write")
     print("start read")
+    webserver()
+
