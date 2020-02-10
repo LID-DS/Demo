@@ -8,6 +8,10 @@ import data_handling as DataHandling
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 
+"""
+initiate websocket
+react app asks for updates of statistics and IDS alarms
+"""
 def webserver():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'secret!'
@@ -31,6 +35,24 @@ def webserver():
     def test_disconnect():
         print('Client disconnected')
 
+"""
+on initiation:
+    start two threads for reading syscalls 
+        first thread reads syscalls with sysdig and writes them to deque
+            with attributes:
+                containerID
+                rawtime
+                latency
+                process name
+                threadID
+                direction: > start syscall with with params listed below < return
+                syscall type
+                arguments of syscall as list
+
+        second thread reads syscalls from deque
+    start a deque to write systemcalls to
+    create statistic class - where calculations on syscalls are made
+"""
 class SysdigHandling:
 
     write_thread = None
@@ -50,11 +72,11 @@ class SysdigHandling:
         self.read_thread.start()
         self.sum = 0
         
+    """
+        start sysdig process on docker container with params: container_ID, raw_time, latency, process_name, thread_ID, direction, syscall_type, syscall_arguments
+    """
     @contextmanager
     def start_sysdig_and_read_data(self):
-        """
-        start sysdig process with params: container_ID, raw_time, latency, process_name, thread_ID, direction, syscall_type, syscall_arguments
-        """
         sysdig_process = None
         try:
             print("starting sysdig")
@@ -67,9 +89,10 @@ class SysdigHandling:
         finally:
             sysdig_process.terminate()
             sysdig_process.kill()
-
+    """
+        create list of information contained in syscall
+    """
     def syscall_parser(self, syscall):
-        # create list of information contained in syscall
         # list entries:
         # containerID
         # rawtime
@@ -86,12 +109,20 @@ class SysdigHandling:
         parsed_syscall.append(list_of_arguments)
         return parsed_syscall
 
+    """
+    get read system calls from sysdig subprocess call
+    write system calls in deque 
+    """ 
     def write_syscalls(self):    
         print("writing")
         with self.start_sysdig_and_read_data() as sysdig_out:
             for line in sysdig_out.stdout:
                 self.deque_syscall.append(self.syscall_parser(line))
 
+    """
+    read system calls from deque
+    if deque not empty send syscall to IDS and to statistics
+    """
     def read_syscall(self):
         #Initiate DB
         self.data_handling = DataHandling.DataHandling()
@@ -102,12 +133,19 @@ class SysdigHandling:
                 #send to IDS
                 #send to statistics
                 self.calc_new_statistic()
-                #print("Read syscall: ", self.deque_syscall.popleft())
-                #print("Entries left: ", len(self.deque_syscall))
-            #else:
-            #    print("No syscalls to read")
-
+            else:
+                print("No syscalls to read")
+    """
+    gathering function for all statistical analysis
+    """ 
     def calc_new_statistic(self):
+        self.calc_sum()
+        
+    """
+    calculate sum of all system calls
+    read current sum of system calls from rethinkdb
+    """
+    def calc_sum(self):
         #tmp_count = rethink_db.table("statistics").filter
         #rethink_db.table("statistics").update({"sum": global_test_counter})
         sum_syscalls = self.data_handling.get_sum() 
@@ -116,12 +154,8 @@ class SysdigHandling:
         self.data_handling.update_statistics(sum_syscalls + 1)
         self.sum = sum_syscalls + 1
 
-
         return None
     
 if __name__ == "__main__":
-    print("initialize threads")
-    print("start write")
-    print("start read")
     webserver()
 
