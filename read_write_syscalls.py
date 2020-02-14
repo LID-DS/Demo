@@ -7,33 +7,44 @@ import threading
 import data_handling as DataHandling
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
+import json
 
 """
 initiate websocket
 react app asks for updates of statistics and IDS alarms
 """
 def webserver():
+    sysdig_handling = SysdigHandling()
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'secret!'
-    socketio = SocketIO(app)
-    socketio.run(app)
-    sysdig_handling = SysdigHandling()
+    socketio = SocketIO(app, cors_allowed_origins = '*')
 
     @app.route('/')
     def index():
         return render_template('index.html')
 
-    @socketio.on('read', namespace='/stats')
-    def test_message(message):
-        emit('stats_sum', {'data': sysdig_handling.sum})
+    def messageReceived(methods = ['GET','POST']):
+        print('message recieved')
 
-    @socketio.on('connect', namespace='/stats')
-    def test_disconnect():
-        emit('hejo')
+    """
+    Client can ask for newest stats
+    with message "sum":
+    send sum
+    """
+    @socketio.on('get stats')
+    def handle_message(message):
+        print('recieved message: ' + message)
+        if message == 'sum':
+            print('send sum')
+            emit('stats_sum', json.loads('{"sum":' + str(sysdig_handling.sum) + '}')) #sysdig_handling.sum})
 
-    @socketio.on('disconnect', namespace='/stats')
-    def test_disconnect():
-        print('Client disconnected')
+    @socketio.on('my event')
+    def handle_my_custom_event(json, methods=['GET', 'POST']):
+        print('received my event: ' + str(json))
+        emit('my response')
+
+
+    socketio.run(app)
 
 """
 on initiation:
@@ -73,7 +84,7 @@ class SysdigHandling:
         self.sum = 0
         
     """
-        start sysdig process on docker container with params: container_ID, raw_time, latency, process_name, thread_ID, direction, syscall_type, syscall_arguments
+    start sysdig process on docker container with params: container_ID, raw_time, latency, process_name, thread_ID, direction, syscall_type, syscall_arguments
     """
     @contextmanager
     def start_sysdig_and_read_data(self):
@@ -90,7 +101,7 @@ class SysdigHandling:
             sysdig_process.terminate()
             sysdig_process.kill()
     """
-        create list of information contained in syscall
+    create list of information contained in syscall
     """
     def syscall_parser(self, syscall):
         # list entries:
@@ -149,8 +160,6 @@ class SysdigHandling:
         #tmp_count = rethink_db.table("statistics").filter
         #rethink_db.table("statistics").update({"sum": global_test_counter})
         sum_syscalls = self.data_handling.get_sum() 
-        print("calc")
-        print(sum_syscalls)
         self.data_handling.update_statistics(sum_syscalls + 1)
         self.sum = sum_syscalls + 1
 

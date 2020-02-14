@@ -1,4 +1,5 @@
 from rethinkdb import RethinkDB
+import json
 
 class DataHandling:
 
@@ -38,3 +39,6 @@ class DataHandling:
         self.rethink_db.table("statistics").filter({"sum"}).update({
            "sum": sum_syscalls 
         }).run(self.conn)
+
+    def create_json(stats):
+        return json.loads('{"sum":' + str(stats) + '}')
