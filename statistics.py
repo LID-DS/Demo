@@ -1,21 +1,45 @@
+import collections
+
 class Statistic:
 
-    syscall_sum = None
-    data_handling = None
+    def __init__(self):
+        self.syscall_sum = 0
+        self.start_time = 0
+        self.calls_per_minute = 0
+        self.bucket_counter = 0
+        self.bucket_update_delay = 1000
+        self.deque_syscall_per_second = collections.deque()
 
-    def __init__(self, data_handling):
-        self.data_handling = data_handling
-    
-    def calc_new_statistic(self):
+    def update_statistic(self, syscall):
         self.calc_sum()
+        self.calc_calls_per_minute(syscall[1])
 
     def calc_sum(self):
-        #tmp_count = rethink_db.table("statistics").filter
-        #rethink_db.table("statistics").update({"sum": global_test_counter})
-        sum_syscalls = self.data_handling.get_sum() 
-        print("calc")
-        print(sum_syscalls)
-        self.data_handling.update_statistics(sum_syscalls + 1)
-        self.sum = sum_syscalls + 1
-
+        self.syscall_sum += 1
         return None
+
+    def get_sum(self):
+        return self.syscall_sum
+
+    def get_calls_per_minute():
+        current_time = int(round(time.time() * 1000))
+        last_bucket_time = current_time 
+        syscall_counter = 0
+        print(len(self.deque_syscall_per_second))
+        return syscall_counter
+
+    def calc_calls_per_minute(self,rawtime_of_syscall):
+        if self.start_time == 0:
+            self.start_time = int(rawtime_of_syscall)
+
+        if int(rawtime_of_syscall) - self.start_time < self.bucket_update_delay:
+            if self.bucket_counter == 0:
+                start_timestamp = int(rawtime_of_syscall)
+            self.bucket_counter += 1
+
+        else:
+            deque_entry = [self.bucket_counter, self.start_time]
+            self.deque_syscall_per_second.append(deque_entry)
+            self.bucket_counter = 0
+            self.start_time = int(rawtime_of_syscall)
+        

@@ -1,50 +1,10 @@
 from contextlib import contextmanager
 import subprocess 
 import collections
-from rethinkdb import RethinkDB
 import time
 import threading
-import data_handling as DataHandling
-from flask import Flask, render_template
-from flask_socketio import SocketIO, emit
-import json
+from statistics import Statistic
 
-"""
-initiate websocket
-react app asks for updates of statistics and IDS alarms
-"""
-def webserver():
-    sysdig_handling = SysdigHandling()
-    app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'secret!'
-    socketio = SocketIO(app, cors_allowed_origins = '*')
-
-    @app.route('/')
-    def index():
-        return render_template('index.html')
-
-    def messageReceived(methods = ['GET','POST']):
-        print('message recieved')
-
-    """
-    Client can ask for newest stats
-    with message "sum":
-    send sum
-    """
-    @socketio.on('get stats')
-    def handle_message(message):
-        print('recieved message: ' + message)
-        if message == 'sum':
-            print('send sum')
-            emit('stats_sum', json.loads('{"sum":' + str(sysdig_handling.sum) + '}')) #sysdig_handling.sum})
-
-    @socketio.on('my event')
-    def handle_my_custom_event(json, methods=['GET', 'POST']):
-        print('received my event: ' + str(json))
-        emit('my response')
-
-
-    socketio.run(app)
 
 """
 on initiation:
@@ -66,12 +26,6 @@ on initiation:
 """
 class SysdigHandling:
 
-    write_thread = None
-    read_thread = None 
-    deque_syscall = None
-    rethink_db = None
-    data_handling = None
-
     def __init__(self):
         #Initiate syscall deque
         self.deque_syscall = collections.deque()
@@ -81,7 +35,8 @@ class SysdigHandling:
         #Initiate read deque thread
         self.read_thread = threading.Thread(target=self.read_syscall, args=())
         self.read_thread.start()
-        self.sum = 0
+        #Initaite statistics 
+        self.statistic = Statistic()
         
     """
     start sysdig process on docker container with params: container_ID, raw_time, latency, process_name, thread_ID, direction, syscall_type, syscall_arguments
@@ -90,7 +45,6 @@ class SysdigHandling:
     def start_sysdig_and_read_data(self):
         sysdig_process = None
         try:
-            print("starting sysdig")
             # collect information for all containers except host
             sensor_command_line = ['sudo','/usr/bin/sysdig', '--unbuffered',
                                 '-p %container.id %evt.rawtime %evt.latency %proc.name %thread.tid %evt.dir %syscall.type %evt.args',
@@ -100,19 +54,20 @@ class SysdigHandling:
         finally:
             sysdig_process.terminate()
             sysdig_process.kill()
+
     """
     create list of information contained in syscall
     """
     def syscall_parser(self, syscall):
         # list entries:
-        # containerID
-        # rawtime
-        # latency
-        # process name
-        # threadID
-        # direction: > start syscall with with params listed below < return
-        # syscall type
-        # arguments of syscall as list:
+        # 0 - containerID
+        # 1 - rawtime
+        # 2 - latency
+        # 3 - process name
+        # 4 - threadID
+        # 5 - direction: > start syscall with with params listed below < return
+        # 6 - syscall type
+        # 7 - arguments of syscall as list:
         syscall = syscall.split()
         parsed_syscall = []
         parsed_syscall[0:7] = syscall[0:7]
@@ -135,36 +90,14 @@ class SysdigHandling:
     if deque not empty send syscall to IDS and to statistics
     """
     def read_syscall(self):
-        #Initiate DB
-        self.data_handling = DataHandling.DataHandling()
-        self.rethink_db = self.data_handling.get_table()
         while True:
             #check if deque is empty
             if self.deque_syscall:
                 #send to IDS
                 #send to statistics
-                self.calc_new_statistic()
-            else:
-                print("No syscalls to read")
-    """
-    gathering function for all statistical analysis
-    """ 
-    def calc_new_statistic(self):
-        self.calc_sum()
-        
-    """
-    calculate sum of all system calls
-    read current sum of system calls from rethinkdb
-    """
-    def calc_sum(self):
-        #tmp_count = rethink_db.table("statistics").filter
-        #rethink_db.table("statistics").update({"sum": global_test_counter})
-        sum_syscalls = self.data_handling.get_sum() 
-        self.data_handling.update_statistics(sum_syscalls + 1)
-        self.sum = sum_syscalls + 1
-
-        return None
+                syscall = self.deque_syscall.pop()
+                self.statistic.update_statistic(syscall)
+            #else:
+                #print("No syscalls to read")
     
-if __name__ == "__main__":
-    webserver()
 
