@@ -1,4 +1,4 @@
-
+import pdb
 import threading
 import json
 import time
@@ -48,10 +48,16 @@ def statistic_update(socketio, sysdig_handling):
     send React new statistic
     """
     delay = 1
+    stats = {}
     while True :
-        socketio.emit('stats_sum', json.loads('{"sum":' + str(sysdig_handling.statistic.get_calls_per_minute()) + '}')) 
+        stats['sum'] = str(sysdig_handling.statistic.get_sum())
+        stats['call_per_minute'] = str(sysdig_handling.statistic.get_calls_per_minute())
+        stats['syscall_type_dict'] = sysdig_handling.statistic.get_syscall_distribution()
+        #print('{"sum":' + stats['sum'] + ',"call_per_mintute": ' + stats['call_per_minute'] +'}')
+        #socketio.emit('stats_sum', json.loads('{"sum":' + stats['sum'] + ',"call_per_mintute": ' + stats['call_per_minute'] + '}')) )
+        socketio.emit('stats_sum', stats) 
+        print(stats)
         time.sleep(delay)
-
 
 if __name__ == "__main__":
     webserver()

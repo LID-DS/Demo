@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import io from 'socket.io-client'
+import io from 'socket.io-client';
 
 class App extends React.PureComponent{
 
@@ -14,7 +14,7 @@ class App extends React.PureComponent{
 
     render(){
 	return(
-	    <div>{this.state.sum}</div>
+		<div>{this.state.sum}</div>
 	)
     }
     componentDidMount(){
@@ -31,9 +31,9 @@ class App extends React.PureComponent{
 	    console.log("somethin");
 	});
 	socket.on('stats_sum', function(data) {
-	    console.log(data["sum"])
+	    console.log(data)
 	    this.setState({
-		sum : data["sum"]
+		sum : data['call_per_minute']
 	    })
 	}.bind(this));
 
