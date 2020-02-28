@@ -171,3 +171,4 @@ class DemoModelStide:
         for syscall_int in ngram_tuple:
             string += self._int_to_syscall[syscall_int] + " "
         return string[:-1]
+>>>>>>> a811c5fd4173d65dc416b943acacaff6e50dc617
