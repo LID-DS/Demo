@@ -5,12 +5,13 @@ import time
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 from read_write_syscalls import SysdigHandling
+import datetime
 
 """
 initiate websocket
 react app asks for updates of statistics and IDS alarms
 """
-def webserver():
+def start():
     sysdig_handling = SysdigHandling()
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'secret!'
@@ -35,7 +36,7 @@ def webserver():
         print('recieved message: ' + message)
         if message == 'sum':
             print('send sum')
-            emit('stats_sum', json.loads('{"sum":' + str(sysdig_handling.statistic.get_sum()) + '}')) #sysdig_handling.sum})
+            emit('stats', json.loads('{"sum":' + str(sysdig_handling.statistic.get_sum()) + '}')) 
 
     @socketio.on('my event')
     def handle_my_custom_event(json, methods=['GET', 'POST']):
@@ -51,13 +52,18 @@ def statistic_update(socketio, sysdig_handling):
     stats = {}
     while True :
         stats['sum'] = str(sysdig_handling.statistic.get_sum())
-        stats['call_per_minute'] = str(sysdig_handling.statistic.get_calls_per_minute())
-        stats['syscall_type_dict'] = sysdig_handling.statistic.get_syscall_distribution()
+        calls_per_second = sysdig_handling.statistic.get_calls_per_second()
+        stats['calls_per_second'] = calls_per_second
+        stats['time'] = 0 #time_first_call
+        stats['ids_score'] = sysdig_handling.statistic.ids_score
+        
+        stats['syscall_type_dict'] = sysdig_handling.statistic.calc_syscall_type_distribution()
+        
         #print('{"sum":' + stats['sum'] + ',"call_per_mintute": ' + stats['call_per_minute'] +'}')
         #socketio.emit('stats_sum', json.loads('{"sum":' + stats['sum'] + ',"call_per_mintute": ' + stats['call_per_minute'] + '}')) )
-        socketio.emit('stats_sum', stats) 
+        socketio.emit('stats', stats) 
         print(stats)
         time.sleep(delay)
 
 if __name__ == "__main__":
-    webserver()
+    start()

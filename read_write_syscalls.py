@@ -4,7 +4,7 @@ import collections
 import time
 import threading
 from statistics import Statistic
-
+import demo_model_stide 
 
 """
 on initiation:
@@ -29,14 +29,16 @@ class SysdigHandling:
     def __init__(self):
         #Initiate syscall deque
         self.deque_syscall = collections.deque()
+        self.ids = demo_model_stide.DemoModelStide(training_size=10)
         #Initiate write deque thread
         self.write_thread = threading.Thread(target=self.write_syscalls, args=())
         self.write_thread.start()
         #Initiate read deque thread
-        self.read_thread = threading.Thread(target=self.read_syscall, args=())
+        self.read_thread = threading.Thread(target=self.read_syscall, args=([self.ids]))
         self.read_thread.start()
         #Initaite statistics 
         self.statistic = Statistic()
+        
         
     """
     start sysdig process on docker container with params: container_ID, raw_time, latency, process_name, thread_ID, direction, syscall_type, syscall_arguments
@@ -89,15 +91,12 @@ class SysdigHandling:
     read system calls from deque
     if deque not empty send syscall to IDS and to statistics
     """
-    def read_syscall(self):
+    def read_syscall(self, ids):
         while True:
             #check if deque is empty
             if self.deque_syscall:
-                #send to IDS
-                #send to statistics
                 syscall = self.deque_syscall.pop()
-                self.statistic.update_statistic(syscall)
-            #else:
-                #print("No syscalls to read")
-    
-
+                #send to IDS
+                result = ids.consume_system_call(syscall)
+                #send to statistics
+                self.statistic.update_statistic(syscall,result)
