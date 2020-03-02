@@ -55,12 +55,10 @@ def statistic_update(socketio, sysdig_handling):
         calls_per_second = sysdig_handling.statistic.get_calls_per_second()
         stats['calls_per_second'] = calls_per_second
         stats['time'] = 0 #time_first_call
-        stats['ids_score'] = sysdig_handling.statistic.ids_score
+        stats['ids_score'] = sysdig_handling.statistic.get_ids_score()
         
         stats['syscall_type_dict'] = sysdig_handling.statistic.calc_syscall_type_distribution()
         
-        #print('{"sum":' + stats['sum'] + ',"call_per_mintute": ' + stats['call_per_minute'] +'}')
-        #socketio.emit('stats_sum', json.loads('{"sum":' + stats['sum'] + ',"call_per_mintute": ' + stats['call_per_minute'] + '}')) )
         socketio.emit('stats', stats) 
         print(stats)
         time.sleep(delay)

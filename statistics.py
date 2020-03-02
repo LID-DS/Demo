@@ -1,4 +1,5 @@
 import collections
+import pdb
 
 class Statistic:
 
@@ -12,12 +13,13 @@ class Statistic:
         self.syscall_type_dict_bucket = {}
         self.syscall_type_dict = {}
         self.ids_score = 0
+        self.ids_score_list = []
 
     def update_statistic(self, syscall, ids_score):
         self.calc_sum()
         #self.calc_syscall_type_distribution()
         self.calc_calls_per_minute(syscall)
-        self.ids_score = ids_score
+        self.handle_ids_score(ids_score)
 
     def calc_syscall_type_distribution(self):
         """
@@ -33,6 +35,24 @@ class Statistic:
                 else:
                     self.syscall_type_dict[syscall_type] = syscall_type_dict[syscall_type]
         return self.syscall_type_dict 
+
+    def handle_ids_score(self, ids_score):
+        """
+        Add ids scores to save until next statistic update
+        """
+        if not ids_score == None: 
+            self.ids_score_list.append(ids_score)
+        
+    def get_ids_score(self):
+        # if list is not empty return highest score
+        if self.ids_score_list:
+            # sort list and return highest score
+            sorted_ids_scores = sorted(self.ids_score_list, reverse = True)
+            self.ids_score_list = list()
+            highest_score = sorted_ids_scores[0]
+            return highest_score
+        return None 
+        
 
     def get_syscall_distribution(self):
         return self.syscall_type_dict
