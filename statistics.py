@@ -1,6 +1,7 @@
 import collections
 import pdb
 
+
 class Statistic:
 
     def __init__(self):
@@ -17,7 +18,7 @@ class Statistic:
 
     def update_statistic(self, syscall, ids_score):
         self.calc_sum()
-        #self.calc_syscall_type_distribution()
+        # self.calc_syscall_type_distribution()
         self.calc_calls_per_minute(syscall)
         self.handle_ids_score(ids_score)
 
@@ -34,29 +35,28 @@ class Statistic:
                     self.syscall_type_dict[syscall_type] += syscall_type_dict[syscall_type]
                 else:
                     self.syscall_type_dict[syscall_type] = syscall_type_dict[syscall_type]
-        return self.syscall_type_dict 
+        return self.syscall_type_dict
 
     def handle_ids_score(self, ids_score):
         """
         Add ids scores to save until next statistic update
         """
-        if not ids_score == None: 
+        if not ids_score == None:
             self.ids_score_list.append(ids_score)
-        
+
     def get_ids_score(self):
         # if list is not empty return highest score
         if self.ids_score_list:
             # sort list and return highest score
-            sorted_ids_scores = sorted(self.ids_score_list, reverse = True)
+            sorted_ids_scores = sorted(self.ids_score_list, reverse=True)
             self.ids_score_list = list()
             highest_score = sorted_ids_scores[0]
             return highest_score
-        return None 
-        
+        return None
 
     def get_syscall_distribution(self):
         return self.syscall_type_dict
-        
+
     def calc_sum(self):
         self.syscall_sum += 1
         return None
@@ -64,7 +64,7 @@ class Statistic:
     def get_sum(self):
         return self.syscall_sum
 
-    def calc_calls_per_minute(self,syscall):
+    def calc_calls_per_minute(self, syscall):
         rawtime_of_syscall = syscall[1]
         syscall_type = syscall[6]
         syscall_type_dict = {}
@@ -77,7 +77,7 @@ class Statistic:
             if self.bucket_counter == 0:
                 start_timestamp = int(rawtime_of_syscall)
             self.bucket_counter += 1
-            #TODO ADD SYSCALL TYPE CORRECT NOT ONE PER BUCKET
+            # TODO ADD SYSCALL TYPE CORRECT NOT ONE PER BUCKET
             # add entry to dictionary, count type of systemcall to bucket information
             if syscall_type in syscall_type_dict:
                 self.syscall_type_dict_bucket[syscall_type] += 1
@@ -89,18 +89,16 @@ class Statistic:
         else:
             deque_entry = [self.bucket_counter, self.start_time, self.syscall_type_dict_bucket]
             self.deque_syscall_per_second.append(deque_entry)
-            if len(self.deque_syscall_per_second) > 1 :
+            if len(self.deque_syscall_per_second) > 1:
                 dropped = self.deque_syscall_per_second.popleft()
             self.bucket_counter = 0
             self.syscall_type_dict_bucket = {}
             self.start_time = int(rawtime_of_syscall)
-        
+
     def get_calls_per_second(self):
-        #current_time = int(round(time.time() * 1000))
-        #last_bucket_time = current_time 
+        # current_time = int(round(time.time() * 1000))
+        # last_bucket_time = current_time
         syscall_counter = 0
         for syscall in self.deque_syscall_per_second:
             syscall_counter += syscall[0]
         return syscall_counter
-    
-

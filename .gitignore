@@ -6,3 +6,4 @@ minimalFlaskIO.py
 node_modules/
 package-lock.json
 
+/venv/
