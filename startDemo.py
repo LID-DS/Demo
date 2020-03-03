@@ -1,8 +1,17 @@
 import docker
 import webserver
 
+import os
+
 #start container
-client = docker.from_env()
-client.containers.run('vulhyb/mysql:5.5.23', detach=True)
-webserver.start()
+os.system('sudo docker run -d vulhyb/mysql:5.5.23')
+
 #start webserver
+webserver.start()
+
+#start react app
+cmd = 'npm start --prefix demo-app/'
+os.system(cmd)
+
+
+
