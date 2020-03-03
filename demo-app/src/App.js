@@ -2,6 +2,7 @@ import React from 'react';
 import './App.css';
 import io from 'socket.io-client';
 import Plot from 'react-plotly.js';
+import {Helmet} from 'react-helmet';
 
 class App extends React.PureComponent{
     
@@ -44,6 +45,7 @@ class App extends React.PureComponent{
 export default App;
 
 const PLOT_WINDOW_CUTOUT = 60
+const IDS_THRESHOLD = 0.5
 
 export class IDS_Plot extends React.PureComponent{
     
@@ -61,24 +63,44 @@ export class IDS_Plot extends React.PureComponent{
 		name: ""
 	    },
 	    original_data:{
-		x: [],		y: [], 
+		x: [],
+		y: [], 
 		ids_score: []
 	    },
+	    training: 'Training ongoing',
 	    index: 0 
 	}
     }
 
+    updateColors = (ids_state, ids_score) => {
+	console.log(ids_score)
+	//console.log(IDS_THRESHOLD)
+	if (ids_state === "Detecting"){
+	    if (ids_score > IDS_THRESHOLD){
+		console.log("alarm")
+		document.body.style.backgroundColor = '#75443a' 
+	    }
+	    else {
+		console.log("kein alarm")
+		document.body.style.backgroundColor = '#3A754E'
+	    }
+	}
+	else { document.body.style.backgroundColor = '#75743a' }
+    }
     updatePlot = (data) => {
-	console.log(data)
 	//console.log([data['calls_per_second'], data['time_of_first_call_minute']])
 	let y = this.state.original_data.y
 	let x = this.state.original_data.x
 	let ids_score = this.state.original_data.ids_score
 	// insert sent data into data object of plot
-	if (data['ids_score']){
+	if (data['ids_score'] != null) {
 	    ids_score.push(data['ids_score'])
+	    var ids_state = "Detecting"
 	}
-	else ids_score.push(0)
+	else {
+	    var ids_state = "Training ongoing"
+	    ids_score.push(0)
+	}
 	y.push(data['calls_per_second'])
 	x.push(this.state.index)
 	// only show static window of PLOT_WINDOW_CUTOUT seconds
@@ -103,6 +125,7 @@ export class IDS_Plot extends React.PureComponent{
 	    cutout_x = new_cutout_x.concat(cutout_x)
 	    cutout_y = new_cutout_y.concat(cutout_y)
 	}
+	this.updateColors(ids_state, ids_score[ids_score.length - 1])
 	
 	this.setState({
 	    calls_per_second : { 
@@ -113,13 +136,14 @@ export class IDS_Plot extends React.PureComponent{
 	    ids_score: {
 		x: cutout_x,
 		y: cutout_ids,
-		name: 'IDS score data'
+		name: 'IDS score data',
 	    },
 	    original_data:{
 		x: x,
 		y: y,
 		ids_score: ids_score
 	    },
+	    ids_state: ids_state,
 	    index: this.state.index + 1
 	});
     }
@@ -127,6 +151,7 @@ export class IDS_Plot extends React.PureComponent{
     render(){
 	return(
 	    <div>
+		<div> {this.state.ids_state} </div>
 		<Plot
 		    data={[this.state.calls_per_second]}
 		    layout = {
@@ -138,7 +163,10 @@ export class IDS_Plot extends React.PureComponent{
 			    yaxis : {
 				title : "Amount of Systemcalls"
 			    },
-			    datarevision : this.state.index
+			    datarevision : this.state.index,
+			    paper_bgcolor: 'rgba(0,0,0,0)',
+			    plot_bgcolor: 'rgba(0,0,0,0)'
+			    
 			}
 		    }
 		/>
@@ -153,7 +181,9 @@ export class IDS_Plot extends React.PureComponent{
 			    yaxis : {
 				title : "Highest Score In Last Second"
 			    },
-			    datarevision : this.state.index
+			    datarevision : this.state.index,
+			    paper_bgcolor: 'rgba(0,0,0,0)',
+			    plot_bgcolor: 'rgba(0,0,0,0)'
 			}
 		    }
 		/>
