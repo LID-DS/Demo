@@ -3,9 +3,10 @@ import './App.css';
 import io from 'socket.io-client';
 import Plot from 'react-plotly.js';
 import {Helmet} from 'react-helmet';
+import TrafficLight from 'react-trafficlight';
 
 class App extends React.PureComponent{
-    
+
     constructor(props){
 	super(props)
 	this.state = {
@@ -17,12 +18,14 @@ class App extends React.PureComponent{
 
     render() {
 	return(
-	    <IDS_Plot ref={this.idsPlot}/>
+	    <div>
+		<IDS_Plot ref={this.idsPlot}/>
+	    </div>
 	);
     };
 
-    
     componentDidMount(){
+	document.body.style.backgroundColor = '#ACB2B9'
 	let socket = io('ws://localhost:5000/');
 	socket.on('connect', function() {
 	    console.log('connected')
@@ -31,7 +34,7 @@ class App extends React.PureComponent{
 	    });
 	}.bind(this));
 
-	//if recieved message stats update plot 
+	//if recieved message stats update plot
 	socket.on('stats', function(data) {
 	    this.setState({
 		data : data
@@ -41,14 +44,13 @@ class App extends React.PureComponent{
     }
 }
 
-
 export default App;
 
 const PLOT_WINDOW_CUTOUT = 60
 const IDS_THRESHOLD = 0.5
 
 export class IDS_Plot extends React.PureComponent{
-    
+
     constructor(props){
 	super(props)
 	this.state = {
@@ -56,7 +58,7 @@ export class IDS_Plot extends React.PureComponent{
 		y: [],
 		x: [],
 		name: ""
-	    }, 
+	    },
 	    ids_score: {
 		y: [],
 		x: [],
@@ -64,29 +66,36 @@ export class IDS_Plot extends React.PureComponent{
 	    },
 	    original_data:{
 		x: [],
-		y: [], 
+		y: [],
 		ids_score: []
 	    },
 	    training: 'Training ongoing',
-	    index: 0 
+	    alarm: 1,
+	    index: 0
 	}
+	this.trafficLight = React.createRef();
     }
 
     updateColors = (ids_state, ids_score) => {
-	console.log(ids_score)
-	//console.log(IDS_THRESHOLD)
 	if (ids_state === "Detecting"){
 	    if (ids_score > IDS_THRESHOLD){
 		console.log("alarm")
-		document.body.style.backgroundColor = '#75443a' 
+		this.setState({
+		    alarm: 0
+		});
 	    }
 	    else {
 		console.log("kein alarm")
-		document.body.style.backgroundColor = '#3A754E'
+		this.setState({
+		    alarm: 1
+		});
 	    }
 	}
-	else { document.body.style.backgroundColor = '#75743a' }
+	else { }
     }
+
+    // recieves data from App which implements websocket
+    // calculate window for plotly fill
     updatePlot = (data) => {
 	//console.log([data['calls_per_second'], data['time_of_first_call_minute']])
 	let y = this.state.original_data.y
@@ -105,9 +114,9 @@ export class IDS_Plot extends React.PureComponent{
 	x.push(this.state.index)
 	// only show static window of PLOT_WINDOW_CUTOUT seconds
 	var cutout_ids = this.state.ids_score.cutout_ids
-	var cutout_y = this.state.calls_per_second.cutout_y 
+	var cutout_y = this.state.calls_per_second.cutout_y
 	var cutout_x = this.state.calls_per_second.cutout_x
-	// select only last entries of original data for cutout window 
+	// select only last entries of original data for cutout window
 	cutout_ids = ids_score.slice(Math.max(ids_score.length - PLOT_WINDOW_CUTOUT, 1))
 	cutout_x = x.slice(Math.max(x.length - PLOT_WINDOW_CUTOUT, 1))
 	cutout_y = y.slice(Math.max(y.length - PLOT_WINDOW_CUTOUT, 1))
@@ -115,9 +124,9 @@ export class IDS_Plot extends React.PureComponent{
 	// fill in zeros in y
 	// fill in negative numbers so first value of y starts at x = 0
 	if (cutout_x.length < PLOT_WINDOW_CUTOUT){
-	    var new_cutout_x = new Array(PLOT_WINDOW_CUTOUT - cutout_x.length).fill(0)  
+	    var new_cutout_x = new Array(PLOT_WINDOW_CUTOUT - cutout_x.length).fill(0)
 	    for(var i = PLOT_WINDOW_CUTOUT - cutout_x.length; i > 0; i--){
-		new_cutout_x[i-1] = -(i-1) 
+		new_cutout_x[i-1] = -(i-1)
 	    }
 	    var new_cutout_y = new Array(PLOT_WINDOW_CUTOUT - cutout_y.length).fill(0)
 	    var new_cutout_ids = new Array(PLOT_WINDOW_CUTOUT - cutout_ids.length).fill(0)
@@ -125,10 +134,17 @@ export class IDS_Plot extends React.PureComponent{
 	    cutout_x = new_cutout_x.concat(cutout_x)
 	    cutout_y = new_cutout_y.concat(cutout_y)
 	}
-	this.updateColors(ids_state, ids_score[ids_score.length - 1])
-	
+
+	if(ids_score[ids_score.length - 1] > IDS_THRESHOLD){
+	    var lights = [true,false,false]
+	}
+	else {
+	    var lights = [false,false,true]
+	}
+	this.trafficLight.current.updateLight(lights)
+
 	this.setState({
-	    calls_per_second : { 
+	    calls_per_second : {
 		x: cutout_x,
 		y: cutout_y,
 		name: 'Time series data'
@@ -153,10 +169,17 @@ export class IDS_Plot extends React.PureComponent{
 	    <div>
 		<div> {this.state.ids_state} </div>
 		<Plot
-		    data={[this.state.calls_per_second]}
+		    data={[
+			{
+			    x: this.state.calls_per_second.x,
+			    y: this.state.calls_per_second.y,
+			    mode: 'markers',
+			    type: 'scatter'
+			}
+		    ]}
 		    layout = {
 			{
-			    title : "Systemcalls in container", 
+			    title : "Systemcalls in container",
 			    xaxis : {
 				title : "Seconds"
 			    },
@@ -166,15 +189,22 @@ export class IDS_Plot extends React.PureComponent{
 			    datarevision : this.state.index,
 			    paper_bgcolor: 'rgba(0,0,0,0)',
 			    plot_bgcolor: 'rgba(0,0,0,0)'
-			    
+
 			}
 		    }
 		/>
 		<Plot
-		    data={[this.state.ids_score]}
+		    data={[
+			{
+			    x: this.state.ids_score.x,
+			    y: this.state.ids_score.y,
+			    mode: 'markers',
+			    type: 'scatter'
+			}
+		    ]}
 		    layout = {
 			{
-			    title : "IDS-Score", 
+			    title : "IDS-Score",
 			    xaxis : {
 				title : "Seconds"
 			    },
@@ -186,10 +216,38 @@ export class IDS_Plot extends React.PureComponent{
 			    plot_bgcolor: 'rgba(0,0,0,0)'
 			}
 		    }
+
 		/>
+		<TrafficLightContainer ref={this.trafficLight}/>
 	    </div>
 	)
     }
     componentDidMount(){
+    }
+}
+
+export class TrafficLightContainer extends React.PureComponent {
+    state = {
+	redOn: true,
+	yellowOn: false,
+	greenOn: false,
+    }
+
+    updateLight = (state) => {
+	this.setState({
+	    redOn: state[0],
+	    yellowOn: state[1],
+	    greenOn: state[2]
+	});
+    }
+
+    render() {
+	return (
+	<TrafficLight
+	    RedOn={this.state.redOn}
+	    YellowOn={this.state.yellowOn}
+	    GreenOn={this.state.greenOn}
+	/>
+	);
     }
 }

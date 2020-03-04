@@ -33,7 +33,6 @@ def start():
     with message "sum":
     send sum
     """
-
     @socketio.on('get stats')
     def handle_message(message):
         print('recieved message: ' + message)
@@ -61,11 +60,12 @@ def statistic_update(socketio, sysdig_handling):
         stats['calls_per_second'] = calls_per_second
         stats['time'] = 0  # time_first_call
         stats['ids_score'] = sysdig_handling.statistic.get_ids_score()
-
         stats['syscall_type_dict'] = sysdig_handling.statistic.calc_syscall_type_distribution()
 
+        print(stats['syscall_type_dict'])
+        print(calls_per_second)
         socketio.emit('stats', stats)
-        print(stats)
+        #print(stats)
         time.sleep(delay)
 
 

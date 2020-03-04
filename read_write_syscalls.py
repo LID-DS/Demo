@@ -4,6 +4,7 @@ import collections
 import threading
 from statistics import Statistic
 import demo_model_stide
+import time
 
 """
 on initiation:
@@ -30,7 +31,7 @@ class SysdigHandling:
     def __init__(self):
         # Initiate syscall deque
         self.deque_syscall = collections.deque()
-        self.ids = demo_model_stide.DemoModelStide(training_size=1000)
+        self.ids = demo_model_stide.DemoModelStide(training_size=10000)
         # Initiate write deque thread
         self.write_thread = threading.Thread(target=self.write_syscalls, args=())
         self.write_thread.start()
@@ -49,7 +50,7 @@ class SysdigHandling:
         sysdig_process = None
         try:
             # collect information for all containers except host
-            sensor_command_line = ['sudo', '/usr/bin/sysdig', '--unbuffered',
+            sensor_command_line = ['sudo', '/usr/bin/sysdig', #'--unbuffered',
                                    '-p %container.id %evt.rawtime %evt.latency %proc.name %thread.tid %evt.dir %syscall.type %evt.args',
                                    'container.id!=host and syscall.type!=container']
             sysdig_process = subprocess.Popen(sensor_command_line, stdout=subprocess.PIPE, encoding="utf-8")
@@ -104,3 +105,5 @@ class SysdigHandling:
                 result = ids.consume_system_call(syscall)
                 # send to statistics
                 self.statistic.update_statistic(syscall, result)
+            else:
+                time.sleep(0.1)

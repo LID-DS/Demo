@@ -19,7 +19,7 @@ class Statistic:
     def update_statistic(self, syscall, ids_score):
         self.calc_sum()
         # self.calc_syscall_type_distribution()
-        self.calc_calls_per_minute(syscall)
+        self.calc_calls_per_bucket(syscall)
         self.handle_ids_score(ids_score)
 
     def calc_syscall_type_distribution(self):
@@ -64,10 +64,9 @@ class Statistic:
     def get_sum(self):
         return self.syscall_sum
 
-    def calc_calls_per_minute(self, syscall):
+    def calc_calls_per_bucket(self, syscall):
         rawtime_of_syscall = syscall[1]
         syscall_type = syscall[6]
-        syscall_type_dict = {}
         if self.start_time == 0:
             self.start_time = int(rawtime_of_syscall)
 
@@ -79,7 +78,7 @@ class Statistic:
             self.bucket_counter += 1
             # TODO ADD SYSCALL TYPE CORRECT NOT ONE PER BUCKET
             # add entry to dictionary, count type of systemcall to bucket information
-            if syscall_type in syscall_type_dict:
+            if syscall_type in self.syscall_type_dict_bucket:
                 self.syscall_type_dict_bucket[syscall_type] += 1
             else:
                 self.syscall_type_dict_bucket[syscall_type] = 1
