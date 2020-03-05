@@ -65,7 +65,6 @@ def statistic_update(socketio, sysdig_handling):
         print(stats['syscall_type_dict'])
         print(calls_per_second)
         socketio.emit('stats', stats)
-        #print(stats)
         time.sleep(delay)
 
 
