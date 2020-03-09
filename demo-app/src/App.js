@@ -4,6 +4,9 @@ import io from 'socket.io-client';
 import Plot from 'react-plotly.js';
 import {Helmet} from 'react-helmet';
 import TrafficLight from 'react-trafficlight';
+import Incident_Table from './Table';
+
+
 
 class App extends React.PureComponent{
 
@@ -20,6 +23,7 @@ class App extends React.PureComponent{
 	return(
 	    <div>
 		<IDS_Plot ref={this.idsPlot}/>
+		<div id="container"> </div>
 	    </div>
 	);
     };
@@ -48,6 +52,11 @@ export default App;
 
 const PLOT_WINDOW_CUTOUT = 60
 const IDS_THRESHOLD = 0.5
+var  IS_TRAINING = true
+var INCIDENT = [
+    {id: 1, time: 1, score: 0.5},
+    {id: 2, time: 2, score: 0.8}
+];
 
 export class IDS_Plot extends React.PureComponent{
 
@@ -74,6 +83,7 @@ export class IDS_Plot extends React.PureComponent{
 	    index: 0
 	}
 	this.trafficLight = React.createRef();
+	this.incidentTable = React.createRef();
     }
 
     updateColors = (ids_state, ids_score) => {
@@ -91,7 +101,6 @@ export class IDS_Plot extends React.PureComponent{
 		});
 	    }
 	}
-	else { }
     }
 
     // recieves data from App which implements websocket
@@ -103,12 +112,17 @@ export class IDS_Plot extends React.PureComponent{
 	let ids_score = this.state.original_data.ids_score
 	// insert sent data into data object of plot
 	if (data['ids_score'] != null) {
+	    IS_TRAINING = false
 	    ids_score.push(data['ids_score'])
 	    var ids_state = "Detecting"
 	}
-	else {
+	else if (IS_TRAINING){
 	    var ids_state = "Training ongoing"
 	    ids_score.push(0)
+	}
+	else {
+	    ids_score.push(0)
+	    var ids_state = "Detecting"
 	}
 	y.push(data['calls_per_second'])
 	x.push(this.state.index)
@@ -121,7 +135,7 @@ export class IDS_Plot extends React.PureComponent{
 	cutout_x = x.slice(Math.max(x.length - PLOT_WINDOW_CUTOUT, 1))
 	cutout_y = y.slice(Math.max(y.length - PLOT_WINDOW_CUTOUT, 1))
 
-	// fill in zeros in y
+	// fill in zeros in y -> Entries with no record (because nothing was recorded) set to 0 
 	// fill in negative numbers so first value of y starts at x = 0
 	if (cutout_x.length < PLOT_WINDOW_CUTOUT){
 	    var new_cutout_x = new Array(PLOT_WINDOW_CUTOUT - cutout_x.length).fill(0)
@@ -135,11 +149,18 @@ export class IDS_Plot extends React.PureComponent{
 	    cutout_y = new_cutout_y.concat(cutout_y)
 	}
 
-	if(ids_score[ids_score.length - 1] > IDS_THRESHOLD){
+	//when alarm triggered
+	// update table with incidents
+	// update traffic light
+	var current_score = ids_score[ids_score.length - 1]
+	if(current_score > IDS_THRESHOLD){
 	    var lights = [true,false,false]
+	    console.log(this.state.index)
+	    this.incidentTable.current.updateTable(this.state.index, current_score)
 	}
 	else {
 	    var lights = [false,false,true]
+	    console.log(this.state.index)
 	}
 	this.trafficLight.current.updateLight(lights)
 
@@ -219,6 +240,7 @@ export class IDS_Plot extends React.PureComponent{
 
 		/>
 		<TrafficLightContainer ref={this.trafficLight}/>
+		<Incident_Table ref={this.incidentTable}/>
 	    </div>
 	)
     }
@@ -251,3 +273,4 @@ export class TrafficLightContainer extends React.PureComponent {
 	);
     }
 }
+

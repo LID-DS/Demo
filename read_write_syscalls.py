@@ -8,7 +8,7 @@ import time
 
 """
 on initiation:
-    start two threads for reading syscalls 
+    start two threads for reading syscalls
         first thread reads syscalls with sysdig and writes them to deque
             with attributes:
                 containerID
@@ -82,7 +82,7 @@ class SysdigHandling:
 
     """
     get read system calls from sysdig subprocess call
-    write system calls in deque 
+    write system calls in deque
     """
 
     def write_syscalls(self):
