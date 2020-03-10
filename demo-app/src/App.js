@@ -79,6 +79,7 @@ export class IDS_Plot extends React.PureComponent{
 	}
 	this.trafficLight = React.createRef();
 	this.incidentTable = React.createRef();
+    this.thresholdSlider = React.createRef();
     }
 
 

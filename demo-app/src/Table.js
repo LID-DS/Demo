@@ -1,26 +1,31 @@
 import React from 'react';
-
 import { Column, Table } from 'react-virtualized';
-import 'react-virtualized/styles.css'; 
+import 'react-virtualized/styles.css';
 
 export default class Incident_Table extends React.PureComponent {
     constructor(probs){
-	super(probs)
-	this.state = {
-	    incident_list: [{
-		id: 1,
-		time: 1,
-		score: 0.5
-	    }]
-	}
+        super(probs)
+        this.state = {
+            incident_list:[{
+                id:0,
+                time:0,
+                score:0
+            }]
+        }
     }
     updateTable = (time, score) => {
-	console.log("update Table")
-	var new_id = this.state.incident_list[this.state.incident_list.length - 1]["id"] + 1
-	this.state.incident_list.push({id: new_id, time: time, score: score})
-	console.log(this.state.incident_list)
-	this.tableRef.forceUpdateGrid()
+        var current_list = this.state.incident_list
+        var new_id = current_list[this.state.incident_list.length - 1]["id"] + 1
+        current_list.push({id: new_id, time: time, score: score})
+        this.setState({
+            incident_list: current_list
+        })
+        console.log(current_list)
     }
+
+    //function rowRenderer(probs) {
+     //   return <SortabelTableRowRenderer {...probs} />;
+   // }
 
     render() {
 	return (
@@ -32,6 +37,7 @@ export default class Incident_Table extends React.PureComponent {
 		    rowHeight={30}
 		    rowCount={this.state.incident_list.length}
 		    rowGetter={({ index }) => this.state.incident_list[index]}
+    //        rowRenderer={rowRenderer}
 		>
 		    <Column
 		    label='ID'
