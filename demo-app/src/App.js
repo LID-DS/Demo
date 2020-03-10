@@ -2,7 +2,6 @@ import React from 'react';
 import './App.css';
 import io from 'socket.io-client';
 import Plot from 'react-plotly.js';
-import {Helmet} from 'react-helmet';
 import TrafficLight from 'react-trafficlight';
 import Incident_Table from './Table';
 
@@ -53,10 +52,6 @@ export default App;
 const PLOT_WINDOW_CUTOUT = 60
 const IDS_THRESHOLD = 0.5
 var  IS_TRAINING = true
-var INCIDENT = [
-    {id: 1, time: 1, score: 0.5},
-    {id: 2, time: 2, score: 0.8}
-];
 
 export class IDS_Plot extends React.PureComponent{
 
@@ -86,22 +81,6 @@ export class IDS_Plot extends React.PureComponent{
 	this.incidentTable = React.createRef();
     }
 
-    updateColors = (ids_state, ids_score) => {
-	if (ids_state === "Detecting"){
-	    if (ids_score > IDS_THRESHOLD){
-		console.log("alarm")
-		this.setState({
-		    alarm: 0
-		});
-	    }
-	    else {
-		console.log("kein alarm")
-		this.setState({
-		    alarm: 1
-		});
-	    }
-	}
-    }
 
     // recieves data from App which implements websocket
     // calculate window for plotly fill
@@ -135,7 +114,7 @@ export class IDS_Plot extends React.PureComponent{
 	cutout_x = x.slice(Math.max(x.length - PLOT_WINDOW_CUTOUT, 1))
 	cutout_y = y.slice(Math.max(y.length - PLOT_WINDOW_CUTOUT, 1))
 
-	// fill in zeros in y -> Entries with no record (because nothing was recorded) set to 0 
+	// fill in zeros in y -> Entries with no record (because nothing was recorded) set to 0
 	// fill in negative numbers so first value of y starts at x = 0
 	if (cutout_x.length < PLOT_WINDOW_CUTOUT){
 	    var new_cutout_x = new Array(PLOT_WINDOW_CUTOUT - cutout_x.length).fill(0)
@@ -166,19 +145,19 @@ export class IDS_Plot extends React.PureComponent{
 
 	this.setState({
 	    calls_per_second : {
-		x: cutout_x,
-		y: cutout_y,
-		name: 'Time series data'
+            x: cutout_x,
+            y: cutout_y,
+            name: 'Time series data'
 	    },
 	    ids_score: {
-		x: cutout_x,
-		y: cutout_ids,
-		name: 'IDS score data',
+            x: cutout_x,
+            y: cutout_ids,
+            name: 'IDS score data',
 	    },
 	    original_data:{
-		x: x,
-		y: y,
-		ids_score: ids_score
+            x: x,
+            y: y,
+            ids_score: ids_score
 	    },
 	    ids_state: ids_state,
 	    index: this.state.index + 1
@@ -234,7 +213,21 @@ export class IDS_Plot extends React.PureComponent{
 			    },
 			    datarevision : this.state.index,
 			    paper_bgcolor: 'rgba(0,0,0,0)',
-			    plot_bgcolor: 'rgba(0,0,0,0)'
+			    plot_bgcolor: 'rgba(0,0,0,0)',
+                shapes: [
+                    {
+                        type: 'line',
+                        xref: 'paper',
+                        y0: IDS_THRESHOLD,
+                        y1: IDS_THRESHOLD,
+                        x0: this.state.ids_score.x[0],
+                        x1: this.state.calls_per_second.x[this.state.calls_per_second.x.length - 1],
+                        line:{
+                            color: 'rgb(255,0,10)',
+                            width: 2
+                        }
+                    }
+                ]
 			}
 		    }
 
