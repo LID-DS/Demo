@@ -218,7 +218,7 @@ export class IDS_Plot extends React.PureComponent{
                 shapes: [
                     {
                         type: 'line',
-                        xref: 'paper',
+                        yref: 'paper',
                         y0: IDS_THRESHOLD,
                         y1: IDS_THRESHOLD,
                         x0: this.state.ids_score.x[0],
