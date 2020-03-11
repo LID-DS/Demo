@@ -1,0 +1,15 @@
+Things to install
+
+npm -version
+
+    npm install
+
+install pip
+sudo apt install python3-pip
+
+python requirements
+pip3 install -r requirements.txt
+
+sysdig
+    curl -s https://s3.amazonaws.com/download.draios.com/stable/install-sysdig | sudo bash
+
