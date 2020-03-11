@@ -1,5 +1,5 @@
 import React from 'react';
-import { List, Column, Table, defaultTableRowRenderer } from 'react-virtualized';
+import { Column, Table } from 'react-virtualized';
 import 'react-virtualized/styles.css';
 
 export default class Incident_Table extends React.PureComponent {
@@ -18,7 +18,6 @@ export default class Incident_Table extends React.PureComponent {
         var current_list = this.state.incident_list
         var new_id = current_list[this.state.incident_list.length - 1]["id"] + 1
         current_list.push({id: new_id, time: time, score: score})
-        var list = this.state.students
         this.setState((prevState, props) => {
             return {
                 incident_list: [...prevState.incident_list]
