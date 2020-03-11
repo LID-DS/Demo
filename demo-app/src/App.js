@@ -52,6 +52,7 @@ export default App;
 const PLOT_WINDOW_CUTOUT = 60
 const IDS_THRESHOLD = 0.5
 var  IS_TRAINING = true
+const colors = ["#00ff00", "#ff0000"]
 
 export class IDS_Plot extends React.PureComponent{
 
@@ -137,6 +138,7 @@ export class IDS_Plot extends React.PureComponent{
 	    var lights = [true,false,false]
 	    console.log(this.state.index)
 	    this.incidentTable.current.updateTable(this.state.index, current_score)
+
 	}
 	else {
 	    var lights = [false,false,true]
@@ -200,7 +202,10 @@ export class IDS_Plot extends React.PureComponent{
 			    x: this.state.ids_score.x,
 			    y: this.state.ids_score.y,
 			    mode: 'markers',
-			    type: 'scatter'
+			    type: 'scatter',
+                marker: {
+                    color: colors[(this.state.ids_score.y[this.state.ids_score.y.length - 1] >= IDS_THRESHOLD) ? 1 : 0 ]
+                }
 			}
 		    ]}
 		    layout = {
@@ -218,7 +223,6 @@ export class IDS_Plot extends React.PureComponent{
                 shapes: [
                     {
                         type: 'line',
-                        yref: 'paper',
                         y0: IDS_THRESHOLD,
                         y1: IDS_THRESHOLD,
                         x0: this.state.ids_score.x[0],
