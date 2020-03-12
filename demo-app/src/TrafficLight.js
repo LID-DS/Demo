@@ -1,7 +1,8 @@
 import React from 'react';
-import TrafficLight from 'react-trafficlight';
+import ReactTrafficLight from 'react-trafficlight';
 
-class TrafficLightContainer extends React.PureComponent {
+import './css/TrafficLight.css'
+class TrafficLight extends React.PureComponent {
     state = {
 	redOn: true,
 	yellowOn: false,
@@ -18,7 +19,7 @@ class TrafficLightContainer extends React.PureComponent {
 
     render() {
 	return (
-	<TrafficLight
+	<ReactTrafficLight className="TrafficLight"
 	    RedOn={this.state.redOn}
 	    YellowOn={this.state.yellowOn}
 	    GreenOn={this.state.greenOn}
@@ -27,4 +28,4 @@ class TrafficLightContainer extends React.PureComponent {
     }
 }
 
-export default TrafficLightContainer;
+export default TrafficLight;
