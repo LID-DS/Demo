@@ -1,20 +1,19 @@
-.App {
-  font-family: sans-serif;
-  text-align: center;
+body {
+    font-size: 12px;
 }
-
-.light {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  margin: 10px;
-}
-
-.traffic-light {
-  width: 120px;
-  padding: 5px;
-  margin: 5px;
-  background-color: #888;
-  border: dashed 1px #666;
+.ReactVirtualized__Table {
   display: inline-block;
+  border: 2px solid rgba(0, 0, 0, 0.1);
 }
+
+.ReactVirtualized__Table__headerColumn {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  padding: 0;
+}
+
+.ReactVirtualized__Table__headerTruncatedText {
+  flex: auto;
+}
+

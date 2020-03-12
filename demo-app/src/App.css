@@ -14,14 +14,14 @@
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color: #858B8E;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  font-size: calc(8px + 2vmin);
+  color: #3d4142;
 }
 
 .App-link {
@@ -36,3 +36,36 @@
     transform: rotate(360deg);
   }
 }
+
+.light {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin: 10px;
+}
+
+.traffic-light {
+  width: 120px;
+  padding: 5px;
+  margin: 5px;
+  background-color: #888;
+  border: dashed 1px #666;
+  display: inline-block;
+}
+
+.ReactVirtualized__Table {
+  display: inline-block;
+  border: 8px solid rgba(0, 0, 0, 0.1);
+}
+
+.ReactVirtualized__Table__headerColumn {
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  padding: 5;
+}
+
+.ReactVirtualized__Table__headerTruncatedText {
+  flex: auto;
+}
+

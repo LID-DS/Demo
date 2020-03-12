@@ -4,6 +4,6 @@ rethinkdb_data/
 minimalClient.js
 minimalFlaskIO.py
 node_modules/
-package-lock.json
+demo-app/package-lock.json
 
 /venv/

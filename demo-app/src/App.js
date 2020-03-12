@@ -1,10 +1,12 @@
 import React from 'react';
-import './App.css';
 import io from 'socket.io-client';
 import Plot from 'react-plotly.js';
-import TrafficLight from 'react-trafficlight';
-import Incident_Table from './Table';
 import Slider from 'react-input-slider';
+
+import './App.css';
+
+import Incident_Table from './Table';
+import TrafficLightContainer from './TrafficLightContainer';
 
 
 
@@ -21,30 +23,32 @@ class App extends React.PureComponent{
 
     render() {
 	return(
-	    <div>
-		<IDSPlot ref={this.idsPlot}/>
-		<div id="container"> </div>
+	    <div className="App">
+          <header className="App-header">
+            <IDSPlot ref={this.idsPlot}/>
+            <div id="container"> </div>
+          </header>
 	    </div>
 	);
     };
 
     componentDidMount(){
-	document.body.style.backgroundColor = '#ACB2B9'
-	let socket = io('ws://localhost:5000/');
-	socket.on('connect', function() {
-	    console.log('connected')
-	    this.setState({
-		websocket: socket
-	    });
-	}.bind(this));
+        //document.body.style.backgroundColor = '#ACB2B9'
+        let socket = io('ws://localhost:5000/');
+        socket.on('connect', function() {
+            console.log('connected')
+            this.setState({
+            websocket: socket
+            });
+        }.bind(this));
 
-	//if recieved message stats update plot
-	socket.on('stats', function(data) {
-	    this.setState({
-		data : data
-	    });
-	    this.idsPlot.current.updatePlot(data)
-	}.bind(this));
+        //if recieved message stats update plot
+        socket.on('stats', function(data) {
+            this.setState({
+            data : data
+            });
+            this.idsPlot.current.updatePlot(data)
+        }.bind(this));
     }
 }
 
@@ -53,7 +57,7 @@ export default App;
 const PLOT_WINDOW_CUTOUT = 60
 const IDS_THRESHOLD = 0.5
 var  IS_TRAINING = true
-const colors = ["#00ff00", "#ff0000"]
+const colors = ["#236845", "#8C1217"]
 const divStyle = {
     display: 'flex',
     alignItems: 'center'
@@ -177,7 +181,6 @@ export class IDSPlot extends React.PureComponent{
     render(){
 	return(
 	    <div>
-		<div> {this.state.ids_state} </div>
 		<Plot
 		    data={[
 			{
@@ -203,6 +206,7 @@ export class IDSPlot extends React.PureComponent{
 			}
 		    }
 		/>
+		<div> {this.state.ids_state} </div>
 		<TrafficLightContainer ref={this.trafficLight}/>
 		<Plot
 		    data={[
@@ -236,7 +240,7 @@ export class IDSPlot extends React.PureComponent{
                         x0: this.state.ids_score.x[0],
                         x1: this.state.calls_per_second.x[this.state.calls_per_second.x.length - 1],
                         line:{
-                            color: 'rgb(255,0,10)',
+                            color: 'rgb(140,18,23)',
                             width: 2
                         }
                     }
@@ -260,32 +264,6 @@ export class IDSPlot extends React.PureComponent{
 	)
     }
     componentDidMount(){
-    }
-}
-
-export class TrafficLightContainer extends React.PureComponent {
-    state   = {
-	redOn: true,
-	yellowOn: false,
-	greenOn: false,
-    }
-
-    updateLight = (state) => {
-	this.setState({
-	    redOn: state[0],
-	    yellowOn: state[1],
-	    greenOn: state[2]
-	});
-    }
-
-    render() {
-	return (
-	<TrafficLight
-	    RedOn={this.state.redOn}
-	    YellowOn={this.state.yellowOn}
-	    GreenOn={this.state.greenOn}
-	/>
-	);
     }
 }
 
