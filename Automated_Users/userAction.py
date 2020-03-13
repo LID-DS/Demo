@@ -173,11 +173,17 @@ def leave_feedback(driver, selected_products):
         
 if __name__ == "__main__":
 
-    driver = webdriver.Firefox()
     #credentials
-    email = sys.argv[1]
+    try:
+        email = sys.argv[1]
+    except:
+        print("please enter email as argument in command")
+        sys.exit() 
     password = "testpassword"
     security_question = "middlename"
+
+    driver = webdriver.Firefox()
+    
 
     register(driver, email, password, security_question)
     login(driver, email, password)
