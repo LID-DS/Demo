@@ -20,6 +20,7 @@ curl -s https://s3.amazonaws.com/download.draios.com/stable/install-sysdig | sud
 #download geckodriver and mv to /usr/bin
 curl -s https://github.com/mozilla/geckodriver/releases/download/v0.26.0/geckodriver-v0.26.0-linux32.tar.gz | tar -xzvf
 
-#geckodriver-v0.26.0-linux64.tar.gz
+export path=$path: Automated_Users/geckodriver/
+#Using Chrome to access web
 
-sudo mv ~/Downloads/geckodriver /usr/bin
+sudo mv geckodriver Automated_Users
