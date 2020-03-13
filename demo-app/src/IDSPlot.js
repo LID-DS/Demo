@@ -203,9 +203,9 @@ export default class IDSPlot extends React.PureComponent{
             x={this.state.slider.threshold}
             xmin={0}
             xmax={1}
-            xstep={0.1}
+            xstep={0.01}
         onChange={({ x }) => this.setState({slider : {
-            threshold: x.toFixed(1)
+            threshold: x.toFixed(2)
         }})}
           />
 		<Incident_Table ref={this.incidentTable}/>
