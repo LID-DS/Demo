@@ -179,7 +179,7 @@ if __name__ == "__main__":
     password = "testpassword"
     security_question = "middlename"
 
-    #register(driver, email, password, security_question)
+    register(driver, email, password, security_question)
     login(driver, email, password)
     time.sleep(1.5)
     
