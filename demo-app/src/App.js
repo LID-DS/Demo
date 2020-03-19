@@ -51,9 +51,3 @@ class App extends React.PureComponent{
 
 export default App;
 
-const divStyle = {
-    display: 'flex',
-    alignItems: 'center'
-};
-
-
