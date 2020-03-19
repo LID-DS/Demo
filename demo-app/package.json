@@ -42,7 +42,7 @@
     ]
   },
   "devDependencies": {
-    "acorn": "^6.4.1",
+    "acorn": "^7.1.1",
     "eslint-config-react-app": "^5.2.0",
     "eslint-plugin-flowtype": "^3.13.0",
     "fibers": "^4.0.2",
