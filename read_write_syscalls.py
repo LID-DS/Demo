@@ -31,7 +31,7 @@ class SysdigHandling:
     def __init__(self):
         # Initiate syscall deque
         self.deque_syscall = collections.deque()
-        self.ids = demo_model_stide.DemoModelStide(training_size=100000)
+        self.ids = demo_model_stide.DemoModelStide(training_size=400000)
         # Initiate write deque thread
         self.write_thread = threading.Thread(target=self.write_syscalls, args=())
         self.write_thread.start()
