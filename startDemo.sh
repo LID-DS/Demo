@@ -1,12 +1,24 @@
 #!/bin/bash
 
-#start docker
-#sudo docker run -d 'vulhub/mysql:5.5.23'
-sudo docker run --rm -p 3000:3000 bkimminich/juice-shop
 
-#start webserver
-python3 webserver.py &
+#enabling docker to run without sudo rights
+#sudo groupadd docker &&
+#sudo usermod -aG docker $USER &&   
+#newgrp docker
 
-#start react application
-npm start --prefix demo-app/
+#||
+#enabling sysdig to run without sudo rights
+sudo groupadd sysdig &&
+sudo usermod -aG sysdig $USER &&
+newgrp sysdig &&
 
+echo "%sysdig ALL= /usr/bin/sysdig" | sudo EDITOR='tee -a' visudo
+
+#||
+# tmux session with prepared config which starts:
+#   docker juice shop
+#   react app
+#   webserver.py for syscall analysis
+#   userAction.py for automated traffic on juice shop
+
+tmuxp load startDemo.yaml

@@ -14,6 +14,7 @@ python-engineio==3.11.2
 python-socketio==4.4.0
 requests==2.23.0
 six==1.14.0
+tmuxp==1.5.4
 urllib3==1.25.8
 websocket-client==0.57.0
 Werkzeug==1.0.0
