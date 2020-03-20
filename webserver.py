@@ -62,8 +62,8 @@ def statistic_update(socketio, sysdig_handling):
         stats['ids_score'] = sysdig_handling.statistic.get_ids_score()
         stats['syscall_type_dict'] = sysdig_handling.statistic.calc_syscall_type_distribution()
 
-        print(stats['syscall_type_dict'])
-        print(calls_per_second)
+        #print(stats['syscall_type_dict'])
+        print(stats['sum'])
         socketio.emit('stats', stats)
         time.sleep(delay)
 
