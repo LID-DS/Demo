@@ -176,12 +176,16 @@ class User:
         for item in random_items:
             print("Put item into basket")
             self.put_products_in_basket([item])
+            if (random.randint(0,4) >  2):
+                self.reload()
             if (random.randint(0,1) > 0):
                 print("Leave Feedback")
                 self.leave_feedback([item])
+
+    def reload(self):
+        self.driver.refresh()
             
     def action(self):
-        
         self.register()
         for i in range(2):
             self.login()
