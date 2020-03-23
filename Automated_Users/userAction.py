@@ -187,7 +187,7 @@ class User:
             
     def action(self):
         self.register()
-        for i in range(2):
+        while(True):
             self.login()
             time.sleep(1.5)
             self.go_shopping()
@@ -196,7 +196,7 @@ class User:
 
 if __name__ == "__main__":
     
-    parallel_users = 2
+    parallel_users = 1
 
     #credentials
     users = []
