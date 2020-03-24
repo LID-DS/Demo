@@ -4,7 +4,7 @@ import random
 import threading
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
-
+from selenium.webdriver.chrome.options import Options
 
 
 products = [
@@ -24,11 +24,12 @@ products = [
 
 class User:
     
-    def __init__(self, email, password, security_question): 
-        self.driver = webdriver.Firefox()
+    def __init__(self, driver, email, password, security_question, user_number): 
+        self.driver = driver
         self.email = email
         self.password = password
         self.security_question = security_question   
+        self.user_number = user_number
 
     def register(self):
         #Open the website
@@ -37,7 +38,7 @@ class User:
             #get rid of pop up window by clicking in top right corner
             self.driver.find_element_by_xpath('//div[contains(@class,"cdk-overlay-pane")]//button[@aria-label="Close Welcome Banner"]').click()
         except:
-            print('No Welcome Banner')
+            print("User: " + str(self.user_number) + " " + 'No Welcome Banner')
         #find email box
         reg_email_box = self.driver.find_element_by_xpath('//div[contains(@id, "registration-form")]//input[@id="emailControl"]')
         reg_email_box.send_keys(self.email)
@@ -59,20 +60,16 @@ class User:
 
     def login(self):
         
-        print('Try logging in')
+        print("User: " + str(self.user_number) + " " + 'Try logging in')
         #Open the website
         self.driver.get('http://localhost:3000/#/login')
 
-        try:
-            #get rid of pop up window by clicking in top right corner
-            self.driver.find_element_by_xpath('//div[contains(@class,"cdk-overlay-pane")]//button[@aria-label="Close Welcome Banner"]').click()
-        except:
-            print("No welcome banner")
 
         #Login with given credentials
         #find email box
         email_box = self.driver.find_element_by_name('email')
         #enter email address
+        print(self.email)
         email_box.send_keys(self.email)
         #find password box
         pass_box = self.driver.find_element_by_name('password')
@@ -87,16 +84,21 @@ class User:
         try:
             self.driver.find_element_by_xpath('//div[contains(@aria-describedby, "cookieconsent:desc")]//a[@aria-label="dismiss cookie message"]').click()
         except:
-            print('No cookie banner')
+            print("User: " + str(self.user_number) + " " + 'No cookie banner')
 
 
     def logout(self):
     
-        print('Logout')
-        account_button = self.driver.find_element_by_id('navbarAccount')
-        account_button.click()
-        logout_button = self.driver.find_element_by_id('navbarLogoutButton')
-        logout_button.click()
+        print("User: " + str(self.user_number) + " " + 'Logout')
+        try:
+            account_button = self.driver.find_element_by_id('navbarAccount')
+            account_button.click()
+            logout_button = self.driver.find_element_by_id('navbarLogoutButton')
+            logout_button.click()
+        except:
+            print("User: " + str(self.user_number) + " " + "Logout failed, retrying")
+            self.reload()
+            self.logout()
 
     def select_products(self, selected_products, add_to_basket, leave_feedback):
 
@@ -129,8 +131,12 @@ class User:
 
     def get_product_feedback_field(self, product_number):
         product_path = '//div[contains(@class, "ng-star-inserted")]//mat-grid-tile[@style="left: {}; width: calc(33.3333% - 20px); margin-top: {}; padding-top: calc(33.3333% - 20px);"]//div[@aria-label="Click for more information about the product"]'
-        product_button = self.driver.find_element_by_xpath(product_path.format(products[product_number][0],products[product_number][1]))
-        product_button.click()
+        try: 
+            product_button = self.driver.find_element_by_xpath(product_path.format(products[product_number][0],products[product_number][1]))
+            product_button.click()
+        except:
+            return None
+
         #select feedback window
         feedback_path = '//div[contains(@class, "cdk-overlay-pane")]//textarea[contains(@class, "mat-input-element")]'
         feedback_input = self.driver.find_element_by_xpath(feedback_path)
@@ -152,6 +158,9 @@ class User:
         for selection in selected_products:
             #get feedback field
             feedback_field = self.get_product_feedback_field(selection)
+            if feedback_field == None:
+                print("User: " + str(self.user_number) + " " + "Error leaving feedback -> skipping feedback")
+                return
             self.driver.execute_script("arguments[0].scrollIntoView();", feedback_field)
             #enter feedback
             feedback_field.send_keys('u got that juice')
@@ -165,7 +174,7 @@ class User:
 
     def go_shopping(self):
 
-        print("Go shopping")
+        print("User: " + str(self.user_number) + " " + "Go shopping")
         # choose how many items user puts in basket
         how_many_items_in_basket = random.randint(0,2)
         random_items = []
@@ -174,12 +183,12 @@ class User:
         for i in range(0,how_many_items_in_basket + 1):
             random_items.append(random.randint(0,11)) 
         for item in random_items:
-            print("Put item into basket")
+            print("User: " + str(self.user_number) + " " + "Put item into basket")
             self.put_products_in_basket([item])
             if (random.randint(0,4) >  2):
                 self.reload()
             if (random.randint(0,1) > 0):
-                print("Leave Feedback")
+                print("User: " + str(self.user_number) + " " + "Leave Feedback")
                 self.leave_feedback([item])
 
     def reload(self):
@@ -196,6 +205,9 @@ class User:
 
 if __name__ == "__main__":
     
+
+    driver = webdriver.Firefox()
+
     parallel_users = 1
 
     #credentials
@@ -206,9 +218,9 @@ if __name__ == "__main__":
     random_addition = random.randint(0,9999999999)
     
     #create user objects
-    for no_use in range(parallel_users):
-        email = "testmail{}{}@test.de".format(no_use, random_addition) 
-        users.append(User(email, password, security_question)) 
+    for num_user in range(parallel_users):
+        email = "testmail{}{}@test.de".format(num_user, random_addition) 
+        users.append(User(driver, email, password, security_question, num_user)) 
 
     i = 0
     for user in users:
