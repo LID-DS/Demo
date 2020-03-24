@@ -25,8 +25,8 @@ curl -s https://s3.amazonaws.com/download.draios.com/stable/install-sysdig | sud
 #UserActions
 mkdir Downloads && cd Downloads
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb 
-sudo apt install ./Downloads/google-chrome-stable_current_amd64.deb
-sudo apt install chromium-chromedriver
+sudo apt install ./Downloads/google-chrome-stable_current_amd64.deb -y
+sudo apt install chromium-chromedriver -y
 
 sudo apt update
 
