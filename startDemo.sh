@@ -1,20 +1,22 @@
 #!/bin/bash
 
+sudo apt update
+#install prequesites for downloading and installing needed features
+sudo apt install git -y
+sudo apt install curl -y
+sudo apt install python3-pip -y
 
-#enabling docker to run without sudo rights
-#sudo groupadd docker &&
-#sudo usermod -aG docker $USER &&   
-#newgrp docker
+# install nvm
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.35.2/install.s | bash
+# install node and matching npm via nvm
+nvm install v8.10.0
 
-#||
-#enabling sysdig to run without sudo rights
-sudo groupadd sysdig &&
-sudo usermod -aG sysdig $USER &&
-newgrp sysdig &&
+#install python dependencies
+pip3 install -r requirements.txt
 
-echo "%sysdig ALL= /usr/bin/sysdig" | sudo EDITOR='tee -a' visudo
+#install sysdig
+curl -s https://s3.amazonaws.com/download.draios.com/stable/install-sysdig | sudo bash
 
-#||
 # tmux session with prepared config which starts:
 #   docker juice shop
 #   react app
