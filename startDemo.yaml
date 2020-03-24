@@ -6,10 +6,10 @@ windows:
     - cd ~/Documents/Demo/
   panes:
     - shell_command:
-        - docker run --rm -p 3000:3000 bkimminich/juice-shop 
+        - sudo docker run --rm -p 3000:3000 bkimminich/juice-shop 
     - shell_command: 
-        - python3 webserver.py
+        - sudo python3 webserver.py
     - shell_command: 
         - npm start --prefix demo-app/ 
     - shell_command: 
-        - python3 Automated_Users/userAction.py 
+        - python3 Automated_Users/userAction_headless.py 
