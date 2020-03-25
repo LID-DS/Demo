@@ -208,7 +208,7 @@ if __name__ == "__main__":
     
     #wait until website is reachable
     while True:
-        status_of_js = os.system('docker ps | grep juice-shop')
+        status_of_js = os.system('sudo docker ps | grep juice-shop')
         if status_of_js  == 256:
             print('Juice Shop offline') 
             time.sleep(5)
