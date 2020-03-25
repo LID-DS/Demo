@@ -2,6 +2,8 @@ import sys
 import time
 import random
 import threading
+import requests
+import time
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options
@@ -204,8 +206,12 @@ class User:
 
 if __name__ == "__main__":
     
+    #wait until website is reachable
+    while '200' in requests.get('https://localhost:3000/'):
+        print('Site not online, wait for 5 seconds')
+        time.sleep(5)
 
-
+    
     parallel_users = 4
 
     #credentials
