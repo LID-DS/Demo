@@ -10,9 +10,11 @@ from selenium.webdriver.chrome.options import Options
 
 
  
+MAX_LOGOUT_FAILS = 5
 
 class User:
     
+
     def __init__(self, email, password, security_question, user_number): 
 
         #configurations for headless browsing
@@ -24,7 +26,11 @@ class User:
         self.password = password
         self.security_question = security_question   
         self.user_number = user_number
+        self.logout_count = 0
 
+    def reset(self):
+        self.__init__(self.email, self.password, self.security_question, self.user_number)
+    
     def register(self):
         #Open the website
         self.driver.get('http://localhost:3000/#/register')
@@ -42,6 +48,8 @@ class User:
         #find repeat password box
         reg_password_repeat_box = self.driver.find_element_by_xpath('//div[contains(@id, "registration-form")]//input[@id="repeatPasswordControl"]')
         reg_password_repeat_box.send_keys(self.password)
+        #occasional overlapping without sleep
+        time.sleep(1)
         #select security question
         self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-register/div/mat-card/div[2]/div[1]/mat-form-field[1]/div/div[1]/div[3]').click()
         self.driver.find_element_by_xpath('//div[contains(@id, "cdk-overlay-2")]//mat-option[@id="mat-option-0"]').click()
@@ -58,6 +66,12 @@ class User:
         #Open the website
         self.driver.get('http://localhost:3000/#/login')
 
+        try:
+            #get rid of pop up window by clicking in top right corner
+            self.driver.find_element_by_xpath('//div[contains(@class,"cdk-overlay-pane")]//button[@aria-label="Close Welcome Banner"]').click()
+        except:
+            print("User: " + str(self.user_number) + " " + 'No Welcome Banner')
+
         #Login with given credentials
         #find email box
         email_box = self.driver.find_element_by_name('email')
@@ -72,6 +86,8 @@ class User:
         #click button
         login_button.click()
         time.sleep(1)
+        #logout count for too many failed logouts
+        self.logout_count = 0
         #remove cookie overlay window
         try:
             self.driver.find_element_by_xpath('//div[contains(@aria-describedby, "cookieconsent:desc")]//a[@aria-label="dismiss cookie message"]').click()
@@ -80,17 +96,24 @@ class User:
 
 
     def logout(self):
-    
+     
         print("User: " + str(self.user_number) + " " + 'Logout')
-        try:
-            account_button = self.driver.find_element_by_id('navbarAccount')
-            account_button.click()
-            logout_button = self.driver.find_element_by_id('navbarLogoutButton')
-            logout_button.click()
-        except:
-            print("User: " + str(self.user_number) + " " + "Logout failed, retrying")
-            self.reload()
-            self.logout()
+        self.logout_count += 1
+        if (self.logout_count < MAX_LOGOUT_FAILS):
+            try:    
+                account_button = self.driver.find_element_by_id('navbarAccount')
+                account_button.click()
+                logout_button = self.driver.find_element_by_id('navbarLogoutButton')
+                logout_button.click()
+            except:
+                print("User: " + str(self.user_number) + " " + "Logout failed, retrying")
+                self.reload()
+                self.logout()
+        else:
+            print("User: " + str(self.user_number) + " " + 'max retries for relogin reached \n reinitialize User')
+            self.driver.quit()
+            self.reset()
+            
 
     def select_products(self, selected_products, add_to_basket, leave_feedback):
 
@@ -150,10 +173,16 @@ class User:
             if selection == 10:
                 time.sleep(8)
             else: time.sleep(1)
-            basket_button = self.get_product_basket_button(selection)
-            #scroll to element so it is clickable
-            self.driver.execute_script("arguments[0].scrollIntoView();", basket_button)
-            basket_button.click()
+            try: 
+                basket_button = self.get_product_basket_button(selection)
+                #scroll to element so it is clickable
+                self.driver.execute_script("arguments[0].scrollIntoView();", basket_button)
+                basket_button.click()
+            except:
+                print("User: " + str(self.user_number) + " " + "Error putting item into basket -> skipping item")
+                self.logout()
+                time.sleep(1)
+                self.login()
 
     def leave_feedback(self, selected_products):
         for selection in selected_products:
@@ -197,10 +226,12 @@ class User:
             
     def action(self):
         self.register()
+        time.sleep(0.1)
         while(True):
             self.login()
             time.sleep(1.5)
             self.go_shopping(max_products=10)
+            time.sleep(1)
             self.logout()
 
 
