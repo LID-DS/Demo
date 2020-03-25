@@ -2,7 +2,7 @@ import sys
 import time
 import random
 import threading
-import requests
+import os 
 import time
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
@@ -208,13 +208,11 @@ if __name__ == "__main__":
     
     #wait until website is reachable
     while True:
-        try: 
-            response = requests.get('https://localhost:3000/')
-            if response.status_code == 200:
-                break
-        except: 
-            print('Site not online, wait for 5 seconds')
+        status_of_js = os.system('docker ps | grep juice-shop')
+        if status_of_js  == 256:
+            print('Juice Shop offline') 
             time.sleep(5)
+        else: break
 
     print('Juice Shop is online')
     
