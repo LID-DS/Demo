@@ -12,7 +12,9 @@ sudo apt install python3-pip -y
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.35.2/install.sh | bash
 #TODO restart terminal so command nvm is usable
 #try
-exec bash
+. ~/.nvm/nvm.sh
+. ~/.profile
+. ~/.bashrc
 # install node and matching npm via nvm
 nvm install 12.6
 #install demo-app dependencies
