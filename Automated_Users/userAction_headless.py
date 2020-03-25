@@ -207,10 +207,16 @@ class User:
 if __name__ == "__main__":
     
     #wait until website is reachable
-    while '200' in requests.get('https://localhost:3000/'):
-        print('Site not online, wait for 5 seconds')
-        time.sleep(5)
+    while True:
+        try: 
+            response = requests.get('https://localhost:3000/')
+            if response.status_code == 200:
+                break
+        except: 
+            print('Site not online, wait for 5 seconds')
+            time.sleep(5)
 
+    print('Juice Shop is online')
     
     parallel_users = 4
 
