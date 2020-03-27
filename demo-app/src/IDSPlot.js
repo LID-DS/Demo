@@ -4,12 +4,12 @@ import Slider from 'react-input-slider';
 
 import './css/Table.css'
 
-import Incident_Table from './Table';
+import IncidentTable from './Table';
 import TrafficLight from './TrafficLight';
+import TrainingInfo from './TrainingInfo';
 
 const PLOT_WINDOW_CUTOUT = 60
 const IDS_THRESHOLD = 0.5
-var  IS_TRAINING = true
 const colors = ["#236845", "#8C1217"]
 
 export default class IDSPlot extends React.PureComponent{
@@ -35,96 +35,91 @@ export default class IDSPlot extends React.PureComponent{
         slider: {
             threshold: IDS_THRESHOLD
         },
-	    training: 'Training ongoing',
 	    alarm: 1,
 	    index: 0
 	}
 	this.trafficLight = React.createRef();
 	this.incidentTable = React.createRef();
-    }i
+    this.trainingInfo = React.createRef();
+    }
 
 
-    // recieves data from App which implements websocket
+    // recieves data from App.js which implements websocket
     // calculate window for plotly fill
     updatePlot = (data) => {
-	//console.log([data['calls_per_second'], data['time_of_first_call_minute']])
-	let y = this.state.original_data.y
-	let x = this.state.original_data.x
-	let ids_score = this.state.original_data.ids_score
-	// insert sent data into data object of plot
-	if (data['ids_score'] != null) {
-	    IS_TRAINING = false
-	    ids_score.push(data['ids_score'])
-	    var ids_state = "Detecting"
-	}
-	else if (IS_TRAINING){
-	    var ids_state = "Training ongoing"
-	    ids_score.push(0)
-	}
-	else {
-	    ids_score.push(0)
-	    var ids_state = "Detecting"
-	}
-	y.push(data['calls_per_second'])
-	x.push(this.state.index)
-	// only show static window of PLOT_WINDOW_CUTOUT seconds
-	var cutout_ids = this.state.ids_score.cutout_ids
-	var cutout_y = this.state.calls_per_second.cutout_y
-	var cutout_x = this.state.calls_per_second.cutout_x
-	// select only last entries of original data for cutout window
-	cutout_ids = ids_score.slice(Math.max(ids_score.length - PLOT_WINDOW_CUTOUT, 1))
-	cutout_x = x.slice(Math.max(x.length - PLOT_WINDOW_CUTOUT, 1))
-	cutout_y = y.slice(Math.max(y.length - PLOT_WINDOW_CUTOUT, 1))
+        //console.log([data['calls_per_second'], data['time_of_first_call_minute']])
+        let y = this.state.original_data.y
+        let x = this.state.original_data.x
+        let ids_score = this.state.original_data.ids_score
+        // insert sent data into data object of plot
+         // and further information into ids_info
+        this.trainingInfo.current.update_training_info(data['ids_info'])
 
-	// fill in zeros in y -> Entries with no record (because nothing was recorded) set to 0
-	// fill in negative numbers so first value of y starts at x = 0
-	if (cutout_x.length < PLOT_WINDOW_CUTOUT){
-	    var new_cutout_x = new Array(PLOT_WINDOW_CUTOUT - cutout_x.length).fill(0)
-	    for(var i = PLOT_WINDOW_CUTOUT - cutout_x.length; i > 0; i--){
-		new_cutout_x[i-1] = -(i-1)
-	    }
-	    var new_cutout_y = new Array(PLOT_WINDOW_CUTOUT - cutout_y.length).fill(0)
-	    var new_cutout_ids = new Array(PLOT_WINDOW_CUTOUT - cutout_ids.length).fill(0)
-	    cutout_ids = new_cutout_ids.concat(cutout_ids)
-	    cutout_x = new_cutout_x.concat(cutout_x)
-	    cutout_y = new_cutout_y.concat(cutout_y)
-	}
+        if (data['ids_info']['score'] != null) {
+            ids_score.push(data['ids_info']['score'])
+        }
+        else{
+            ids_score.push(0)
+        }   
+        y.push(data['calls_per_second'])
+        x.push(this.state.index)
+        // only show static window of PLOT_WINDOW_CUTOUT seconds
+        var cutout_ids = this.state.ids_score.cutout_ids
+        var cutout_y = this.state.calls_per_second.cutout_y
+        var cutout_x = this.state.calls_per_second.cutout_x
+        // select only last entries of original data for cutout window
+        cutout_ids = ids_score.slice(Math.max(ids_score.length - PLOT_WINDOW_CUTOUT, 1))
+        cutout_x = x.slice(Math.max(x.length - PLOT_WINDOW_CUTOUT, 1))
+        cutout_y = y.slice(Math.max(y.length - PLOT_WINDOW_CUTOUT, 1))
 
-	//when alarm triggered
-	// update table with incidents
-	// update traffic light
-	var current_score = ids_score[ids_score.length - 1]
-	if(current_score > this.state.slider.threshold){
-	    var lights = [true,false,false]
-	    console.log(this.state.index)
-	    this.incidentTable.current.updateTable(this.state.index, current_score)
+        // fill in zeros in y -> Entries with no record (because nothing was recorded) set to 0
+        // fill in negative numbers so first value of y starts at x = 0
+        if (cutout_x.length < PLOT_WINDOW_CUTOUT){
+            var new_cutout_x = new Array(PLOT_WINDOW_CUTOUT - cutout_x.length).fill(0)
+            for(var i = PLOT_WINDOW_CUTOUT - cutout_x.length; i > 0; i--){
+            new_cutout_x[i-1] = -(i-1)
+            }
+            var new_cutout_y = new Array(PLOT_WINDOW_CUTOUT - cutout_y.length).fill(0)
+            var new_cutout_ids = new Array(PLOT_WINDOW_CUTOUT - cutout_ids.length).fill(0)
+            cutout_ids = new_cutout_ids.concat(cutout_ids)
+            cutout_x = new_cutout_x.concat(cutout_x)
+            cutout_y = new_cutout_y.concat(cutout_y)
+        }
 
-	}
-	else {
-	    var lights = [false,false,true]
-	    console.log(this.state.index)
-	}
-	this.trafficLight.current.updateLight(lights)
+        //when alarm triggered
+        // update table with incidents
+        // update traffic light
+        var current_score = ids_score[ids_score.length - 1]
+        if(current_score > this.state.slider.threshold){
+            var lights = [true,false,false]
+            console.log(this.state.index)
+            this.incidentTable.current.updateTable(this.state.index, current_score)
 
-	this.setState({
-	    calls_per_second : {
-            x: cutout_x,
-            y: cutout_y,
-            name: 'Time series data'
-	    },
-	    ids_score: {
-            x: cutout_x,
-            y: cutout_ids,
-            name: 'IDS score data',
-	    },
-	    original_data:{
-            x: x,
-            y: y,
-            ids_score: ids_score
-	    },
-	    ids_state: ids_state,
-	    index: this.state.index + 1
-	});
+        }
+        else {
+            var lights = [false,false,true]
+            console.log(this.state.index)
+        }
+        this.trafficLight.current.updateLight(lights)
+
+        this.setState({
+            calls_per_second : {
+                x: cutout_x,
+                y: cutout_y,
+                name: 'Time series data'
+            },
+            ids_score: {
+                x: cutout_x,
+                y: cutout_ids,
+                name: 'IDS score data',
+            },
+            original_data:{
+                x: x,
+                y: y,
+                ids_score: ids_score
+            },
+            index: this.state.index + 1,
+        });
     }
 
     render(){
@@ -155,7 +150,7 @@ export default class IDSPlot extends React.PureComponent{
 			}
 		    }
 		/>
-		<div> {this.state.ids_state} </div>
+        <TrainingInfo ref={this.trainingInfo}/>
 		<TrafficLight ref={this.trafficLight}/>
 		<Plot
 		    data={[
@@ -173,10 +168,10 @@ export default class IDSPlot extends React.PureComponent{
 			{
 			    title : "IDS-Score",
 			    xaxis : {
-				title : "Seconds"
+                    title : "Seconds"
 			    },
 			    yaxis : {
-				title : "Highest Score In Last Second"
+                    title : "Highest Score In Last Second"
 			    },
 			    datarevision : this.state.index,
 			    paper_bgcolor: 'rgba(0,0,0,0)',
@@ -208,10 +203,11 @@ export default class IDSPlot extends React.PureComponent{
             threshold: x.toFixed(2)
         }})}
           />
-		<Incident_Table ref={this.incidentTable}/>
+		<IncidentTable ref={this.incidentTable}/>
 	    </div>
 	)
     }
     componentDidMount(){
     }
 }
+
