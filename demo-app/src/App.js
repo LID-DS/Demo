@@ -1,9 +1,9 @@
 import React from 'react';
 import io from 'socket.io-client';
-
 import './css/App.css';
 
 import IDSPlot from './IDSPlot';
+import TrainingInfo from './TrainingInfo';
 
 
 
@@ -16,17 +16,19 @@ class App extends React.PureComponent{
 	    data:[]
 	}
 	this.idsPlot = React.createRef();
+    this.trainingInfo = React.createRef();
     };
 
     render() {
-	return(
-	    <div className="App">
-          <header className="App-header">
-            <IDSPlot ref={this.idsPlot}/>
-            <div id="container"> </div>
-          </header>
-	    </div>
-	);
+        return(
+            <div className="App">
+              <header className="App-header">
+                <IDSPlot ref={this.idsPlot}/>
+                <TrainingInfo ref={this.trainingInfo}/>
+                <div id="container"> </div>
+              </header>
+            </div>
+        );
     };
 
     componentDidMount(){
@@ -42,9 +44,10 @@ class App extends React.PureComponent{
         //if recieved message stats update plot
         socket.on('stats', function(data) {
             this.setState({
-            data : data
+                data : data
             });
             this.idsPlot.current.updatePlot(data)
+            this.trainingInfo.current.update_training_info(data['ids_info'])
         }.bind(this));
     }
 }
