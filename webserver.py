@@ -12,7 +12,6 @@ initiate websocket
 react app asks for updates of statistics and IDS alarms
 """
 
-
 def start():
     sysdig_handling = SysdigHandling()
     app = Flask(__name__)
@@ -59,13 +58,29 @@ def statistic_update(socketio, sysdig_handling):
         calls_per_second = sysdig_handling.statistic.get_calls_per_second()
         stats['calls_per_second'] = calls_per_second
         stats['time'] = 0  # time_first_call
-        stats['ids_score'] = sysdig_handling.statistic.get_ids_score()
         stats['syscall_type_dict'] = sysdig_handling.statistic.calc_syscall_type_distribution()
+        stats['ids_info'] = {
+            'score': sysdig_handling.statistic.get_ids_score(),
+            'state': sysdig_handling.statistic.ids_info['state'],
+            'training_size': sysdig_handling.statistic.ids_info['training_size'],
+            'current_ngrams': sysdig_handling.statistic.ids_info['current_ngrams']
+        }
 
-        #print(stats['syscall_type_dict'])
-        print(stats['sum'])
+        print(stats['ids_info'])
         socketio.emit('stats', stats)
         time.sleep(delay)
+
+def training_update(socketio):
+    return 0
+    #current_count of calls in trainingsphase
+    #needed calls for training
+    #training status
+# Lernphase info
+    # stand #systemcalls
+    # vorgelerntes modell
+# Automatisierte User per Knopfdruck starten
+# Angriffe starten
+
 
 
 if __name__ == "__main__":

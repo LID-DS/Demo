@@ -31,7 +31,7 @@ class SysdigHandling:
     def __init__(self):
         # Initiate syscall deque
         self.deque_syscall = collections.deque()
-        self.ids = demo_model_stide.DemoModelStide(training_size=400000)
+        self.ids = demo_model_stide.DemoModelStide(training_size=100000)
         # Initiate write deque thread
         self.write_thread = threading.Thread(target=self.write_syscalls, args=())
         self.write_thread.start()
@@ -94,6 +94,10 @@ class SysdigHandling:
     """
     read system calls from deque
     if deque not empty send syscall to IDS and to statistics
+    get resulting info of ids:
+        score
+        state (training, detecting)
+        current state of training 
     """
 
     def read_syscall(self, ids):
@@ -102,8 +106,14 @@ class SysdigHandling:
             if self.deque_syscall:
                 syscall = self.deque_syscall.pop()
                 # send to IDS
-                result = ids.consume_system_call(syscall)
+                #result = ids.consume_system_call(syscall)
+                ids_info = {
+                    'score': ids.consume_system_call(syscall), 
+                    'state': ids._model_state.value,
+                    'training_size': ids._training_size,
+                    'current_ngrams': ids._normal_ngrams["training_size"] - 1
+                }
                 # send to statistics
-                self.statistic.update_statistic(syscall, result)
+                self.statistic.update_statistic(syscall, ids_info)
             else:
                 time.sleep(0.1)
