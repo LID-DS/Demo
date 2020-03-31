@@ -4,9 +4,7 @@ import Slider from 'react-input-slider';
 
 import './css/Table.css'
 
-import IncidentTable from './Table';
 import TrafficLight from './TrafficLight';
-import TrainingInfo from './TrainingInfo';
 
 const PLOT_WINDOW_CUTOUT = 60
 const IDS_THRESHOLD = 0.5
@@ -35,14 +33,12 @@ export default class IDSPlot extends React.PureComponent{
         slider: {
             threshold: IDS_THRESHOLD
         },
-	    alarm: 1,
-	    index: 0
+	    index: 0,
+        alarm: 0
 	}
 	this.trafficLight = React.createRef();
-	this.incidentTable = React.createRef();
-    this.trainingInfo = React.createRef();
     }
-
+    
 
     // recieves data from App.js which implements websocket
     // calculate window for plotly fill
@@ -53,7 +49,6 @@ export default class IDSPlot extends React.PureComponent{
         let ids_score = this.state.original_data.ids_score
         // insert sent data into data object of plot
          // and further information into ids_info
-        this.trainingInfo.current.update_training_info(data['ids_info'])
 
         if (data['ids_info']['score'] != null) {
             ids_score.push(data['ids_info']['score'])
@@ -87,18 +82,18 @@ export default class IDSPlot extends React.PureComponent{
         }
 
         //when alarm triggered
-        // update table with incidents
         // update traffic light
+        // set alarm state so App.js can access it
         var current_score = ids_score[ids_score.length - 1]
         if(current_score > this.state.slider.threshold){
             var lights = [true,false,false]
-            console.log(this.state.index)
-            this.incidentTable.current.updateTable(this.state.index, current_score)
-
+            this.setState({alarm: 1})
+            //console.log(this.state.index)
         }
         else {
             var lights = [false,false,true]
-            console.log(this.state.index)
+            this.setState({alarm: 0})
+            //console.log(this.state.index)
         }
         this.trafficLight.current.updateLight(lights)
 
@@ -150,7 +145,6 @@ export default class IDSPlot extends React.PureComponent{
 			}
 		    }
 		/>
-        <TrainingInfo ref={this.trainingInfo}/>
 		<TrafficLight ref={this.trafficLight}/>
 		<Plot
 		    data={[
@@ -203,7 +197,6 @@ export default class IDSPlot extends React.PureComponent{
             threshold: x.toFixed(2)
         }})}
           />
-		<IncidentTable ref={this.incidentTable}/>
 	    </div>
 	)
     }

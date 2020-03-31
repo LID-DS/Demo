@@ -3,6 +3,7 @@ import { Column, Table } from 'react-virtualized';
 import 'react-virtualized/styles.css';
 
 export default class Incident_Table extends React.PureComponent {
+
     constructor(probs){
         super(probs)
         this.state = {
@@ -13,8 +14,8 @@ export default class Incident_Table extends React.PureComponent {
             }],
         }
     }
-    updateTable = (time, score) => {
-        console.log("updateTable")
+
+    add_incident = (time, score) => {
         var current_list = this.state.incident_list
         var new_id = current_list[this.state.incident_list.length - 1]["id"] + 1
         current_list.push({id: new_id, time: time, score: score})
@@ -23,7 +24,6 @@ export default class Incident_Table extends React.PureComponent {
                 incident_list: [...prevState.incident_list]
             }
         })
-        console.log(current_list)
     }
 
     render() {

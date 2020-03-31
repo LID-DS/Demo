@@ -4,7 +4,7 @@ import pdb
 
 class Statistic:
 
-    def __init__(self):
+    def __init__(self, ids):
         self.syscall_sum = 0
         self.start_time = 0
         self.calls_per_minute = 0
@@ -13,6 +13,7 @@ class Statistic:
         self.deque_syscall_per_second = collections.deque()
         self.syscall_type_dict_bucket = {}
         self.syscall_type_dict = {}
+        self.ids = ids
         self.ids_info = {
             'score': 0,
             'score_list': [],
@@ -21,17 +22,26 @@ class Statistic:
             'current_ngrams': 0
         }
 
-    def update_statistic(self, syscall, ids_info):
+    """
+    received syscall from syscallhandling 
+    """ 
+    def update_statistic(self, syscall):
         self.calc_sum()
         # self.calc_syscall_type_distribution()
         self.calc_calls_per_bucket(syscall)
+        ids_info = {
+            'score': self.ids.consume_system_call(syscall), 
+            'state': self.ids._model_state.value,
+            'training_size': self.ids._training_size,
+            'current_ngrams': self.ids._normal_ngrams["training_size"] - 1
+        }
         self.handle_ids_info(ids_info)
 
+    """
+    scan through deque and read syscall type dictionary
+    sum occurences of each syscall and return summed dictionary 
+    """
     def calc_syscall_type_distribution(self):
-        """
-        scan through deque and read syscall type dictionary
-        sum occurences of each syscall and return summed dictionary 
-        """
         self.syscall_type_dict = {}
         for syscall in self.deque_syscall_per_second:
             syscall_type_dict = syscall[2]

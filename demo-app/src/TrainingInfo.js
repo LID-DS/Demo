@@ -16,10 +16,13 @@ export default class Training_info extends React.PureComponent{
             },
             training_size_input: 100000
         }
+        //console.log("printprobs")
+        //console.log(this.probs)
     }
     
     update_training_info = (ids_info) => {
-
+        
+    // Invoked from IDSPlot
         var ids_state = "Training ongoing"
         if (ids_info['state'] !== 0){
             var ids_state = "Detecting"
@@ -36,45 +39,25 @@ export default class Training_info extends React.PureComponent{
             }
         })
     }
+    //pass information to ids -> App.js websocket -> Backend
     retrain = () => {
         console.log("Train IDS")
-        //pass information to demo_stide 
+        this.probs.sendTrainingInfo(this.state.training_size_input)
     }
 
-    set_training_size = (event) => {
-        console.log(event.target.value)
-        this.setState({
-            training_size_input: event.target.value 
-        })
-        //pass information to demo_stide 
-    } 
-    
-    start_training = () => {
-        console.log("start training")
-        //pass infrmation to demo_stide
-    }
-    
     render(){
         return(
             <div>
                 <Info ids_info={this.state.ids_info}/>
-                <form>
-                    Training size: 
-                    <input 
-                        type="text" 
-                        name="training_size"
-                        value={this.state.training_size_input}
-                        onChange={this.set_training_size}
-                    />
-                </form>
-                <button onClick={() => this.retrain()}>Train IDS</button>
+                <em>Current training size: {this.state.ids_info.training_size}</em>
             </div>
         )
     }
 }
+
 function Info(probs) {
     var ids_info = probs.ids_info    
-    console.log(probs.ids_info)
+    //console.log(probs.ids_info)
     if (ids_info.state === 1) {
         return <div> {ids_info.state_string} </div>
     } 

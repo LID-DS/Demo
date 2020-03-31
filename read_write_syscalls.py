@@ -3,7 +3,6 @@ import subprocess
 import collections
 import threading
 from statistics import Statistic
-import demo_model_stide
 import time
 
 """
@@ -28,18 +27,17 @@ on initiation:
 
 class SysdigHandling:
 
-    def __init__(self):
+    def __init__(self, statistic):
         # Initiate syscall deque
         self.deque_syscall = collections.deque()
-        self.ids = demo_model_stide.DemoModelStide(training_size=100000)
         # Initiate write deque thread
         self.write_thread = threading.Thread(target=self.write_syscalls, args=())
         self.write_thread.start()
         # Initiate read deque thread
-        self.read_thread = threading.Thread(target=self.read_syscall, args=([self.ids]))
+        self.read_thread = threading.Thread(target=self.read_syscall, args=([]))
         self.read_thread.start()
-        # Initaite statistics
-        self.statistic = Statistic()
+        # Initiate statistic
+        self.statistic = statistic
 
     """
     start sysdig process on docker container with params: container_ID, raw_time, latency, process_name, thread_ID, direction, syscall_type, syscall_arguments
@@ -93,27 +91,15 @@ class SysdigHandling:
 
     """
     read system calls from deque
-    if deque not empty send syscall to IDS and to statistics
-    get resulting info of ids:
-        score
-        state (training, detecting)
-        current state of training 
+    if deque not empty send syscall to statistics
     """
 
-    def read_syscall(self, ids):
+    def read_syscall(self):
         while True:
             # check if deque is empty
             if self.deque_syscall:
                 syscall = self.deque_syscall.pop()
-                # send to IDS
-                #result = ids.consume_system_call(syscall)
-                ids_info = {
-                    'score': ids.consume_system_call(syscall), 
-                    'state': ids._model_state.value,
-                    'training_size': ids._training_size,
-                    'current_ngrams': ids._normal_ngrams["training_size"] - 1
-                }
                 # send to statistics
-                self.statistic.update_statistic(syscall, ids_info)
+                self.statistic.update_statistic(syscall)
             else:
                 time.sleep(0.1)
