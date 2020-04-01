@@ -11,22 +11,22 @@ from selenium.webdriver.chrome.options import Options
 
  
 MAX_LOGOUT_FAILS = 5
+MAX_USERS = 4
 
 class User:
     
-
     def __init__(self, email, password, security_question, user_number): 
-
         #configurations for headless browsing
-        chrome_options = Options()
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--window-size=1480,996")
-        self.driver = webdriver.Chrome(options=chrome_options)
+        self.chrome_options = Options()
+        self.chrome_options.add_argument("--headless")
+        self.chrome_options.add_argument("--window-size=1480,996")
+        self.driver = webdriver.Chrome(options=self.chrome_options)
         self.email = email
         self.password = password
         self.security_question = security_question   
         self.user_number = user_number
         self.logout_count = 0
+        self.isrunning = True
 
     def reset(self):
         self.__init__(self.email, self.password, self.security_question, self.user_number)
@@ -138,6 +138,7 @@ class User:
         return 0
 
     def get_product_basket_button(self, product_number):
+
         product_paths = "/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-search-result/div/div/div[2]/mat-grid-list/div/mat-grid-tile[{}]/figure/mat-card/div[{}]/button"
         # product 7,9,11 have extra banner, so different xpath 
         if product_number in [7,9,11]:
@@ -167,6 +168,7 @@ class User:
         return feedback_input
 
     def put_products_in_basket(self, selected_products):
+
         for selection in selected_products:
             #if last row middle product is chosen
             #wait for popup to close (...put into basket) or else it is obscured
@@ -185,6 +187,7 @@ class User:
                 self.login()
 
     def leave_feedback(self, selected_products):
+
         for selection in selected_products:
             #get feedback field
             feedback_field = self.get_product_feedback_field(selection)
@@ -228,15 +231,66 @@ class User:
         self.register()
         time.sleep(0.1)
         while(True):
+            if not self.isrunning: 
+                return 
             self.login()
             time.sleep(1.5)
             self.go_shopping(max_products=10)
             time.sleep(1)
             self.logout()
-
-
-if __name__ == "__main__":
     
+    def suicide(self):
+        self.isrunning = False
+
+        
+class UserManager:
+    
+    
+    def __init__(self):
+        self.active_users = []
+        self.active_threads = []   
+    
+    def checkSite(self):
+        status_of_js = os.system('sudo docker ps | grep juice-shop')
+        while status_of_js == 256:
+            print('Juice Shop offline') 
+            time.sleep(5)
+            status_of_js = os.system('sudo docker ps | grep juice-shop')
+
+    
+    def add_user(self): 
+        if(len(self.active_users) >= MAX_USERS):
+            print("MAX_USERS reached")
+        
+        self.checkSite()
+        password = "testpassword"
+        security_question = "middlename"
+        email = "mail{}{}@test.com".format(len(self.active_users), random.randint(0,9999999999)) 
+        new_user = User(email, password, security_question, user_number=len(self.active_users))
+        self.active_users.append(new_user)
+        user_thread = threading.Thread(target=new_user.action, args=([]))
+        user_thread.start()
+        #self.active_threads.append(user_thread)
+
+    def remove_user(self):
+        #get last user of list 
+        if(len(self.active_users) < 1):
+            print("No active users")
+            return
+        user = self.active_users[len(self.active_users) - 1]
+        user.suicide()
+        self.active_users = self.activeUsers[:-1]
+        
+    def show_actions(self):
+        return 0
+        #run user which is not headless
+        
+if __name__ == "__main__":
+    userManager = UserManager()
+    userManager.add_user()
+    userManager.add_user()
+    
+"""    
     #wait until website is reachable
     while True:
         status_of_js = os.system('sudo docker ps | grep juice-shop')
@@ -267,4 +321,4 @@ if __name__ == "__main__":
         i += 1
         user_thread = threading.Thread(target=user.action, args=([]))
         user_thread.start()
-
+"""    
