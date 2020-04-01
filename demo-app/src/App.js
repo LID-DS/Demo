@@ -6,6 +6,7 @@ import IDSPlot from './IDSPlot';
 import TrainingInfo from './TrainingInfo';
 import IncidentTable from './Table';
 import UserInput from './UserInput'
+import UserActionInput from './UserActionInput'
 
 class App extends React.PureComponent{
 
@@ -46,6 +47,10 @@ class App extends React.PureComponent{
         this.incidentTable.current.updateTable(data.index, data.score)
     }
     
+    automaticUserActions = (userAction) => {
+        this.state.websocket.emit('user action', userAction)
+    }
+    
     render() {
         return(
             <div className="App">
@@ -53,8 +58,8 @@ class App extends React.PureComponent{
                 <IDSPlot ref={this.idsPlot} addIncidentCallback={this.addIncident} />
                 <TrainingInfo ref={this.trainingInfo} />
                 <UserInput inputRef={el => (this.inputElement = el)} />
-                <button onClick={this.handleRetrain}>Retrain IDS</button>
-                <div id="container"> </div>
+                <button className="button-basic" onClick={this.handleRetrain}>Retrain IDS</button>
+                <UserActionInput onChildClick={this.automaticUserActions} />
                 <IncidentTable ref={this.incidentTable} />
               </header>
             </div>
@@ -62,7 +67,6 @@ class App extends React.PureComponent{
     };
 
     componentDidMount(){
-        //document.body.style.backgroundColor = '#ACB2B9'
         let socket = io('ws://localhost:5000/');
         socket.on('connect', function() {
             console.log('connected')
@@ -76,17 +80,18 @@ class App extends React.PureComponent{
             this.setState({
                 data : data
             });
-            //send ids plot data (check if score falls below threshold value and set alarm state)
             this.idsPlot.current.updatePlot(data)
             this.trainingInfo.current.update_training_info(data['ids_info'])
-            console.log(this.idsPlot.current.state.alarm)
-            //Access alarm to check if incident happend 
+            //Add incident to  table if alarm state of ids plot is reached
+            // -> depends on set threshold in plot
             if (this.idsPlot.current.state.alarm == 1){
                 this.incidentTable.current.add_incident(data['time'], data['ids_info']['score'])
             }
-            else{
-                console.log()
-            }
+        }.bind(this));
+        //if recieved message user action update count of active users 
+        socket.on('user action', function(data) {
+            console.log("received length")
+            console.log(data) 
         }.bind(this));
     }
 }
