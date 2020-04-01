@@ -7,7 +7,6 @@ class Statistic:
     def __init__(self, ids):
         self.syscall_sum = 0
         self.start_time = 0
-        self.calls_per_minute = 0
         self.bucket_counter = 0
         self.bucket_update_delay = 1000
         self.deque_syscall_per_second = collections.deque()
@@ -33,7 +32,7 @@ class Statistic:
             'score': self.ids.consume_system_call(syscall), 
             'state': self.ids._model_state.value,
             'training_size': self.ids._training_size,
-            'current_ngrams': self.ids._normal_ngrams["training_size"] - 1
+            'current_ngrams': self.ids._normal_ngrams["training_size"]
         }
         self.handle_ids_info(ids_info)
 
