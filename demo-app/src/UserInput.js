@@ -7,7 +7,6 @@ const UserInput = probs => {
                 <input 
                     type="text" 
                     name="training_size"
-                    value="100000"
                     ref={probs.inputRef} 
                 />
             </form>

@@ -2,8 +2,6 @@ import React from 'react';
 import Plot from 'react-plotly.js';
 import Slider from 'react-input-slider';
 
-import './css/Table.css'
-
 import TrafficLight from './TrafficLight';
 
 const PLOT_WINDOW_CUTOUT = 60
@@ -80,18 +78,22 @@ export default class IDSPlot extends React.PureComponent{
             cutout_x = new_cutout_x.concat(cutout_x)
             cutout_y = new_cutout_y.concat(cutout_y)
         }
-
+        var lights = []
+        var current_score = ids_score[ids_score.length - 1]
+        //if still in training set light to yellow
+        if(data['ids_info']['state'] === 0){
+            lights = [false,true,false]
+        }
         //when alarm triggered
         // update traffic light
         // set alarm state so App.js can access it
-        var current_score = ids_score[ids_score.length - 1]
-        if(current_score > this.state.slider.threshold){
-            var lights = [true,false,false]
+        else if(current_score > this.state.slider.threshold){
+            lights = [true,false,false]
             this.setState({alarm: 1})
             //console.log(this.state.index)
         }
         else {
-            var lights = [false,false,true]
+            lights = [false,false,true]
             this.setState({alarm: 0})
             //console.log(this.state.index)
         }
@@ -188,14 +190,19 @@ export default class IDSPlot extends React.PureComponent{
 		/>
         <div>{'Incident threshold: ' + this.state.slider.threshold}</div>
           <Slider
+            styles={{
+                active: {
+                    backgroundColor: 'black'//#236845
+                }
+            }}
             axis="x"
             x={this.state.slider.threshold}
             xmin={0}
             xmax={1}
             xstep={0.01}
-        onChange={({ x }) => this.setState({slider : {
-            threshold: x.toFixed(2)
-        }})}
+            onChange={({ x }) => this.setState({slider : {
+                threshold: x.toFixed(2)
+            }})}
           />
 	    </div>
 	)

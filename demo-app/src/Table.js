@@ -1,11 +1,12 @@
 import React from 'react';
 import { Column, Table } from 'react-virtualized';
 import 'react-virtualized/styles.css';
+import './css/Table.css'
 
 export default class Incident_Table extends React.PureComponent {
 
-    constructor(probs){
-        super(probs)
+    constructor(props){
+        super(props)
         this.state = {
             incident_list:[{
                 id: 0,

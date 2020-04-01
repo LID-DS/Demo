@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Line } from 'rc-progress';
 
-export default class Training_info extends React.PureComponent{
+export default class Training_info extends React.PureComponent {
 
     constructor(props){
         super(props)
@@ -38,11 +38,6 @@ export default class Training_info extends React.PureComponent{
                 progress: progress
             }
         })
-    }
-    //pass information to ids -> App.js websocket -> Backend
-    retrain = () => {
-        console.log("Train IDS")
-        this.probs.sendTrainingInfo(this.state.training_size_input)
     }
 
     render(){
