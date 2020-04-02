@@ -18,7 +18,9 @@ class User:
     def __init__(self, email, password, security_question, user_number): 
         #configurations for headless browsing
         self.chrome_options = Options()
+        #no Browser window
         self.chrome_options.add_argument("--headless")
+        self.chrome_options.add_argument("--no-sandbox")
         self.chrome_options.add_argument("--window-size=1480,996")
         self.driver = webdriver.Chrome(options=self.chrome_options)
         self.email = email
@@ -26,7 +28,10 @@ class User:
         self.security_question = security_question   
         self.user_number = user_number
         self.logout_count = 0
+        #to stop thread
         self.isrunning = True
+        #to see if thread has stopped
+        self.isfinished = False
 
     def reset(self):
         self.__init__(self.email, self.password, self.security_question, self.user_number)
@@ -232,19 +237,21 @@ class User:
         time.sleep(0.1)
         while(True):
             if not self.isrunning: 
+                self.isfinished = True
                 return 
             self.login()
             time.sleep(1.5)
             self.go_shopping(max_products=10)
             time.sleep(1)
             self.logout()
+        #wait for last actions, then set true so we know thread has finished
+
     
     def suicide(self):
         self.isrunning = False
 
         
 class UserManager:
-    
     
     def __init__(self):
         self.active_users = []
@@ -256,31 +263,37 @@ class UserManager:
             print('Juice Shop offline') 
             time.sleep(5)
             status_of_js = os.system('sudo docker ps | grep juice-shop')
-
     
     def add_user(self): 
         if(len(self.active_users) >= MAX_USERS):
             print("MAX_USERS reached")
-        
         self.checkSite()
         password = "testpassword"
         security_question = "middlename"
         email = "mail{}{}@test.com".format(len(self.active_users), random.randint(0,9999999999)) 
         new_user = User(email, password, security_question, user_number=len(self.active_users))
         self.active_users.append(new_user)
+        print(len(self.active_users))
+        print("User: {} was added".format(new_user.user_number))
         user_thread = threading.Thread(target=new_user.action, args=([]))
         user_thread.start()
         #self.active_threads.append(user_thread)
 
+    """
+    set is_running Flag to false to stop userActions and end the thread
+    remove user from active user list
+    """
     def remove_user(self):
         #get last user of list 
         if(len(self.active_users) < 1):
             print("No active users")
             return
         user = self.active_users[len(self.active_users) - 1]
+        print("User: {} was removed".format(user.user_number))
         user.suicide()
-        self.active_users = self.activeUsers[:-1]
-        
+        self.active_users = self.active_users[:-1]
+        return user 
+
     def show_actions(self):
         return 0
         #run user which is not headless
@@ -289,6 +302,10 @@ if __name__ == "__main__":
     userManager = UserManager()
     userManager.add_user()
     userManager.add_user()
+    time.sleep(3)
+    userManager.remove_user()
+    time.sleep(3)
+    userManager.remove_user()
     
 """    
     #wait until website is reachable

@@ -69,11 +69,11 @@ class Backend:
         @self.socketio.on('user action')
         def handle_message(json, methods=['GET', 'POST']):
             if str(json) == 'add': 
-                print('user action ' + str(json))
                 self.userManager.add_user()
             if str(json) == 'remove': 
-                print('user action ' + str(json))
-                self.userManager.remove_user()
+                stopped_user = self.userManager.remove_user()
+                while(not stopped_user.isfinished):
+                    time.sleep(1)
             #send how many users are active to frontend
             self.socketio.emit('user action', len(self.userManager.active_users))
             
@@ -100,7 +100,7 @@ class Backend:
                 'training_size': self.statistic.ids_info['training_size'],
                 'current_ngrams': self.statistic.ids_info['current_ngrams']
             }
-            print(stats)
+            #print(stats)
             time_since_start += 1
             self.socketio.emit('stats', stats)
             time.sleep(delay)
