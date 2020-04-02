@@ -16,8 +16,6 @@ export default class Training_info extends React.PureComponent {
             },
             training_size_input: 100000
         }
-        //console.log("printprobs")
-        //console.log(this.probs)
     }
     
     update_training_info = (ids_info) => {
@@ -52,7 +50,7 @@ export default class Training_info extends React.PureComponent {
 
 function Info(probs) {
     var ids_info = probs.ids_info    
-    //console.log(probs.ids_info)
+    var percentage = Math.round((ids_info.current_ngrams/ids_info.training_size) * 100)
     if (ids_info.state === 1) {
         return <div> {ids_info.state_string} </div>
     } 
@@ -61,7 +59,7 @@ function Info(probs) {
             <div>      
                 <div> {ids_info.state_string} </div>
                 <Line percent={ids_info.progress} strokeWidth="4" strokeColor="#236845" />
-                <div> {ids_info.current_ngrams - 1} von {ids_info.training_size}</div> 
+                <div>{percentage}%</div> 
             </div>
         )
     }

@@ -56,14 +56,21 @@ class App extends React.PureComponent{
         return(
             <div className="App">
               <header className="App-header">
-                <IDSPlot ref={this.idsPlot} addIncidentCallback={this.addIncident} />
-                <TrainingInfo ref={this.trainingInfo} />
-                <UserInput inputRef={el => (this.inputElement = el)} />
-                <button className="button-basic" onClick={this.handleRetrain}>Retrain IDS</button>
-                <UserActionInput 
-                    onChildClick={this.automaticUserActions} 
-                    ref={this.userAction}
+                <IDSPlot 
+                    ref={this.idsPlot}  
+                    addIncidentCallback={this.addIncident} 
                 />
+                <div className="nested">
+                    <div>
+                        <TrainingInfo ref={this.trainingInfo} />
+                        <UserInput className="training-input" inputRef={el => (this.inputElement = el)} />
+                        <button className="button-basic" onClick={this.handleRetrain}>Retrain IDS</button>
+                    </div>
+                    <UserActionInput 
+                        onChildClick={this.automaticUserActions} 
+                        ref={this.userAction}
+                    />
+                </div>
                 <IncidentTable ref={this.incidentTable} />
               </header>
             </div>
@@ -73,7 +80,7 @@ class App extends React.PureComponent{
     componentDidMount(){
         let socket = io('ws://localhost:5000/');
         socket.on('connect', function() {
-            console.log('connected')
+            console.log('Connected.')
             this.setState({
                 websocket: socket
             });
@@ -94,8 +101,6 @@ class App extends React.PureComponent{
         }.bind(this));
         //if recieved message user action update count of active users 
         socket.on('user action', function(data) {
-            console.log("received length")
-            console.log(data) 
             this.userAction.current.updateCount(data)
         }.bind(this));
     }

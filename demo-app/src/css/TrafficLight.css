@@ -6,11 +6,10 @@
 }
 
 .traffic-light {
-  width: 12px;
+  width: 120px;
   padding: 5px;
-  margin: 5px;
-  background-color: #888;
-  border: dashed 1px #666;
+  margin-bottom: 120px;
+  background-color: #858B8E;
   display: inline-block;
 }
 

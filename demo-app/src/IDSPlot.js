@@ -4,6 +4,8 @@ import Slider from 'react-input-slider';
 
 import TrafficLight from './TrafficLight';
 
+import './css/IDSPlot.css'
+
 const PLOT_WINDOW_CUTOUT = 60
 const IDS_THRESHOLD = 0.5
 const colors = ["#236845", "#8C1217"]
@@ -11,30 +13,30 @@ const colors = ["#236845", "#8C1217"]
 export default class IDSPlot extends React.PureComponent{
 
     constructor(props){
-	super(props)
-	this.state = {
-	    calls_per_second: {
-            y: [],
-            x: [],
-            name: ""
-	    },
-        ids_score: {
-            y: [],
-            x: [],
-            name: ""
-	    },
-        original_data: {
-            x: [],
-            y: [],
-            ids_score: []
-	    },
-        slider: {
-            threshold: IDS_THRESHOLD
-        },
-	    index: 0,
-        alarm: 0
-	}
-	this.trafficLight = React.createRef();
+        super(props)
+        this.state = {
+            calls_per_second: {
+                y: [],
+                x: [],
+                name: ""
+            },
+            ids_score: {
+                y: [],
+                x: [],
+                name: ""
+            },
+            original_data: {
+                x: [],
+                y: [],
+                ids_score: []
+            },
+            slider: {
+                threshold: IDS_THRESHOLD
+            },
+            index: 0,
+            alarm: 0
+        }
+        this.trafficLight = React.createRef();
     }
     
 
@@ -206,8 +208,6 @@ export default class IDSPlot extends React.PureComponent{
           />
 	    </div>
 	)
-    }
-    componentDidMount(){
     }
 }
 

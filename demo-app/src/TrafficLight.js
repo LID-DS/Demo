@@ -19,7 +19,7 @@ class TrafficLight extends React.PureComponent {
 
     render() {
 	return (
-	<ReactTrafficLight className="TrafficLight"
+	<ReactTrafficLight className="traffic-light"
 	    RedOn={this.state.redOn}
 	    YellowOn={this.state.yellowOn}
 	    GreenOn={this.state.greenOn}

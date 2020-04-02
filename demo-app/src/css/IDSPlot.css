@@ -1,0 +1,5 @@
+.IDSPlot {
+    background-color:#ff0000;
+    display:grid;
+    grid-template-columns: 10% 90%;
+}

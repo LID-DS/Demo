@@ -11,5 +11,3 @@ windows:
         - sudo python3 backend.py
     - shell_command: 
         - npm start --prefix demo-app/ 
-    - shell_command: 
-        - python3 Automated_Users/userAction_headless.py 
