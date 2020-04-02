@@ -221,6 +221,9 @@ class User:
         for i in range(0,how_many_items_in_basket + 1):
             random_items.append(random.randint(0,11)) 
         for item in random_items:
+            if not self.isrunning: 
+                self.isfinished = True
+                return 
             print("User: " + str(self.user_number) + " " + "Put item into basket")
             self.put_products_in_basket([item])
             if (random.randint(0,4) >  2):
