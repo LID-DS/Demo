@@ -19,6 +19,7 @@ class App extends React.PureComponent{
         this.idsPlot = React.createRef();
         this.trainingInfo = React.createRef();
         this.incidentTable = React.createRef();
+        this.userAction = React.createRef();
     };
    
     //receive incident from IDSPlot 
@@ -59,7 +60,10 @@ class App extends React.PureComponent{
                 <TrainingInfo ref={this.trainingInfo} />
                 <UserInput inputRef={el => (this.inputElement = el)} />
                 <button className="button-basic" onClick={this.handleRetrain}>Retrain IDS</button>
-                <UserActionInput onChildClick={this.automaticUserActions} />
+                <UserActionInput 
+                    onChildClick={this.automaticUserActions} 
+                    ref={this.userAction}
+                />
                 <IncidentTable ref={this.incidentTable} />
               </header>
             </div>
@@ -92,6 +96,7 @@ class App extends React.PureComponent{
         socket.on('user action', function(data) {
             console.log("received length")
             console.log(data) 
+            this.userAction.current.updateCount(data)
         }.bind(this));
     }
 }
