@@ -23,7 +23,7 @@ export default class Training_info extends React.PureComponent {
     // Invoked from IDSPlot
         var ids_state = "Training ongoing"
         if (ids_info['state'] !== 0){
-            var ids_state = "Detecting"
+            ids_state = "Detecting"
         }
 
         var progress = ids_info['current_ngrams']/ids_info['training_size']*100       
@@ -58,7 +58,12 @@ function Info(probs) {
         return (
             <div>      
                 <div> {ids_info.state_string} </div>
-                <Line percent={ids_info.progress} strokeWidth="4" strokeColor="#236845" />
+                <Line percent={ids_info.progress} 
+                    strokeWidth="1" 
+                    strokeColor="#282828"
+                    trailColor="#caceca"
+                    trailwidth = "1"
+                    />
                 <div>{percentage}%</div> 
             </div>
         )

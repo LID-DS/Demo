@@ -1,29 +1,73 @@
+:root {
+  --main-bg-color: #282828;
+  --item-bg-color: #889188;
+}
+
 .App {
+  background-color: var(--main-bg-color);
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(1px + 2vmin);
+  color: #3d4142;
 }
 
 .App-header {
-  background-color: #858B8E;
-  min-height: 100vh;
-  display:grid;
-  grid-template-columns: 1fr;
-  grid-gap:1em;
-  "display: flex;
-  flex-direction: column;"
+  grid-area: header;
+  background-color: var(--item-bg-color);
+  min-height: 5vh;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(8px + 2vmin);
   color: #3d4142;
+  margin-top: 20px;
 }
 
 .App-link {
   color: #61dafb;
 }
 
-.nested {
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  grid-gap:1em;
+$admin-header-height: 10px;
+$admin-footer-height: 70px;
+$admin-nav-width: 250px;
+
+.main {
+  display: grid; 
+  height: 100vh;
+
+  grid-template-rows: 10px 1fr 70px; 
+  grid-template-columns: 100px 1fr;
+  grid-template-areas: "header  header" 
+                        "nav  main"
+                        "footer footer";
+}
+
+.navigation {
+  grid-area: nav;
+}
+
+.dashboard {
+  margin-top: 1rem;
+  margin-right: 1rem;
+  margin-left: 1rem;
+  grid-area: main;
+  --column-count: 3;
+  display: grid;
+  grid-template-columns: 4fr 1fr 4fr;
+  grid-gap: 1rem;
+}
+
+.item {
+  background-color: var(--item-bg-color);
+}
+
+.item-status {
+  grid-column: 1/4;
+  background-color: var(--item-bg-color);
 }
 
 
