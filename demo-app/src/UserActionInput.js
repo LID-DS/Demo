@@ -29,7 +29,7 @@ class UserActionInput extends React.PureComponent {
 
     render() {
         return(
-            <div className="UserActionInput">
+            <div className="user-action-input">
                 Automated User Actions 
                     
                 <div className="button-container">
@@ -53,16 +53,19 @@ class UserActionInput extends React.PureComponent {
 function Info(probs) {
     if (probs.userInfo.removingUser) {
         return (
-                <div>
+            <div>
+                <div className="active-user">Active users: {probs.userInfo.userCount}</div>
+                <div className="user-logout">
                     <span syle="color: #FF0000">Waiting for user to log out.</span>  
-                    <div>Active users: {probs.userInfo.userCount}</div>
-                </div>)
+                </div>
+            </div>
+        )
     }
     if (probs.userInfo.userCount === 0) {
         return <span syle="background-color: #FFFF00">No running users.</span>  
     }
-    else {
-        return <div>Active users: {probs.userInfo.userCount}</div>
+    if (probs.userInfo.userCount > 0) {
+        return <div className="active-user">Active users: {probs.userInfo.userCount}</div>
                         
     }
 }

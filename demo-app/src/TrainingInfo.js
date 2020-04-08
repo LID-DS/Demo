@@ -1,4 +1,5 @@
 import React from 'react';
+import './css/TrainingInfo.css' 
 
 import { Line } from 'rc-progress';
 
@@ -40,7 +41,7 @@ export default class Training_info extends React.PureComponent {
 
     render(){
         return(
-            <div>
+            <div className="detecting">
                 <Info ids_info={this.state.ids_info}/>
                 <em>Current training size: {this.state.ids_info.training_size}</em>
             </div>
@@ -56,8 +57,8 @@ function Info(probs) {
     } 
     else{
         return (
-            <div>      
-                <div> {ids_info.state_string} </div>
+            <div className="in-training">      
+                <div className="training-string"> {ids_info.state_string} </div>
                 <Line percent={ids_info.progress} 
                     strokeWidth="1" 
                     strokeColor="#282828"

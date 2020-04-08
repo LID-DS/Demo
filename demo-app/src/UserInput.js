@@ -1,9 +1,9 @@
 import React from 'react';
 const UserInput = probs => {
     return(
-        <div>
+        <div className="user-input">
             <form> 
-                Training size: 
+                {"Training size:    "}
                 <input 
                     type="text" 
                     name="training_size"

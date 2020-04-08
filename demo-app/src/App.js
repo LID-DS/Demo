@@ -9,10 +9,14 @@ import IncidentTable from './Table';
 import UserInput from './UserInput'
 import UserActionInput from './UserActionInput'
 import TrafficLight from './TrafficLight';
+import SyscallTypePlot from './SyscallTypePlot';
 
 const IDS_THRESHOLD = 0.5
 const PLOT_WINDOW_CUTOUT = 60
 
+const highlight_color = '#f9f5d7'
+const highlight1_color = '#470a0a'
+const background_color = '#0e1217'
 
 class App extends React.PureComponent{
 
@@ -49,9 +53,14 @@ class App extends React.PureComponent{
                 threshold: IDS_THRESHOLD
             },
             alarm: 0,
-            index: 0 
+            index: 0,
+            syscall_type_dist: {
+                complete: {} ,
+                top5: {},
+            }
         }
 
+        this.syscallDistPlot = React.createRef();
         this.trafficLight = React.createRef();
         this.idsPlot = React.createRef();
         this.trainingInfo = React.createRef();
@@ -72,6 +81,15 @@ class App extends React.PureComponent{
     //send info via websocket to backend 
     sendToBackend = (data) => {
        this.state.websocket.emit('training update', data) 
+    }
+    
+    updateSyscallDistribution = (data) => {
+        let top5 = [];
+        var i;
+        for (i = 0; i < 5; i++){
+            top5.push(data['syscall_type_dict']['sorted_syscalls'][i]);
+        }
+        this.syscallDistPlot.current.handleValues(top5)
     }
 
     /*
@@ -199,6 +217,8 @@ class App extends React.PureComponent{
             this.preparePlotData(data)
             //this.idsPlot.current.updatePlot(data)
             this.trainingInfo.current.update_training_info(data['ids_info'])
+            //update syscallsistribution
+            this.updateSyscallDistribution(data)
             //Add incident to  table if alarm state of ids plot is reached
             // -> depends on set threshold in plot
             if (this.state.alarm === 1){
@@ -219,7 +239,7 @@ class App extends React.PureComponent{
                 <h2>Anomaly Detection</h2>
               </header>
                 <div className="dashboard">
-                    <div className="item">
+                    <div className="item-plot">
                         <IDSPlot className="syscall-plot" 
                             plot_info={this.state.syscall_plot}  
                         />
@@ -227,7 +247,7 @@ class App extends React.PureComponent{
                     <div className="item">
                         <TrafficLight className="traffic-light" ref={this.trafficLight}/>
                     </div>
-                    <div className="item">
+                    <div className="item-plot">
                         <IDSPlot className="ids-plot" 
                             plot_info={this.state.ids_plot}  
                         />
@@ -242,12 +262,20 @@ class App extends React.PureComponent{
                         </div>
                     </div>
                     <div className="item">
-                        <div className="slider"> 
+                        <div className="slider-text"> 
                             Incident threshold:  {this.state.slider.threshold}
                             <Slider
                               styles={{
                                   active: {
-                                      backgroundColor: 'black'//#236845
+                                      backgroundColor: highlight1_color 
+                                  },
+                                  track: {
+                                    backgroundColor: highlight_color
+                                  },
+                                  thumb: {
+                                    backgroundColor: background_color,
+                                    width: 25,
+                                    height: 25
                                   }
                               }}
                               axis="x"
@@ -267,7 +295,11 @@ class App extends React.PureComponent{
                             ref={this.userAction}
                         />
                     </div>
-                    <div>fill</div>
+                    <div className="item-plot">
+                        <SyscallTypePlot
+                            ref={this.syscallDistPlot} 
+                        />
+                    </div>
                     <div className="item">
                         <IncidentTable className="incident-table" ref={this.incidentTable} />
                     </div>

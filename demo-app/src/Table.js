@@ -34,7 +34,7 @@ export default class Incident_Table extends React.PureComponent {
 		    ref={(ref) => this.tableRef = ref}
 		    width={300}
 		    height={300}
-		    headerHeight={20}
+		    headerHeight={40}
 		    rowHeight={30}
 		    rowCount={this.state.incident_list.length}
 		    rowGetter={({ index }) => this.state.incident_list[index]}

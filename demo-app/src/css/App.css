@@ -1,6 +1,10 @@
 :root {
-  --main-bg-color: #282828;
-  --item-bg-color: #889188;
+  --main-bg-color: #0e1217;
+  --item-bg-color: #424a57;
+  --item-bg-color-light: #99a3b2;
+  "--main-bg-color: #282828;"
+  "--item-bg-color: #889188;"
+  --border-color: #a2a9a2;
 }
 
 .App {
@@ -11,7 +15,7 @@
   align-items: center;
   justify-content: center;
   font-size: calc(1px + 2vmin);
-  color: #3d4142;
+  color: #f9f5d7;    
 }
 
 .App-header {
@@ -23,8 +27,11 @@
   align-items: center;
   justify-content: center;
   font-size: calc(8px + 2vmin);
-  color: #3d4142;
-  margin-top: 20px;
+  color: #f9f5d7;    
+  margin-top: 1rem;
+  margin-right: 1rem;
+  margin-left: 1rem;
+  border: 3px solid var(--border-color);
 }
 
 .App-link {
@@ -63,11 +70,20 @@ $admin-nav-width: 250px;
 
 .item {
   background-color: var(--item-bg-color);
+  border: 3px solid var(--border-color);
 }
 
 .item-status {
   grid-column: 1/4;
   background-color: var(--item-bg-color);
+  border: 3px solid var(--border-color);
 }
 
+.item-plot {
+  background-color: var(--item-bg-color-light);
+  border: 3px solid var(--border-color);
+}
 
+.slider-text {
+  margin-top: 45px;
+}
