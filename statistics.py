@@ -67,7 +67,18 @@ class Statistic:
         return None 
                 
     def get_syscall_type_distribution(self):
-        return self.syscall_type_dict
+        #sort dictionary 
+        list_of_dicts = [] 
+        sorted_tuples = sorted(self.syscall_type_dict.items(), reverse=True, key=lambda x: x[1])
+        for elem in sorted_tuples:
+            tmp_dict = {}
+            tmp_dict[elem[0]] = elem[1]
+            list_of_dicts.append(tmp_dict)
+        #sorted_dict = {key: value for key, value in sorted(self.syscall_type_dict.items(), reverse=True, key=lambda item: item[1])}
+        sorted_dict = {
+            "sorted_syscalls": list_of_dicts
+        } 
+        return sorted_dict 
 
     def handle_ids_info(self, ids_info):
         """
