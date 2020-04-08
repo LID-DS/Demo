@@ -1,8 +1,10 @@
 import collections
 import pdb
 
+MAX_BUCKETS = 1
 
 class Statistic:
+    
 
     def __init__(self, ids):
         self.syscall_sum = 0
@@ -10,8 +12,10 @@ class Statistic:
         self.bucket_counter = 0
         self.bucket_update_delay = 1000
         self.deque_syscall_per_second = collections.deque()
+        self.deque_syscall_type_per_second = collections.deque()
         self.syscall_type_dict_bucket = {}
         self.syscall_type_dict = {}
+        self.syscall_type_dict_last_second = None
         self.ids = ids
         self.ids_info = {
             'score': 0,
@@ -26,8 +30,8 @@ class Statistic:
     """ 
     def update_statistic(self, syscall):
         self.calc_sum()
-        # self.calc_syscall_type_distribution()
         self.calc_calls_per_bucket(syscall)
+        self.calc_syscall_type_distribution()
         ids_info = {
             'score': self.ids.consume_system_call(syscall), 
             'state': self.ids._model_state.value,
@@ -41,14 +45,28 @@ class Statistic:
     sum occurences of each syscall and return summed dictionary 
     """
     def calc_syscall_type_distribution(self):
-        self.syscall_type_dict = {}
-        for syscall in self.deque_syscall_per_second:
-            syscall_type_dict = syscall[2]
+        #iterate through all syscall_type_dicts in deque
+        # if MAX_BUCKETS=1 only one entry in deqeue_syscall_type_per_second
+        for syscall_type_dict in self.deque_syscall_type_per_second:
+            # iterate through different types of syscalls in dict
             for syscall_type in syscall_type_dict:
+                #sum up all entries, if not existent -> add entry
                 if syscall_type in self.syscall_type_dict:
                     self.syscall_type_dict[syscall_type] += syscall_type_dict[syscall_type]
                 else:
                     self.syscall_type_dict[syscall_type] = syscall_type_dict[syscall_type]
+        if(self.deque_syscall_type_per_second):
+            self.syscall_type_dict_last_second = self.deque_syscall_type_per_second.pop()
+        
+
+    def get_syscall_type_distribution_second(self):
+        if not (self.syscall_type_dict_last_second == None):
+            tmp = self.syscall_type_dict_last_second
+            self.syscall_type_dict_last_second = None
+            return tmp
+        return None 
+                
+    def get_syscall_type_distribution(self):
         return self.syscall_type_dict
 
     def handle_ids_info(self, ids_info):
@@ -76,8 +94,6 @@ class Statistic:
             return highest_score
         return 0 
 
-    def get_syscall_distribution(self):
-        return self.syscall_type_dict
 
     def calc_sum(self):
         self.syscall_sum += 1
@@ -106,11 +122,12 @@ class Statistic:
                 self.syscall_type_dict_bucket[syscall_type] = 1
 
 
-        # add newest bucket to deque and pop oldest if more than 60 entries
+        # add newest bucket to deque and pop oldest if more than MAX_BUCKETS entries
         else:
-            deque_entry = [self.bucket_counter, self.start_time, self.syscall_type_dict_bucket]
+            deque_entry = [self.bucket_counter, self.start_time]
             self.deque_syscall_per_second.append(deque_entry)
-            if len(self.deque_syscall_per_second) > 1:
+            self.deque_syscall_type_per_second.append(self.syscall_type_dict_bucket)
+            if len(self.deque_syscall_per_second) > MAX_BUCKETS:
                 dropped = self.deque_syscall_per_second.popleft()
             self.bucket_counter = 0
             self.syscall_type_dict_bucket = {}
@@ -122,4 +139,6 @@ class Statistic:
         syscall_counter = 0
         for syscall in self.deque_syscall_per_second:
             syscall_counter += syscall[0]
+        if (self.deque_syscall_per_second):
+            self.deque_syscall_per_second.popleft()
         return syscall_counter

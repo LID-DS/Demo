@@ -93,7 +93,12 @@ class Backend:
             calls_per_second = self.statistic.get_calls_per_second()
             stats['calls_per_second'] = calls_per_second
             stats['time'] = time_since_start # time_first_call
-            stats['syscall_type_dict'] = self.statistic.calc_syscall_type_distribution()
+            stats['syscall_type_dict_second'] = self.statistic.get_syscall_type_distribution_second()
+            stats['syscall_type_dict'] = self.statistic.get_syscall_type_distribution()
+            print("per second")
+            print(stats['syscall_type_dict_second'])
+            print("whole")
+            print(stats['syscall_type_dict'])
             stats['ids_info'] = {
                 'score': self.statistic.get_ids_score(),
                 'state': self.statistic.ids_info['state'],
