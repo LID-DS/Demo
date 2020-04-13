@@ -4,29 +4,28 @@ import collections
 import threading
 from statistics import Statistic
 import time
-
-"""
-on initiation:
-    start two threads for reading syscalls
-        first thread reads syscalls with sysdig and writes them to deque
-            with attributes:
-                containerID
-                rawtime
-                latency
-                process name
-                threadID
-                direction: > start syscall with with params listed below < return
-                syscall type
-                arguments of syscall as list
-
-        second thread reads syscalls from deque
-    start a deque to write systemcalls to
-    create statistic class - where calculations on syscalls are made
-"""
-
+import psutil 
 
 class SysdigHandling:
 
+    """
+    on initiation:
+        start two threads for reading syscalls
+            first thread reads syscalls with sysdig and writes them to deque
+                with attributes:
+                    containerID
+                    rawtime
+                    latency
+                    process name
+                    threadID
+                    direction: > start syscall with with params listed below < return
+                    syscall type
+                    arguments of syscall as list
+
+            second thread reads syscalls from deque
+        start a deque to write systemcalls to
+        create statistic class - where calculations on syscalls are made
+    """
     def __init__(self, statistic):
         # Initiate syscall deque
         self.deque_syscall = collections.deque()
@@ -39,28 +38,28 @@ class SysdigHandling:
         # Initiate statistic
         self.statistic = statistic
 
-    """
-    start sysdig process on docker container with params: container_ID, raw_time, latency, process_name, thread_ID, direction, syscall_type, syscall_arguments
-    """
-
     @contextmanager
     def start_sysdig_and_read_data(self):
-        sysdig_process = None
+        """
+        start sysdig process on docker container with params:
+            container_ID, raw_time, latency, process_name, 
+            thread_ID, direction, syscall_type, syscall_arguments
+        """
+        self.sysdig_process = None
         try:
             # collect information for all containers except host
             sensor_command_line = ['sudo', '/usr/bin/sysdig', #'--unbuffered',
                                    '-p %container.id %evt.rawtime %evt.latency %proc.name %thread.tid %evt.dir %syscall.type %evt.args',
                                    'container.id!=host and syscall.type!=container']
-            sysdig_process = subprocess.Popen(sensor_command_line, stdout=subprocess.PIPE, encoding="utf-8")
-            yield sysdig_process
+            self.sysdig_process = subprocess.Popen(sensor_command_line, stdout=subprocess.PIPE, encoding="utf-8")
+            yield self.sysdig_process
         finally:
-            sysdig_process.terminate()
-            sysdig_process.kill()
+            self.sysdig_process.terminate()
+            self.sysdig_process.kill()
 
     """
     create list of information contained in syscall
     """
-
     def syscall_parser(self, syscall):
         # list entries:
         # 0 - containerID
@@ -78,23 +77,23 @@ class SysdigHandling:
         parsed_syscall.append(list_of_arguments)
         return parsed_syscall
 
-    """
-    get read system calls from sysdig subprocess call
-    write system calls in deque
-    """
 
     def write_syscalls(self):
+        """
+        get read system calls from sysdig subprocess call
+        write system calls in deque
+        """
         print("writing")
         with self.start_sysdig_and_read_data() as sysdig_out:
             for line in sysdig_out.stdout:
                 self.deque_syscall.append(self.syscall_parser(line))
 
-    """
-    read system calls from deque
-    if deque not empty send syscall to statistics
-    """
 
     def read_syscall(self):
+        """
+        read system calls from deque
+        if deque not empty send syscall to statistics
+        """
         while True:
             # check if deque is empty
             if self.deque_syscall:
@@ -103,3 +102,12 @@ class SysdigHandling:
                 self.statistic.update_statistic(syscall)
             else:
                 time.sleep(0.1)
+
+    def stop_process(self):
+        """
+        stop sysdig subprocess
+        """
+        for proc in psutil.process_iter():
+            if proc.name() == "sysdig":
+                print("killed")
+                proc.kill()

@@ -15,20 +15,33 @@ class Statistic:
         self.deque_syscall_type_per_second = collections.deque()
         self.syscall_type_dict_bucket = {}
         self.syscall_type_dict = {}
-        self.syscall_type_dict_last_second = None
+        self.syscall_type_dict_last_second = {} 
         self.ids = ids
+        if (self.ids._model_state == 1):
+            model_state = 1
+        else:      
+            model_state = 0
         self.ids_info = {
             'score': 0,
             'score_list': [],
-            'state': 0,
-            'training_size': 0,
-            'current_ngrams': 0
+            'state': model_state,
+            'training_size': self.ids._training_size,
+            'current_ngrams':self.ids._normal_ngrams['training_size'] 
         }
 
-    """
-    received syscall from syscallhandling 
-    """ 
     def update_statistic(self, syscall):
+        """
+        received syscall from syscallhandling 
+        calc new:
+            sum of syscalls
+            syscalls in last <bucket_size> (e.g 1 second)
+            syscall distribution
+            gather ids information 
+                score
+                state
+                training size
+                current seen ngrams
+        """ 
         self.calc_sum()
         self.calc_calls_per_bucket(syscall)
         self.calc_syscall_type_distribution()
@@ -40,11 +53,11 @@ class Statistic:
         }
         self.handle_ids_info(ids_info)
 
-    """
-    scan through deque and read syscall type dictionary
-    sum occurences of each syscall and return summed dictionary 
-    """
     def calc_syscall_type_distribution(self):
+        """
+        scan through deque and read syscall type dictionary
+        sum occurences of each syscall and save summed dictionary 
+        """
         #iterate through all syscall_type_dicts in deque
         # if MAX_BUCKETS=1 only one entry in deqeue_syscall_type_per_second
         for syscall_type_dict in self.deque_syscall_type_per_second:
@@ -60,6 +73,11 @@ class Statistic:
         
 
     def get_syscall_type_distribution_second(self):
+        """
+        return syscall_type distribution for last second if existent 
+        (could be ask before syscall information received -> return None)
+        :return syscall_type_dict_last_second
+        """
         if not (self.syscall_type_dict_last_second == None):
             tmp = self.syscall_type_dict_last_second
             self.syscall_type_dict_last_second = None
@@ -67,6 +85,11 @@ class Statistic:
         return None 
                 
     def get_syscall_type_distribution(self):
+        """
+        sort syscall type frequency 
+        embed sorted list in dictionary 
+        :return sorted syscall_type_distribution
+        """
         #sort dictionary 
         list_of_dicts = [] 
         sorted_tuples = sorted(self.syscall_type_dict.items(), reverse=True, key=lambda x: x[1])
@@ -93,7 +116,6 @@ class Statistic:
             'training_size': ids_info['training_size'],
             'current_ngrams': ids_info['current_ngrams'] 
         } 
-        
 
     def get_ids_score(self):
         # if list is not empty return highest score

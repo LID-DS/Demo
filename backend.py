@@ -1,4 +1,3 @@
-import pdb
 import threading
 import json
 import time
@@ -12,7 +11,7 @@ import demo_model_stide
 from Automated_Users.userAction_headless import User, UserManager
 
 
-INITIAL_TRAINING_SIZE = 100000
+INITIAL_TRAINING_SIZE = 10
 
 class Backend:
 
@@ -34,7 +33,6 @@ class Backend:
         self.statistic = Statistic(self.ids)
         """
         setup sysdig handling to record system calls and send calls to ids
-        writes and reads queue in different threads and sends each syscall to statistic
         """
         self.sysdig_handling = SysdigHandling(self.statistic)
         self.start()
@@ -48,26 +46,52 @@ class Backend:
         """ 
         self.socketio.run(self.app)
 
-    """
-    initiate websocket
-    """
     def start(self):
+        """
+        initiate websocket
+        enable handling of 
+            retraining of model
+            loading model
+            saving model
+        """
         self.app = Flask(__name__)
         self.app.config['SECRET_KEY'] = 'secret!'
         self.socketio = SocketIO(self.app, cors_allowed_origins='*')
-
-        @self.app.route('/')
-        def index():
-            return render_template('index.html')
-
         
         @self.socketio.on('training update')
         def handle_message(json, methods=['GET', 'POST']):
             print('Retrain with training size: ' + str(json))
             self.retrain_ids(int(str(json)))
 
+        @self.socketio.on('load model')
+        def handle_message(json, methods=['GET', 'POST']):
+            """
+            if 'load model' was received from frontend run _load_model of DemoStide
+            creates now instance of ids
+            reinitialize statistic and with new ids
+            reinitialize sysdig_handling with new statistic instance 
+            """
+            self.ids = self.ids._load_model()
+            self.statistic = Statistic(self.ids)
+            self.sysdig_handling.stop_process()
+            self.sysdig_handling = SysdigHandling(self.statistic)
+            
+        @self.socketio.on('save model')
+        def handle_message(json, methods=['GET', 'POST']):
+            """ 
+            if 'save model' was received from frontend, save ids model
+            """ 
+            self.ids._save_model() 
+
         @self.socketio.on('user action')
         def handle_message(json, methods=['GET', 'POST']):
+            """
+            if 'user action' was received either:
+                add automated user on webserver
+                remove automated user 
+            :params user_action ('add' or 'remove')
+            :returns (emit) count of active users
+            """
             if str(json) == 'add': 
                 self.userManager.add_user()
             if str(json) == 'remove': 
@@ -76,14 +100,12 @@ class Backend:
                     time.sleep(1)
             #send how many users are active to frontend
             self.socketio.emit('user action', len(self.userManager.active_users))
-            
-            
 
-    """
-    collect data of syscall_statistics and ids
-    send React collected data with delay of delay seconds
-    """
     def data_update(self):
+        """
+        collect data of syscall_statistics and ids
+        send React collected data with delay of delay seconds
+        """
         delay = 1
         #TODO time steps more sophisticated
         time_since_start = 0
@@ -95,10 +117,6 @@ class Backend:
             stats['time'] = time_since_start # time_first_call
             stats['syscall_type_dict_second'] = self.statistic.get_syscall_type_distribution_second()
             stats['syscall_type_dict'] = self.statistic.get_syscall_type_distribution()
-            print("per second")
-            print(stats['syscall_type_dict_second'])
-            print("whole")
-            print(stats['syscall_type_dict'])
             stats['ids_info'] = {
                 'score': self.statistic.get_ids_score(),
                 'state': self.statistic.ids_info['state'],
@@ -110,13 +128,18 @@ class Backend:
             self.socketio.emit('stats', stats)
             time.sleep(delay)
 
-    """
-    retrain ids with given training_size
-    """
-    def retrain_ids(self, training_size):
-        self.ids = demo_model_stide.DemoModelStide(training_size=training_size)
+    def retrain_ids(self, training_size, _normal_ngrams=None):
+        """
+        retrain ids 
+            reinitialize statistic with ids and start new sysdig process with new statistc
+        :params training_size
+        :params _normal_ngrams
+        """
+        self.ids = demo_model_stide.DemoModelStide(training_size=training_size, _normal_ngrams=_normal_ngrams)
         self.statistic = Statistic(self.ids)
+        self.sysdig_handling.stop_process()
         self.sysdig_handling = SysdigHandling(self.statistic)
+        
 
 if __name__ == "__main__":
     IDS = Backend()

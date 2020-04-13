@@ -1,6 +1,7 @@
 from collections import deque
 from enum import Enum
 from enum import IntEnum
+import pickle
 
 
 class Index(IntEnum):
@@ -26,7 +27,7 @@ class ModelState(Enum):
 
 
 class DemoModelStide:
-    def __init__(self, ngram_length=7, window_length=100, training_size=100000):
+    def __init__(self, ngram_length=7, window_length=100, training_size=100000, _normal_ngrams=None):
         """
         create the STIDE classifier
         :param ngram_length: the ngram length to use
@@ -43,11 +44,14 @@ class DemoModelStide:
 
         # dict for all normal ngrams (the "normal" database)
         # self._normal_ngrams[ngram_tuple] = count
-        self._normal_ngrams = {}
-        self._normal_ngrams["training_size"] = 0
+        # when handed with initialisation skip training
+        if _normal_ngrams == None:
+            self._normal_ngrams = {} 
+            self._normal_ngrams["training_size"] = 0
+        else: 
+            self._normal_ngrams = _normal_ngrams 
 
         # dict for model states
-        # self._model_states = ModelStatus.Training
         self._model_state = ModelState.Training
 
         # dict for mismatches, uses a deque of fixed length to calculate moving average mismatch values
@@ -91,7 +95,7 @@ class DemoModelStide:
             self._normal_ngrams[ngram_tuple] = 1
 
         self._normal_ngrams["training_size"] += 1
-        if self._normal_ngrams["training_size"] > self._training_size:
+        if self._normal_ngrams["training_size"] >= self._training_size:
             print("switching to detection mode")
             distinct_ngrams = len(self._normal_ngrams)
             print("  saw {} different ngrams".format(distinct_ngrams))
@@ -171,3 +175,28 @@ class DemoModelStide:
         for syscall_int in ngram_tuple:
             string += self._int_to_syscall[syscall_int] + " "
         return string[:-1]
+
+    def _load_model(self):
+        """
+        load previously saved model 
+        :return reinitialized model  
+        """
+        try:
+            with open('saved_model.p', 'rb') as model_file:
+                _normal_ngrams = pickle.load(model_file)
+            self._normal_ngrams = _normal_ngrams
+            self._training_size = self._normal_ngrams['training_size']    
+            self._mismatch_buffer = deque(iterable=[0] * self._window_length, maxlen=self._window_length)
+            self._moving_sum_value = 0
+        except:  
+            print("Error loading Model")
+        return self
+
+    def _save_model(self):
+        """
+        save current model
+        """
+        if self._model_state == ModelState.Training:
+            return None 
+        with open('saved_model.p', 'wb') as model_file:
+            pickle.dump(self._normal_ngrams, model_file)
