@@ -5,7 +5,7 @@ button {
     margin-right: 0.5rem;
 }
 .button-basic {
-    background-color: #272929;
+    background-color: var(--main-bg-color);
     border: none;
     color: #f9f5d7;
     padding: 15px 32px;

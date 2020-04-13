@@ -16,7 +16,7 @@ const PLOT_WINDOW_CUTOUT = 60
 
 const highlight_color = '#f9f5d7'
 const highlight1_color = '#470a0a'
-const background_color = '#0e1217'
+const background_color = '#282828'
 
 class App extends React.PureComponent{
 
@@ -82,14 +82,36 @@ class App extends React.PureComponent{
     sendToBackend = (data) => {
        this.state.websocket.emit('training update', data) 
     }
+
+    handleSaveModel = (data) => {
+        this.state.websocket.emit('save model', null)
+    }
+    
+    handleLoadModel = () => {
+        this.state.websocket.emit('load model', null)
+    }
     
     updateSyscallDistribution = (data) => {
         let top5 = [];
         var i;
-        for (i = 0; i < 5; i++){
-            top5.push(data['syscall_type_dict']['sorted_syscalls'][i]);
+        try {
+            for (i = 0; i < 5; i++){
+                top5.push(data['syscall_type_dict']['sorted_syscalls'][i]);
+            }
+            var sum_others = 0
+            for (i = 5; i < data['syscall_type_dict']['sorted_syscalls'].length; i++){
+                let tmp = Object.values(data['syscall_type_dict']['sorted_syscalls'][i])
+                sum_others += tmp[0]
+            }
+            let others = {
+                "others": sum_others
+            }
+            top5.push(others) 
+            this.syscallDistPlot.current.handleValues(top5)
         }
-        this.syscallDistPlot.current.handleValues(top5)
+        catch (e) {
+            //No syscalls received jet
+        }
     }
 
     /*
@@ -136,7 +158,10 @@ class App extends React.PureComponent{
             cutout_y = new_cutout_y.concat(cutout_y)
         }
         var lights = []
-        var current_score = ids_score[ids_score.length - 1]
+        var current_score = data['ids_info']['score']
+
+        console.log(current_score)
+        console.log(this.state.slider.threshold)
         //if still in training set light to yellow
         if(data['ids_info']['state'] === 0){
             lights = [false,true,false]
@@ -217,7 +242,8 @@ class App extends React.PureComponent{
             this.preparePlotData(data)
             //this.idsPlot.current.updatePlot(data)
             this.trainingInfo.current.update_training_info(data['ids_info'])
-            //update syscallsistribution
+            //update syscallsistribution if 
+            
             this.updateSyscallDistribution(data)
             //Add incident to  table if alarm state of ids plot is reached
             // -> depends on set threshold in plot
@@ -252,14 +278,31 @@ class App extends React.PureComponent{
                             plot_info={this.state.ids_plot}  
                         />
                     </div>
-                    <div className="item-status">
+                    <div className="item">
+                        <UserActionInput 
+                            onChildClick={this.automaticUserActions} 
+                            ref={this.userAction}
+                        />
+                    </div>
+                    <div className="item">
                         <TrainingInfo ref={this.trainingInfo} />
                     </div>
                     <div className="item">
                         <div className="info">
                                 <UserInput className="training-input" inputRef={el => (this.inputElement = el)} />
-                                <button className="button-basic" onClick={this.handleRetrain}>Retrain IDS</button>
+                                <button className="button-basic" onClick={this.handleRetrain}>Retrain IDS-Model</button>
+                                <div>
+                                    <button className="button-basic" onClick={this.handleSaveModel}>Save Trained IDS-Model</button>
+                                    <button className="button-basic" onClick={this.handleLoadModel}>Load Trained IDS-Model</button>
+            
+                                </div>
+                                
                         </div>
+                    </div>
+                    <div className="item-plot">
+                        <SyscallTypePlot
+                            ref={this.syscallDistPlot} 
+                        />
                     </div>
                     <div className="item">
                         <div className="slider-text"> 
@@ -267,7 +310,7 @@ class App extends React.PureComponent{
                             <Slider
                               styles={{
                                   active: {
-                                      backgroundColor: highlight1_color 
+                                    backgroundColor: highlight1_color 
                                   },
                                   track: {
                                     backgroundColor: highlight_color
@@ -288,17 +331,6 @@ class App extends React.PureComponent{
                               }})}
                             />
                         </div>
-                    </div>
-                    <div className="item">
-                        <UserActionInput 
-                            onChildClick={this.automaticUserActions} 
-                            ref={this.userAction}
-                        />
-                    </div>
-                    <div className="item-plot">
-                        <SyscallTypePlot
-                            ref={this.syscallDistPlot} 
-                        />
                     </div>
                     <div className="item">
                         <IncidentTable className="incident-table" ref={this.incidentTable} />

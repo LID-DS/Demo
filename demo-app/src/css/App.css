@@ -1,7 +1,7 @@
 :root {
-  --main-bg-color: #0e1217;
-  --item-bg-color: #424a57;
-  --item-bg-color-light: #99a3b2;
+  --main-bg-color: #282828;
+  --item-bg-color: #3b5c6d;
+  --item-bg-color-light: #84a598;
   "--main-bg-color: #282828;"
   "--item-bg-color: #889188;"
   --border-color: #a2a9a2;
@@ -64,7 +64,7 @@ $admin-nav-width: 250px;
   grid-area: main;
   --column-count: 3;
   display: grid;
-  grid-template-columns: 4fr 1fr 4fr;
+  grid-template-columns: 4fr 2fr 4fr;
   grid-gap: 1rem;
 }
 
@@ -85,5 +85,9 @@ $admin-nav-width: 250px;
 }
 
 .slider-text {
+  margin-top: 45px;
+}
+
+.info {
   margin-top: 45px;
 }

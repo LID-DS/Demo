@@ -2,7 +2,8 @@ import React from 'react';
 import Plot from 'react-plotly.js';
 import './css/Plot.css'
 
-const pieColors = ['rgb(56,75,126)','rgb(18,36,37)', 'rgb(34,53,101)', 'rgb(99,79,37)', 'rgb(124,103,37)' ] 
+const pieColors = ['#9d962f','#4f767d', '#7b8d3f', '#94384c', '#7e4e7e', '#770d09' ] 
+const highlight_color = '#f9f5d7'
 
 class SyscallTypePlot extends React.PureComponent{
     
@@ -29,8 +30,6 @@ class SyscallTypePlot extends React.PureComponent{
             values: values,
             labels: labels
         })
-        console.log(this.state.values)
-        console.log(this.state.labels)
     }
     render(){
         return(
@@ -48,6 +47,13 @@ class SyscallTypePlot extends React.PureComponent{
                 ]}
                 layout={
                 {
+                    title: {
+                        text: "Systemcall Distribution",
+                        font: {
+                            size: 24,
+                            color: highlight_color 
+                        }
+                    },
                     datarevision: this.props.value,
                     paper_bgcolor: 'rgba(0,0,0,0)',
                     plot_bgcolor: 'rgba(0,0,0,0)'
