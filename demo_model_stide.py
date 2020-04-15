@@ -1,6 +1,7 @@
 from collections import deque
 from enum import Enum
 from enum import IntEnum
+
 import pickle
 
 
@@ -27,7 +28,7 @@ class ModelState(Enum):
 
 
 class DemoModelStide:
-    def __init__(self, ngram_length=7, window_length=100, training_size=100000, _normal_ngrams=None):
+    def __init__(self, ngram_length=7, window_length=100, training_size=100000, ids=None):
         """
         create the STIDE classifier
         :param ngram_length: the ngram length to use
@@ -41,28 +42,37 @@ class DemoModelStide:
         # dict for all syscall buffers:
         # self._system_call_buffers[thread_id] = deque(ngram_size)
         self._system_call_buffer = {}
-
-        # dict for all normal ngrams (the "normal" database)
-        # self._normal_ngrams[ngram_tuple] = count
-        # when handed with initialisation skip training
-        if _normal_ngrams == None:
-            self._normal_ngrams = {} 
+        
+        if ids == None:
+            # dict for all normal ngrams (the "normal" database)
+            # self._normal_ngrams[ngram_tuple] = count
+            self._normal_ngrams = {}
             self._normal_ngrams["training_size"] = 0
+            # dict for model states
+            # self._model_states = ModelStatus.Training
+            self._model_state = ModelState.Training
+            # dict for mismatches, uses a deque of fixed length to calculate moving average mismatch values
+            # self._mismatch_buffers = deque(maxlen=self._window_length)
+            self._mismatch_buffer = {}
+            self._moving_sum_value = 0
+            # dict to convert system calls from string to int ( "close" -> 1)
+            self._syscall_to_int = {}
+            # dict to convert system calls from int to string ( 1 -> "close")
+            self._int_to_syscall = {}
+
         else: 
-            self._normal_ngrams = _normal_ngrams 
+            self._normal_ngrams = ids._normal_ngrams
+            self._model_state = ModelState.Detection
+            # initialize the mismatch buffer here
+            self._mismatch_buffer = deque(iterable=[0] * self._window_length,
+                                          maxlen=self._window_length)
+            self._moving_sum_value = 0
+            
+            # dict to convert system calls from string to int ( "close" -> 1)
+            self._syscall_to_int = ids._syscall_to_int 
+            # dict to convert system calls from int to string ( 1 -> "close")
+            self._int_to_syscall = ids._int_to_syscall
 
-        # dict for model states
-        self._model_state = ModelState.Training
-
-        # dict for mismatches, uses a deque of fixed length to calculate moving average mismatch values
-        # self._mismatch_buffers = deque(maxlen=self._window_length)
-        self._mismatch_buffer = {}
-        self._moving_sum_value = 0
-
-        # dict to convert system calls from string to int ( "close" -> 1)
-        self._syscall_to_int = {}
-        # dict to convert system calls from int to string ( 1 -> "close")
-        self._int_to_syscall = {}
 
     def _get_syscall_as_int(self, syscall_string):
         """
@@ -178,25 +188,29 @@ class DemoModelStide:
 
     def _load_model(self):
         """
-        load previously saved model 
-        :return reinitialized model  
+        load saved _normal_ngrams  
         """
-        try:
-            with open('saved_model.p', 'rb') as model_file:
-                _normal_ngrams = pickle.load(model_file)
-            self._normal_ngrams = _normal_ngrams
-            self._training_size = self._normal_ngrams['training_size']    
-            self._mismatch_buffer = deque(iterable=[0] * self._window_length, maxlen=self._window_length)
-            self._moving_sum_value = 0
-        except:  
-            print("Error loading Model")
+        with open('Models/save_ngrams.p', 'rb') as ngrams_location:
+            self._normal_ngrams = pickle.load(ngrams_location) 
+        with open('Models/save_sys_to_int.p', 'rb') as sys_int_location: 
+            self._syscall_to_int = pickle.load(sys_int_location)
+        with open('Models/save_int_to_sys.p', 'rb') as int_sys_location: 
+            self._int_to_syscall = pickle.load(int_sys_location)
+    
         return self
 
     def _save_model(self):
         """
-        save current model
+        save model:
+            _normal_ngrams to store trained ngrams (syscall as integer)
+            syscall_to_int and 
+            int_to_syscall to convert integers to syscall strings and back.
         """
-        if self._model_state == ModelState.Training:
-            return None 
-        with open('saved_model.p', 'wb') as model_file:
-            pickle.dump(self._normal_ngrams, model_file)
+        with open('Models/save_ngrams.p', 'wb') as ngram_location: 
+            pickle.dump(self._normal_ngrams, ngram_location)
+        with open('Models/save_sys_to_int.p', 'wb') as sys_int_location: 
+            pickle.dump(self._syscall_to_int, sys_int_location)
+        with open('Models/save_int_to_sys.p', 'wb') as int_sys_location: 
+            pickle.dump(self._int_to_syscall, int_sys_location)
+
+            

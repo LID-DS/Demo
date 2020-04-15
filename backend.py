@@ -7,11 +7,10 @@ import datetime
 
 from statistics import Statistic
 from read_write_syscalls import SysdigHandling
-import demo_model_stide
+from demo_model_stide import DemoModelStide
 from Automated_Users.userAction_headless import User, UserManager
 
 
-INITIAL_TRAINING_SIZE = 10
 
 class Backend:
 
@@ -21,16 +20,11 @@ class Backend:
         enable controlling of automated user actions
         """ 
         self.userManager = UserManager()
-        print('added userManger')
-        """
-        setup IDS   
-        """
-        self.ids = demo_model_stide.DemoModelStide(training_size=INITIAL_TRAINING_SIZE)
         """
         setup statistic to compute syscall statistics and evaluate syscalls with IDS
         provides statistics of syscall an analysation of ids
         """
-        self.statistic = Statistic(self.ids)
+        self.statistic = Statistic()
         """
         setup sysdig handling to record system calls and send calls to ids
         """
@@ -60,7 +54,6 @@ class Backend:
         
         @self.socketio.on('training update')
         def handle_message(json, methods=['GET', 'POST']):
-            print('Retrain with training size: ' + str(json))
             self.retrain_ids(int(str(json)))
 
         @self.socketio.on('load model')
@@ -71,17 +64,16 @@ class Backend:
             reinitialize statistic and with new ids
             reinitialize sysdig_handling with new statistic instance 
             """
-            self.ids = self.ids._load_model()
-            self.statistic = Statistic(self.ids)
-            self.sysdig_handling.stop_process()
-            self.sysdig_handling = SysdigHandling(self.statistic)
+            ids = self.statistic.ids._load_model()
+            self.retrain_ids(ids=ids)
+            
             
         @self.socketio.on('save model')
         def handle_message(json, methods=['GET', 'POST']):
             """ 
             if 'save model' was received from frontend, save ids model
-            """ 
-            self.ids._save_model() 
+            """
+            self.statistic.ids._save_model() 
 
         @self.socketio.on('user action')
         def handle_message(json, methods=['GET', 'POST']):
@@ -112,33 +104,31 @@ class Backend:
         stats = {}
         while True:
             stats['sum'] = str(self.statistic.get_sum())
-            calls_per_second = self.statistic.get_calls_per_second()
-            stats['calls_per_second'] = calls_per_second
+            stats['calls_per_second'] = self.statistic.get_calls_per_second()
             stats['time'] = time_since_start # time_first_call
             stats['syscall_type_dict_second'] = self.statistic.get_syscall_type_distribution_second()
             stats['syscall_type_dict'] = self.statistic.get_syscall_type_distribution()
             stats['ids_info'] = {
                 'score': self.statistic.get_ids_score(),
-                'state': self.statistic.ids_info['state'],
+                'state': self.statistic.ids._model_state.value,
                 'training_size': self.statistic.ids_info['training_size'],
                 'current_ngrams': self.statistic.ids_info['current_ngrams']
             }
-            #print(stats)
             time_since_start += 1
             self.socketio.emit('stats', stats)
             time.sleep(delay)
 
-    def retrain_ids(self, training_size, _normal_ngrams=None):
+    def retrain_ids(self, training_size=None, ids=None):
         """
         retrain ids 
             reinitialize statistic with ids and start new sysdig process with new statistc
         :params training_size
         :params _normal_ngrams
         """
-        self.ids = demo_model_stide.DemoModelStide(training_size=training_size, _normal_ngrams=_normal_ngrams)
-        self.statistic = Statistic(self.ids)
-        self.sysdig_handling.stop_process()
-        self.sysdig_handling = SysdigHandling(self.statistic)
+        if ids == None:
+            self.statistic.ids = DemoModelStide(training_size=training_size)
+        else: 
+            self.statistic.ids = DemoModelStide(ids=ids)
         
 
 if __name__ == "__main__":

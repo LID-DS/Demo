@@ -1,12 +1,17 @@
 import collections
-import pdb
+from demo_model_stide import DemoModelStide
 
 MAX_BUCKETS = 1
-
-class Statistic:
+INITIAL_TRAINING_SIZE = 10000
     
+class Statistic:
 
-    def __init__(self, ids):
+    def __init__(self):
+        """
+        setup IDS   
+        """
+        self.ids = DemoModelStide(training_size=INITIAL_TRAINING_SIZE)
+
         self.syscall_sum = 0
         self.start_time = 0
         self.bucket_counter = 0
@@ -16,17 +21,12 @@ class Statistic:
         self.syscall_type_dict_bucket = {}
         self.syscall_type_dict = {}
         self.syscall_type_dict_last_second = {} 
-        self.ids = ids
-        if (self.ids._model_state == 1):
-            model_state = 1
-        else:      
-            model_state = 0
         self.ids_info = {
             'score': 0,
             'score_list': [],
-            'state': model_state,
+            'state': self.ids._model_state.value,
             'training_size': self.ids._training_size,
-            'current_ngrams':self.ids._normal_ngrams['training_size'] 
+            'current_ngrams': 0 
         }
 
     def update_statistic(self, syscall):
