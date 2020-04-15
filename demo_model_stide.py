@@ -36,7 +36,6 @@ class DemoModelStide:
         :param training_size: the number of system calls seen before switching into detection mode
         """
         self._ngram_length = ngram_length
-        self._training_size = training_size
         self._window_length = window_length
 
         # dict for all syscall buffers:
@@ -44,6 +43,7 @@ class DemoModelStide:
         self._system_call_buffer = {}
         
         if ids == None:
+            self._training_size = training_size
             # dict for all normal ngrams (the "normal" database)
             # self._normal_ngrams[ngram_tuple] = count
             self._normal_ngrams = {}
@@ -61,6 +61,7 @@ class DemoModelStide:
             self._int_to_syscall = {}
 
         else: 
+            self._training_size = ids._normal_ngrams['training_size'] 
             self._normal_ngrams = ids._normal_ngrams
             self._model_state = ModelState.Detection
             # initialize the mismatch buffer here
