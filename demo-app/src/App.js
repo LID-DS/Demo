@@ -68,11 +68,6 @@ class App extends React.PureComponent{
         this.userAction = React.createRef();
     };
    
-    //receive incident from IDSPlot 
-    incidentHandler = (incident) => {
-        this.incidentTable.current.updateTable(incident.index, incident.score)
-    }
-
     //revceive info from TrainingInfo 
     trainingChangeHandle = (retrain_info) => {
         this.sendToBackend(retrain_info) 
@@ -160,11 +155,10 @@ class App extends React.PureComponent{
         var lights = []
         var current_score = data['ids_info']['score']
 
-        console.log(current_score)
-        console.log(this.state.slider.threshold)
         //if still in training set light to yellow
         if(data['ids_info']['state'] === 0){
             lights = [false,true,false]
+            this.setState({alarm: 0})
         }
         //when alarm triggered
         // update traffic light
@@ -172,12 +166,10 @@ class App extends React.PureComponent{
         else if(current_score > this.state.slider.threshold){
             lights = [true,false,false]
             this.setState({alarm: 1})
-            //console.log(this.state.index)
         }
         else {
             lights = [false,false,true]
             this.setState({alarm: 0})
-            //console.log(this.state.index)
         }
         this.trafficLight.current.updateLight(lights)
 
@@ -217,10 +209,6 @@ class App extends React.PureComponent{
         }
     }
     
-    addIncident = (data) => {
-        this.incidentTable.current.updateTable(data.index, data.score)
-    }
-    
     automaticUserActions = (userAction) => {
         this.state.websocket.emit('user action', userAction)
     }
@@ -245,6 +233,7 @@ class App extends React.PureComponent{
             //update syscallsistribution if 
             
             this.updateSyscallDistribution(data)
+
             //Add incident to  table if alarm state of ids plot is reached
             // -> depends on set threshold in plot
             if (this.state.alarm === 1){
@@ -272,6 +261,32 @@ class App extends React.PureComponent{
                     </div>
                     <div className="item">
                         <TrafficLight className="traffic-light" ref={this.trafficLight}/>
+                        <div className="slider"> 
+                            Incident threshold:  {this.state.slider.threshold}
+                            <Slider
+                              styles={{
+                                  active: {
+                                    backgroundColor: highlight1_color 
+                                  },
+                                  track: {
+                                    backgroundColor: highlight_color
+                                  },
+                                  thumb: {
+                                    backgroundColor: background_color,
+                                    width: 25,
+                                    height: 25
+                                  }
+                              }}
+                              axis="x"
+                              x={this.state.slider.threshold}
+                              xmin={0}
+                              xmax={1}
+                              xstep={0.01}
+                              onChange={({ x }) => this.setState({slider : {
+                                  threshold: x.toFixed(2)
+                              }})}
+                            />
+                        </div>
                     </div>
                     <div className="item-plot">
                         <IDSPlot className="ids-plot" 
@@ -305,32 +320,6 @@ class App extends React.PureComponent{
                         />
                     </div>
                     <div className="item">
-                        <div className="slider-text"> 
-                            Incident threshold:  {this.state.slider.threshold}
-                            <Slider
-                              styles={{
-                                  active: {
-                                    backgroundColor: highlight1_color 
-                                  },
-                                  track: {
-                                    backgroundColor: highlight_color
-                                  },
-                                  thumb: {
-                                    backgroundColor: background_color,
-                                    width: 25,
-                                    height: 25
-                                  }
-                              }}
-                              axis="x"
-                              x={this.state.slider.threshold}
-                              xmin={0}
-                              xmax={1}
-                              xstep={0.01}
-                              onChange={({ x }) => this.setState({slider : {
-                                  threshold: x.toFixed(2)
-                              }})}
-                            />
-                        </div>
                     </div>
                     <div className="item">
                         <IncidentTable className="incident-table" ref={this.incidentTable} />
