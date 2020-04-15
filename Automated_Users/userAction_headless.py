@@ -43,7 +43,7 @@ class User:
             #get rid of pop up window by clicking in top right corner
             self.driver.find_element_by_xpath('//div[contains(@class,"cdk-overlay-pane")]//button[@aria-label="Close Welcome Banner"]').click()
         except:
-            print("User: " + str(self.user_number) + " " + 'No Welcome Banner')
+            pass
         #find email box
         reg_email_box = self.driver.find_element_by_xpath('//div[contains(@id, "registration-form")]//input[@id="emailControl"]')
         reg_email_box.send_keys(self.email)
@@ -97,12 +97,13 @@ class User:
         try:
             self.driver.find_element_by_xpath('//div[contains(@aria-describedby, "cookieconsent:desc")]//a[@aria-label="dismiss cookie message"]').click()
         except:
-            print("User: " + str(self.user_number) + " " + 'No cookie banner')
+            #print("User: " + str(self.user_number) + " " + 'No cookie banner')
+            pass
 
 
     def logout(self):
      
-        print("User: " + str(self.user_number) + " " + 'Logout')
+        #print("User: " + str(self.user_number) + " " + 'Logout')
         self.logout_count += 1
         if (self.logout_count < MAX_LOGOUT_FAILS):
             try:    
@@ -111,11 +112,11 @@ class User:
                 logout_button = self.driver.find_element_by_id('navbarLogoutButton')
                 logout_button.click()
             except:
-                print("User: " + str(self.user_number) + " " + "Logout failed, retrying")
+                #print("User: " + str(self.user_number) + " " + "Logout failed, retrying")
                 self.reload()
                 self.logout()
         else:
-            print("User: " + str(self.user_number) + " " + 'max retries for relogin reached \n reinitialize User')
+            #print("User: " + str(self.user_number) + " " + 'max retries for relogin reached \n reinitialize User')
             self.driver.quit()
             self.reset()
             
@@ -186,7 +187,7 @@ class User:
                 self.driver.execute_script("arguments[0].scrollIntoView();", basket_button)
                 basket_button.click()
             except:
-                print("User: " + str(self.user_number) + " " + "Error putting item into basket -> skipping item")
+                #print("User: " + str(self.user_number) + " " + "Error putting item into basket -> skipping item")
                 self.logout()
                 time.sleep(1)
                 self.login()
@@ -197,7 +198,7 @@ class User:
             #get feedback field
             feedback_field = self.get_product_feedback_field(selection)
             if feedback_field == None:
-                print("User: " + str(self.user_number) + " " + "Error leaving feedback -> skipping feedback")
+                #print("User: " + str(self.user_number) + " " + "Error leaving feedback -> skipping feedback")
                 return
             self.driver.execute_script("arguments[0].scrollIntoView();", feedback_field)
             #enter feedback
@@ -212,7 +213,7 @@ class User:
 
     def go_shopping(self, max_products):
 
-        print("User: " + str(self.user_number) + " " + "Go shopping")
+        #print("User: " + str(self.user_number) + " " + "Go shopping")
         # choose how many items user puts in basket
         how_many_items_in_basket = random.randint(0,max_products)
         random_items = []
@@ -224,12 +225,12 @@ class User:
             if not self.isrunning: 
                 self.isfinished = True
                 return 
-            print("User: " + str(self.user_number) + " " + "Put item into basket")
+            #print("User: " + str(self.user_number) + " " + "Put item into basket")
             self.put_products_in_basket([item])
             if (random.randint(0,4) >  2):
                 self.reload()
             if (random.randint(0,1) > 0):
-                print("User: " + str(self.user_number) + " " + "Leave Feedback")
+                #print("User: " + str(self.user_number) + " " + "Leave Feedback")
                 self.leave_feedback([item])
 
     def reload(self):
@@ -247,6 +248,8 @@ class User:
             self.go_shopping(max_products=10)
             time.sleep(1)
             self.logout()
+            if (random.randint(0,10) > 1):
+                time.sleep(10)
         #wait for last actions, then set true so we know thread has finished
 
     
@@ -276,7 +279,6 @@ class UserManager:
         email = "mail{}{}@test.com".format(len(self.active_users), random.randint(0,9999999999)) 
         new_user = User(email, password, security_question, user_number=len(self.active_users))
         self.active_users.append(new_user)
-        print(len(self.active_users))
         print("User: {} was added".format(new_user.user_number))
         user_thread = threading.Thread(target=new_user.action, args=([]))
         user_thread.start()
