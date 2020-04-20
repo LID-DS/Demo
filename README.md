@@ -1,8 +1,16 @@
-How to start demo (old)
-1. run a docker container
-2. run: python3 webserver.py
-3. run: npm start --prefix demo-app/ 
 
-How to start demo (new. warning with bugs when stopping script) 
+
+What is this?
+    
+This is an environment for presenting and testing of intrusion detection systems (IDS) using system calls.
+It consists of three parts.
+    
+1. Webserver running OWASP juice-shop webserver
+2. React Frontend for visualization of IDS
+3. Backend handling reading of syscalls and actual IDS
+
+How do I install the environment?
 1. run startDemo.sh
-2. when stopping kill python3 process 
+
+How do I run the environment?
+2. run tmuxp load startDemo.yaml
