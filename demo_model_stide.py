@@ -27,7 +27,7 @@ class ModelState(Enum):
 
 
 class DemoModelStide:
-    def __init__(self, ngram_length=10, window_length=100, training_size=100000, ids=None):
+    def __init__(self, ngram_length=7, window_length=100, training_size=100000, trained_model=None):
         """
         create the STIDE classifier
         :param ngram_length: the ngram length to use
@@ -41,7 +41,7 @@ class DemoModelStide:
         # self._system_call_buffers[thread_id] = deque(ngram_size)
         self._system_call_buffer = {}
         
-        if ids == None:
+        if trained_model == None:
             self._training_size = training_size
             # dict for all normal ngrams (the "normal" database)
             # self._normal_ngrams[ngram_tuple] = count
@@ -60,8 +60,8 @@ class DemoModelStide:
             self._int_to_syscall = {}
 
         else: 
-            self._training_size = ids._normal_ngrams['training_size'] 
-            self._normal_ngrams = ids._normal_ngrams
+            self._training_size = trained_model._normal_ngrams['training_size'] 
+            self._normal_ngrams = trained_model._normal_ngrams
             self._model_state = ModelState.Detection
             # initialize the mismatch buffer here
             self._mismatch_buffer = deque(iterable=[0] * self._window_length,
@@ -69,9 +69,9 @@ class DemoModelStide:
             self._moving_sum_value = 0
             
             # dict to convert system calls from string to int ( "close" -> 1)
-            self._syscall_to_int = ids._syscall_to_int 
+            self._syscall_to_int = trained_model._syscall_to_int 
             # dict to convert system calls from int to string ( 1 -> "close")
-            self._int_to_syscall = ids._int_to_syscall
+            self._int_to_syscall = trained_model._int_to_syscall
 
 
     def _get_syscall_as_int(self, syscall_string):

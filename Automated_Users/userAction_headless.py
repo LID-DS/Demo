@@ -14,11 +14,15 @@ MAX_USERS = 4
 
 class User:
     
-    def __init__(self, email, password, security_question, user_number): 
+    def __init__(self, email, password, security_question, user_number, visible=False): 
         #configurations for headless browsing
         self.chrome_options = Options()
-        #no Browser window
-        self.chrome_options.add_argument("--headless")
+        if not visible: 
+            #no Browser window
+            self.chrome_options.add_argument("--headless")
+        else:
+            #needs to be in full screen  
+            self.chrome_options.add_argument("--kiosk")
         self.chrome_options.add_argument("--no-sandbox")
         self.chrome_options.add_argument("--window-size=1480,996")
         self.driver = webdriver.Chrome(options=self.chrome_options)
@@ -28,9 +32,9 @@ class User:
         self.user_number = user_number
         self.logout_count = 0
         #to stop thread
-        self.isrunning = True
+        self.is_running = True
         #to see if thread has stopped
-        self.isfinished = False
+        self.is_finished = False
 
     def reset(self):
         self.__init__(self.email, self.password, self.security_question, self.user_number)
@@ -221,8 +225,8 @@ class User:
         for i in range(0,how_many_items_in_basket + 1):
             random_items.append(random.randint(0,11)) 
         for item in random_items:
-            if not self.isrunning: 
-                self.isfinished = True
+            if not self.is_running: 
+                self.is_finished = True
                 return 
             #print("User: " + str(self.user_number) + " " + "Put item into basket")
             self.put_products_in_basket([item])
@@ -238,9 +242,9 @@ class User:
     def action(self):
         self.register()
         time.sleep(0.1)
-        while(True):
-            if not self.isrunning: 
-                self.isfinished = True
+        while(self.is_running):
+            if not self.is_running: 
+                self.is_finished = True
                 self.driver.quit()
                 return 
             self.login()
@@ -249,17 +253,27 @@ class User:
             time.sleep(1)
             self.logout()
             if (random.randint(0,10) > 1):
-                time.sleep(10)
+                for i in range(0,10):
+                    if not self.is_running:
+                        self.is_finished = True
+                        self.driver.quit()
+                        break
+                    time.sleep(1)
             if (random.randint(0,3) > 1):
                 self.driver.quit()
+                if not self.is_running:
+                    self.is_finished = True    
+                    self.driver.quit()
+                    break
                 time.sleep(5)
                 self.driver = webdriver.Chrome(options=self.chrome_options)
+        self.driver.quit()
             
         #wait for last actions, then set true so we know thread has finished
 
     
     def suicide(self):
-        self.isrunning = False
+        self.is_running = False
 
         
 class UserManager:
@@ -275,14 +289,14 @@ class UserManager:
             time.sleep(5)
             status_of_js = os.system('sudo docker ps | grep juice-shop')
     
-    def add_user(self): 
+    def add_user(self, visible=False): 
         if(len(self.active_users) >= MAX_USERS):
             print("MAX_USERS reached")
         self.checkSite()
         password = "testpassword"
         security_question = "middlename"
         email = "mail{}{}@test.com".format(len(self.active_users), random.randint(0,9999999999)) 
-        new_user = User(email, password, security_question, user_number=len(self.active_users))
+        new_user = User(email, password, security_question, user_number=len(self.active_users), visible=visible)
         self.active_users.append(new_user)
         print("User: {} was added".format(new_user.user_number))
         user_thread = threading.Thread(target=new_user.action, args=([]))

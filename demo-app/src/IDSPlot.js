@@ -3,7 +3,7 @@ import Plot from 'react-plotly.js';
 
 import './css/Plot.css'
 
-const colors = ["#236845", "#8C1217"]
+const colors = ["#d65d0e", "#470a0a", "#1d2021"]
 const highlight_color = '#f9f5d7'
 
 export default class IDSPlot extends React.PureComponent{
@@ -33,7 +33,7 @@ function PlotRenderer(data) {
 			    mode: 'markers',
 			    type: 'scatter',
                 marker: {
-                    color: colors[0] 
+                    color: colors[2] 
                 }
 			}
 		    ]}
@@ -96,7 +96,7 @@ function PlotRenderer(data) {
                     mode: 'markers',
                     type: 'scatter',
                     marker: {
-                        color: colors[data.alarm ? 1 : 0 ]
+                        color: colors[data.ids_score.alarm ? 1 : 0 ]
                     }
                 }
 		    ]}

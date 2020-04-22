@@ -1,9 +1,11 @@
 import collections
+import operator
 from demo_model_stide import DemoModelStide
 
 MAX_BUCKETS = 1
 INITIAL_TRAINING_SIZE = 10000
-    
+MAX_TOP_NGRAMS= 10
+
 class Statistic:
 
     def __init__(self):
@@ -26,7 +28,7 @@ class Statistic:
             'score_list': [],
             'state': self.ids._model_state.value,
             'training_size': self.ids._training_size,
-            'current_ngrams': 0 
+            'current_ngrams': 0,
         }
 
     def update_statistic(self, syscall):
@@ -72,6 +74,20 @@ class Statistic:
             self.syscall_type_dict_last_second = self.deque_syscall_type_per_second.pop()
         
 
+    def handle_ids_info(self, ids_info):
+        """
+        Add ids scores to save until next statistic update
+        """
+        if not ids_info['score'] == None:
+            self.ids_info['score_list'].append(ids_info['score'])
+        self.ids_info = {
+            'score': ids_info['score'],
+            'score_list': self.ids_info['score_list'],
+            'state': ids_info['state'],
+            'training_size': ids_info['training_size'],
+            'current_ngrams': ids_info['current_ngrams'] 
+        } 
+
     def get_syscall_type_distribution_second(self):
         """
         return syscall_type distribution for last second if existent 
@@ -103,20 +119,6 @@ class Statistic:
         } 
         return sorted_dict 
 
-    def handle_ids_info(self, ids_info):
-        """
-        Add ids scores to save until next statistic update
-        """
-        if not ids_info['score'] == None:
-            self.ids_info['score_list'].append(ids_info['score'])
-        self.ids_info = {
-            'score': ids_info['score'],
-            'score_list': self.ids_info['score_list'],
-            'state': ids_info['state'],
-            'training_size': ids_info['training_size'],
-            'current_ngrams': ids_info['current_ngrams'] 
-        } 
-
     def get_ids_score(self):
         # if list is not empty return highest score
         if self.ids_info['score_list']:
@@ -127,13 +129,46 @@ class Statistic:
             return highest_score
         return 0 
 
+    def get_sum(self):
+        return self.syscall_sum
+
+    def get_calls_per_second(self):
+        # current_time = int(round(time.time() * 1000))
+        # last_bucket_time = current_time
+        syscall_counter = 0
+        for syscall in self.deque_syscall_per_second:
+            syscall_counter += syscall[0]
+        if (self.deque_syscall_per_second):
+            self.deque_syscall_per_second.popleft()
+        return syscall_counter
+
+    def get_top_ngrams(self):
+        """
+        return most seen ngrams 
+        """
+        ngram_dict = self.ids._normal_ngrams
+        #TODO why next line not working?
+        #del ngram_dict['training_size']
+        top = dict(sorted(ngram_dict.items(), key=operator.itemgetter(1), reverse=True)[:MAX_TOP_NGRAMS + 1]) 
+        #remove first entry which stores only training_size
+        del top['training_size']
+        top_list = []
+        for key, value in top.items():
+            temp = [key, value]
+            top_list.append(temp)
+        # convert int to name of system call
+        return top_list
+
+    def get_int_to_sys(self):
+        int_to_syscall_list = []
+        for key, value in self.ids._int_to_syscall.items():
+            temp = [key, value]
+            int_to_syscall_list.append(temp)
+        return int_to_syscall_list
 
     def calc_sum(self):
         self.syscall_sum += 1
         return None
-
-    def get_sum(self):
-        return self.syscall_sum
 
     def calc_calls_per_bucket(self, syscall):
         rawtime_of_syscall = syscall[1]
@@ -166,12 +201,3 @@ class Statistic:
             self.syscall_type_dict_bucket = {}
             self.start_time = int(rawtime_of_syscall)
 
-    def get_calls_per_second(self):
-        # current_time = int(round(time.time() * 1000))
-        # last_bucket_time = current_time
-        syscall_counter = 0
-        for syscall in self.deque_syscall_per_second:
-            syscall_counter += syscall[0]
-        if (self.deque_syscall_per_second):
-            self.deque_syscall_per_second.popleft()
-        return syscall_counter

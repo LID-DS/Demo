@@ -92,8 +92,10 @@ class Backend:
                 self.userManager.add_user()
             if str(json) == 'remove': 
                 stopped_user = self.userManager.remove_user()
-                while(not stopped_user.isfinished):
+                while(not stopped_user.is_finished):
                     time.sleep(1)
+            if str(json) == 'add_head':
+                self.userManager.add_user(visible=True)
             #send how many users are active to frontend
             self.socketio.emit('user action', len(self.userManager.active_users))
 
@@ -124,23 +126,25 @@ class Backend:
                 'score': self.statistic.get_ids_score(),
                 'state': self.statistic.ids._model_state.value,
                 'training_size': self.statistic.ids_info['training_size'],
-                'current_ngrams': self.statistic.ids_info['current_ngrams']
+                'current_ngrams': self.statistic.ids_info['current_ngrams'],
+                'top_ngrams': self.statistic.get_top_ngrams(),
+                'int_to_sys': self.statistic.get_int_to_sys()
             }
             time_since_start += 1
             self.socketio.emit('stats', stats)
             time.sleep(delay)
 
-    def retrain_ids(self, training_size=None, ids=None):
+    def retrain_ids(self, training_size=None, trained_model=None):
         """
         retrain ids 
             reinitialize statistic with ids and start new sysdig process with new statistc
-        :params training_size
-        :params _normal_ngrams
+        :params training_size 
+        :params trained_model
         """
-        if ids == None:
+        if trained_model == None:
             self.statistic.ids = DemoModelStide(training_size=training_size)
         else: 
-            self.statistic.ids = DemoModelStide(ids=ids)
+            self.statistic.ids = DemoModelStide(trained_model=trained_model)
         
 
 if __name__ == "__main__":

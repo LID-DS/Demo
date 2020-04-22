@@ -10,6 +10,7 @@ import UserInput from './UserInput'
 import UserActionInput from './UserActionInput'
 import TrafficLight from './TrafficLight';
 import SyscallTypePlot from './SyscallTypePlot';
+import NgramTable from './NgramTable';
 
 const IDS_THRESHOLD = 0.5
 const PLOT_WINDOW_CUTOUT = 60
@@ -40,6 +41,7 @@ class App extends React.PureComponent{
                     x: [], 
                     y: [],
                     name: '',
+                    alarm: 0
                 },
                 index: 0,
                 slider_threshold: IDS_THRESHOLD
@@ -56,7 +58,7 @@ class App extends React.PureComponent{
             index: 0,
             syscall_type_dist: {
                 complete: {} ,
-                top5: {},
+                top: {},
             }
         }
 
@@ -66,6 +68,8 @@ class App extends React.PureComponent{
         this.trainingInfo = React.createRef();
         this.incidentTable = React.createRef();
         this.userAction = React.createRef();
+        this.ngramTable = React.createRef();
+        this.intToSysTable = React.createRef();
     };
    
     //revceive info from TrainingInfo 
@@ -91,11 +95,11 @@ class App extends React.PureComponent{
     }
     
     updateSyscallDistribution = (data) => {
-        let top5 = [];
+        let top = [];
         var i;
         try {
             for (i = 0; i < 5; i++){
-                top5.push(data['syscall_type_dict']['sorted_syscalls'][i]);
+                top.push(data['syscall_type_dict']['sorted_syscalls'][i]);
             }
             var sum_others = 0
             for (i = 5; i < data['syscall_type_dict']['sorted_syscalls'].length; i++){
@@ -105,8 +109,8 @@ class App extends React.PureComponent{
             let others = {
                 "others": sum_others
             }
-            top5.push(others) 
-            this.syscallDistPlot.current.handleValues(top5)
+            top.push(others) 
+            this.syscallDistPlot.current.handleValues(top)
         }
         catch (e) {
             //No syscalls received jet
@@ -193,6 +197,7 @@ class App extends React.PureComponent{
                     x: cutout_x,
                     y: cutout_ids,
                     name: 'IDS score data',
+                    alarm: this.state.alarm
                 },
                 index: this.state.index + 1,
                 slider_threshold: this.state.slider.threshold 
@@ -231,12 +236,16 @@ class App extends React.PureComponent{
             this.setState({
                 data : data
             });
+            //update plot data 
             this.preparePlotData(data)
-            //this.idsPlot.current.updatePlot(data)
+            //update training info 
             this.trainingInfo.current.update_training_info(data['ids_info'])
-            //update syscallsistribution if 
-            
+            //update syscallsistribution
             this.updateSyscallDistribution(data)
+            // update ngram table 
+            this.ngramTable.current.update_list(data['ids_info']['top_ngrams'])
+            //update table of converted syscalls to int (of ids) 
+            this.intToSysTable.current.update_list(data['ids_info']['int_to_sys'])
 
             //Add incident to  table if alarm state of ids plot is reached
             // -> depends on set threshold in plot
@@ -313,9 +322,7 @@ class App extends React.PureComponent{
                                 <div>
                                     <button className="button-basic" onClick={this.handleSaveModel}>Save Trained IDS-Model</button>
                                     <button className="button-basic" onClick={this.handleLoadModel}>Load Trained IDS-Model</button>
-            
                                 </div>
-                                
                         </div>
                     </div>
                     <div className="item-plot">
@@ -325,13 +332,19 @@ class App extends React.PureComponent{
                     </div>
                     <div className="item">
                         <div>Attacks:{"\n"}</div>
-
                         <button className="button-basic" onClick={this.handleAttack}>SQL injection</button>
                     </div>
                     <div className="item">
                         <IncidentTable className="incident-table" ref={this.incidentTable} />
                     </div>
+                    <div className="item">
+                        <NgramTable className="ngram-table" ref={this.ngramTable}/>
+                    </div>
+                    <div className="item">
+                        <NgramTable className="ngram-table" ref={this.intToSysTable}/>
+                    </div>
                 </div>
+                    
               </div>
         <footer className="footer">
             <p> License ... </p>

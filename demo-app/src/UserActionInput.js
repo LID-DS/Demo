@@ -13,6 +13,10 @@ class UserActionInput extends React.PureComponent {
     handleAddUser = () => {
         this.props.onChildClick('add')
     } 
+    
+    handleAddUserHead = () => {
+        this.props.onChildClick('add_head')
+    } 
 
     handleRemoveUser = () => {
         this.props.onChildClick('remove')
@@ -41,6 +45,11 @@ class UserActionInput extends React.PureComponent {
                         className="button-basic"
                         onClick={this.handleRemoveUser}
                     >Remove User</button>
+                    <button 
+                        className="button-basic"
+                        onClick={this.handleAddUserHead}
+                    >Add Visible User</button>
+                    
                 </div>
                 <div> 
                         <Info userInfo={this.state}/>

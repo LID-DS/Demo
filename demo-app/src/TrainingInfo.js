@@ -3,6 +3,8 @@ import './css/TrainingInfo.css'
 
 import { Line } from 'rc-progress';
 
+import NgramTable from './NgramTable'
+
 export default class Training_info extends React.PureComponent {
 
     constructor(props){
@@ -34,7 +36,7 @@ export default class Training_info extends React.PureComponent {
                 state : ids_info['state'],
                 training_size : ids_info['training_size'],
                 current_ngrams : ids_info['current_ngrams'],
-                progress: progress
+                progress: progress,
             }
         })
     }

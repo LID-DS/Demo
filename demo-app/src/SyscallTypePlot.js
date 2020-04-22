@@ -54,6 +54,12 @@ class SyscallTypePlot extends React.PureComponent{
                             color: highlight_color 
                         }
                     },
+                    legend : {
+                        font : {
+                            size: 18,
+                            color: highlight_color
+                        }
+                    },
                     datarevision: this.props.value,
                     paper_bgcolor: 'rgba(0,0,0,0)',
                     plot_bgcolor: 'rgba(0,0,0,0)'
