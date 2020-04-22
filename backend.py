@@ -9,17 +9,13 @@ from statistics import Statistic
 from read_write_syscalls import SysdigHandling
 from demo_model_stide import DemoModelStide
 from Automated_Users.userAction_headless import User, UserManager
-
+from Automated_Users.Attacks.attack_manager import AttackManager
 
 
 class Backend:
 
     def __init__(self):
 
-        """ 
-        enable controlling of automated user actions
-        """ 
-        self.userManager = UserManager()
         """
         setup statistic to compute syscall statistics and evaluate syscalls with IDS
         provides statistics of syscall an analysation of ids
@@ -35,6 +31,14 @@ class Backend:
         """
         update_thread = threading.Thread(target=self.data_update, args=())
         update_thread.start()
+        """ 
+        enable controlling of automated user actions
+        """ 
+        self.userManager = UserManager()
+        """ 
+        enable controlling of automated user attacks 
+        """ 
+        self.attackManager = AttackManager()
         """ 
         run socket
         """ 
@@ -64,8 +68,8 @@ class Backend:
             reinitialize statistic and with new ids
             reinitialize sysdig_handling with new statistic instance 
             """
-            ids = self.statistic.ids._load_model()
-            self.retrain_ids(ids=ids)
+            trained_model = self.statistic.ids._load_model()
+            self.retrain_ids(trained_model=trained_model)
             
             
         @self.socketio.on('save model')
@@ -92,6 +96,14 @@ class Backend:
                     time.sleep(1)
             #send how many users are active to frontend
             self.socketio.emit('user action', len(self.userManager.active_users))
+
+        @self.socketio.on('start attack')
+        def handle_message(json, methods=['GET', 'POST']):
+            """
+            start sql injection
+            """
+            self.attackManager.run_sql_injection()
+            
 
     def data_update(self):
         """

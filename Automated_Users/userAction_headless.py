@@ -7,9 +7,8 @@ import time
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options
-
-
  
+
 MAX_LOGOUT_FAILS = 5
 MAX_USERS = 4
 
@@ -242,6 +241,7 @@ class User:
         while(True):
             if not self.isrunning: 
                 self.isfinished = True
+                self.driver.quit()
                 return 
             self.login()
             time.sleep(1.5)
@@ -250,6 +250,11 @@ class User:
             self.logout()
             if (random.randint(0,10) > 1):
                 time.sleep(10)
+            if (random.randint(0,3) > 1):
+                self.driver.quit()
+                time.sleep(5)
+                self.driver = webdriver.Chrome(options=self.chrome_options)
+            
         #wait for last actions, then set true so we know thread has finished
 
     

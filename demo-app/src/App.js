@@ -86,6 +86,10 @@ class App extends React.PureComponent{
         this.state.websocket.emit('load model', null)
     }
     
+    handleAttack = () => {
+        this.state.websocket.emit('start attack', null)
+    }
+    
     updateSyscallDistribution = (data) => {
         let top5 = [];
         var i;
@@ -262,7 +266,7 @@ class App extends React.PureComponent{
                     <div className="item">
                         <TrafficLight className="traffic-light" ref={this.trafficLight}/>
                         <div className="slider"> 
-                            Incident threshold:  {this.state.slider.threshold}
+                            <div>Incident threshold:  {this.state.slider.threshold}</div>
                             <Slider
                               styles={{
                                   active: {
@@ -320,6 +324,9 @@ class App extends React.PureComponent{
                         />
                     </div>
                     <div className="item">
+                        <div>Attacks:{"\n"}</div>
+
+                        <button className="button-basic" onClick={this.handleAttack}>SQL injection</button>
                     </div>
                     <div className="item">
                         <IncidentTable className="incident-table" ref={this.incidentTable} />

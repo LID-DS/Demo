@@ -10,7 +10,7 @@
   width: 120px;
   padding: 5px;
   margin-top: 120px;
-  margin-bottom: 120px;
+  margin-bottom: 30px;
   background-color: var(--item-bg-color);
   display: inline-block;
 }

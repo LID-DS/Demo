@@ -1,7 +1,6 @@
 from collections import deque
 from enum import Enum
 from enum import IntEnum
-
 import pickle
 
 
@@ -28,7 +27,7 @@ class ModelState(Enum):
 
 
 class DemoModelStide:
-    def __init__(self, ngram_length=7, window_length=100, training_size=100000, ids=None):
+    def __init__(self, ngram_length=10, window_length=100, training_size=100000, ids=None):
         """
         create the STIDE classifier
         :param ngram_length: the ngram length to use
