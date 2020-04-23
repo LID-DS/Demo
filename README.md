@@ -13,5 +13,6 @@ It consists of three parts.
 How do I install the environment?
 1. run startDemo.sh
 
+
 How do I run the environment?
 2. run tmuxp load startDemo.yaml
