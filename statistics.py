@@ -3,17 +3,23 @@ import operator
 from demo_model_stide import DemoModelStide
 
 MAX_BUCKETS = 1
-INITIAL_TRAINING_SIZE = 10000
-MAX_TOP_NGRAMS= 10
+INITIAL_TRAINING_SIZE = 10000000
+MAX_TOP_NGRAMS = 10
+
 
 class Statistic:
 
     def __init__(self):
         """
-        setup IDS   
+        Initialization of DataHandling
+            In charge of:
+                calculation of statistics of systemcalls
+                    sum
+                    calls per bucket (set to second -> bucket delay
+                    syscall distribution
+                collection of ids information (score, state...)
         """
         self.ids = DemoModelStide(training_size=INITIAL_TRAINING_SIZE)
-
         self.syscall_sum = 0
         self.start_time = 0
         self.bucket_counter = 0
@@ -38,15 +44,18 @@ class Statistic:
             sum of syscalls
             syscalls in last <bucket_size> (e.g 1 second)
             syscall distribution
-            gather ids information 
+            send syscall to IDS to gather ids information 
                 score
                 state
                 training size
                 current seen ngrams
+        first calc_syscall_type_distribution than calls_per_bucket
+            -> calls_per_bucket removes bucket if scanned
         """ 
         self.calc_sum()
-        self.calc_calls_per_bucket(syscall)
         self.calc_syscall_type_distribution()
+        self.calc_calls_per_bucket(syscall)
+        # hand over system call to IDS 
         ids_info = {
             'score': self.ids.consume_system_call(syscall), 
             'state': self.ids._model_state.value,
@@ -60,46 +69,52 @@ class Statistic:
         scan through deque and read syscall type dictionary
         sum occurences of each syscall and save summed dictionary 
         """
-        #iterate through all syscall_type_dicts in deque
+        # iterate through all syscall_type_dicts in deque
         # if MAX_BUCKETS=1 only one entry in deqeue_syscall_type_per_second
         for syscall_type_dict in self.deque_syscall_type_per_second:
             # iterate through different types of syscalls in dict
             for syscall_type in syscall_type_dict:
-                #sum up all entries, if not existent -> add entry
+                # sum up all entries, if not existent -> add entry
                 if syscall_type in self.syscall_type_dict:
-                    self.syscall_type_dict[syscall_type] += syscall_type_dict[syscall_type]
+                    self.syscall_type_dict[syscall_type] += (
+                        syscall_type_dict[syscall_type]
+                    )
                 else:
-                    self.syscall_type_dict[syscall_type] = syscall_type_dict[syscall_type]
+                    self.syscall_type_dict[syscall_type] = (
+                        syscall_type_dict[syscall_type]
+                    )
         if(self.deque_syscall_type_per_second):
-            self.syscall_type_dict_last_second = self.deque_syscall_type_per_second.pop()
-        
+            self.syscall_type_dict_last_second = ( 
+                self.deque_syscall_type_per_second.pop()
+            )
 
     def handle_ids_info(self, ids_info):
         """
         Add ids scores to save until next statistic update
+        than score list is reset
         """
-        if not ids_info['score'] == None:
+        if not ids_info['score'] is None:
             self.ids_info['score_list'].append(ids_info['score'])
         self.ids_info = {
             'score': ids_info['score'],
             'score_list': self.ids_info['score_list'],
             'state': ids_info['state'],
             'training_size': ids_info['training_size'],
-            'current_ngrams': ids_info['current_ngrams'] 
+            'current_ngrams': ids_info['current_ngrams']
         } 
 
     def get_syscall_type_distribution_second(self):
         """
-        return syscall_type distribution for last second if existent 
+        return syscall_type distribution for last second if existent
         (could be ask before syscall information received -> return None)
         :return syscall_type_dict_last_second
         """
-        if not (self.syscall_type_dict_last_second == None):
+        if not (self.syscall_type_dict_last_second is None):
             tmp = self.syscall_type_dict_last_second
             self.syscall_type_dict_last_second = None
             return tmp
-        return None 
-                
+        return None
+
     def get_syscall_type_distribution(self):
         """
         sort syscall type frequency 
@@ -108,18 +123,26 @@ class Statistic:
         """
         #sort dictionary 
         list_of_dicts = [] 
-        sorted_tuples = sorted(self.syscall_type_dict.items(), reverse=True, key=lambda x: x[1])
+        sorted_tuples = sorted(self.syscall_type_dict.items(), 
+                                reverse=True, 
+                                key=lambda x: x[1])
+
         for elem in sorted_tuples:
             tmp_dict = {}
             tmp_dict[elem[0]] = elem[1]
             list_of_dicts.append(tmp_dict)
-        #sorted_dict = {key: value for key, value in sorted(self.syscall_type_dict.items(), reverse=True, key=lambda item: item[1])}
+        # embed to dictionary (easier to send via websocket)
         sorted_dict = {
             "sorted_syscalls": list_of_dicts
         } 
         return sorted_dict 
 
     def get_ids_score(self):
+        """
+        get highest ids score of current list of scores 
+        than reset score list 
+        if list empty return 0
+        """
         # if list is not empty return highest score
         if self.ids_info['score_list']:
             # sort list and return highest score
@@ -133,30 +156,54 @@ class Statistic:
         return self.syscall_sum
 
     def get_calls_per_second(self):
-        # current_time = int(round(time.time() * 1000))
-        # last_bucket_time = current_time
+        """ 
+        
+        """ 
         syscall_counter = 0
-        for syscall in self.deque_syscall_per_second:
-            syscall_counter += syscall[0]
-        if (self.deque_syscall_per_second):
+        for syscall_bucket in self.deque_syscall_per_second:
+            syscall_counter += syscall_bucket[0]
+        if self.deque_syscall_per_second:
             self.deque_syscall_per_second.popleft()
         return syscall_counter
 
     def get_top_ngrams(self):
         """
-        return most seen ngrams 
+        return MAX_TOP_NGRAMS most seen ngrams 
         """
+        # get current normal ngrams of ids
         ngram_dict = self.ids._normal_ngrams
-        #TODO why next line not working?
-        #del ngram_dict['training_size']
-        top = dict(sorted(ngram_dict.items(), key=operator.itemgetter(1), reverse=True)[:MAX_TOP_NGRAMS + 1]) 
+
+        # TODO why next line not working?
+        # TODO converting list to dict and than dict to list, really?
+        # del ngram_dict['training_size']
+
+        # sort dict so highest is in first position
+        top_ngrams = dict(
+            sorted(
+                ngram_dict.items(), 
+                key=operator.itemgetter(1), 
+                reverse=True
+            )[:MAX_TOP_NGRAMS + 1]
+        ) 
         #remove first entry which stores only training_size
-        del top['training_size']
+        del top_ngrams['training_size']
+
+        if len(self.ids._normal_ngrams) > MAX_TOP_NGRAMS + 1: 
+            rest_ngrams = sorted(
+                    ngram_dict.items(), 
+                    key=operator.itemgetter(1), 
+                    reverse=True
+                )[MAX_TOP_NGRAMS + 1:]
+            sum_of_other_ngrams = 0
+            for i in range(len(rest_ngrams)):
+                sum_of_other_ngrams += rest_ngrams[i][1]
         top_list = []
-        for key, value in top.items():
+        for key, value in top_ngrams.items():
             temp = [key, value]
             top_list.append(temp)
-        # convert int to name of system call
+        if len(self.ids._normal_ngrams) > MAX_TOP_NGRAMS + 1: 
+            top_list.append(['others', sum_of_other_ngrams])
+
         return top_list
 
     def get_int_to_sys(self):
@@ -171,6 +218,12 @@ class Statistic:
         return None
 
     def calc_calls_per_bucket(self, syscall):
+        """
+        in intervall of bucket_update_delay sum syscall ocurrences 
+        if intervall is over add bucket (witch sum and syscall type distribution)
+            to dequeue.
+        if more than MAX_BUCKETS in dequeue pop oldest entry
+        """
         rawtime_of_syscall = syscall[1]
         syscall_type = syscall[6]
         if self.start_time == 0:
@@ -188,7 +241,6 @@ class Statistic:
                 self.syscall_type_dict_bucket[syscall_type] += 1
             else:
                 self.syscall_type_dict_bucket[syscall_type] = 1
-
 
         # add newest bucket to deque and pop oldest if more than MAX_BUCKETS entries
         else:

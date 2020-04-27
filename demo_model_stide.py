@@ -27,7 +27,7 @@ class ModelState(Enum):
 
 
 class DemoModelStide:
-    def __init__(self, ngram_length=7, window_length=100, training_size=100000, trained_model=None):
+    def __init__(self, ngram_length=7, window_length=100, training_size=10000000, trained_model=None):
         """
         create the STIDE classifier
         :param ngram_length: the ngram length to use
