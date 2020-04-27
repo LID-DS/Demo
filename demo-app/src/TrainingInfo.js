@@ -3,8 +3,6 @@ import './css/TrainingInfo.css'
 
 import { Line } from 'rc-progress';
 
-import NgramTable from './NgramTable'
-
 export default class Training_info extends React.PureComponent {
 
     constructor(props){

@@ -71,8 +71,6 @@ function PlotRenderer(data) {
 			    datarevision : data.index,
 			    paper_bgcolor: 'rgba(0,0,0,0)',
 			    plot_bgcolor: 'rgba(0,0,0,0)',
-                //plot_bgcolor: '#aaaaaa',
-                //bordercolor: '#000000',
                 legend: {
                     font: {
                         size: 12,

@@ -9,9 +9,9 @@ export default class Incident_Table extends React.PureComponent {
         super(props)
         this.state = {
             incident_list:[{
-                id: 0,
-                time:0,
-                score:0
+                id: null,
+                time:null,
+                score:null
             }],
         }
     }

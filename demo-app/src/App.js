@@ -9,7 +9,7 @@ import IncidentTable from './Table';
 import UserInput from './UserInput'
 import UserActionInput from './UserActionInput'
 import TrafficLight from './TrafficLight';
-import SyscallTypePlot from './SyscallTypePlot';
+import PiePlot from './PiePlot';
 import NgramTable from './NgramTable';
 
 const IDS_THRESHOLD = 0.5
@@ -70,6 +70,7 @@ class App extends React.PureComponent{
         this.userAction = React.createRef();
         this.ngramTable = React.createRef();
         this.intToSysTable = React.createRef();
+        this.ngramPlot = React.createRef();
     };
    
     //revceive info from TrainingInfo 
@@ -93,8 +94,15 @@ class App extends React.PureComponent{
     handleAttack = () => {
         this.state.websocket.emit('start attack', null)
     }
+
+    handleTryHardAttack = () => {
+        var info = "try hard" 
+        this.state.websocket.emit('start attack', info)
+    }
     
     updateSyscallDistribution = (data) => {
+        // create list top of dictionaries 
+        // each entry is name of systemcall and count of occurences
         let top = [];
         var i;
         try {
@@ -110,11 +118,26 @@ class App extends React.PureComponent{
                 "others": sum_others
             }
             top.push(others) 
+            //console.log(data['syscall_type_dict']['sorted_syscalls'])
             this.syscallDistPlot.current.handleValues(top)
         }
         catch (e) {
             //No syscalls received jet
         }
+    }
+
+    updateNgramPlot = (data) => {
+        // create dict of ngrams for piechart 
+        //console.log(data['ids_info']['top_ngrams'][0]) 
+        var ngram_data = data['ids_info']['top_ngrams']
+        var i
+        for(i=0; i<ngram_data.length; i++) {
+            //ngram_data[i][0] = ngram_data[i][0].toString()
+            var tmp1 = ngram_data[i][0].toString()
+            var tmp2 = ngram_data[i][1]
+            ngram_data[i] = {[tmp1]: tmp2}
+        }
+        this.ngramPlot.current.handleValues(ngram_data)
     }
 
     /*
@@ -240,10 +263,12 @@ class App extends React.PureComponent{
             this.preparePlotData(data)
             //update training info 
             this.trainingInfo.current.update_training_info(data['ids_info'])
-            //update syscallsistribution
+            //update syscall distribution
             this.updateSyscallDistribution(data)
             // update ngram table 
             this.ngramTable.current.update_list(data['ids_info']['top_ngrams'])
+            // update ngram piechart
+            this.updateNgramPlot(data)
             //update table of converted syscalls to int (of ids) 
             this.intToSysTable.current.update_list(data['ids_info']['int_to_sys'])
 
@@ -317,31 +342,65 @@ class App extends React.PureComponent{
                     </div>
                     <div className="item">
                         <div className="info">
-                                <UserInput className="training-input" inputRef={el => (this.inputElement = el)} />
-                                <button className="button-basic" onClick={this.handleRetrain}>Retrain IDS-Model</button>
+                                <UserInput className="training-input" 
+                                    inputRef={el => (this.inputElement = el)} />
+                                <button className="button-basic" 
+                                    onClick={this.handleRetrain}>
+                                    Retrain IDS-Model
+                                </button>
                                 <div>
-                                    <button className="button-basic" onClick={this.handleSaveModel}>Save Trained IDS-Model</button>
-                                    <button className="button-basic" onClick={this.handleLoadModel}>Load Trained IDS-Model</button>
+                                    <button className="button-basic" 
+                                        onClick={this.handleSaveModel}>
+                                        Save Trained IDS-Model
+                                    </button>
+                                    <button className="button-basic" 
+                                        onClick={this.handleLoadModel}>
+                                        Load Trained IDS-Model
+                                    </button>
                                 </div>
                         </div>
                     </div>
                     <div className="item-plot">
-                        <SyscallTypePlot
+                        <div className="title">
+                            System Call Distribution
+                        </div>
+                        <PiePlot
+                            info={"syscalldist"}
                             ref={this.syscallDistPlot} 
                         />
                     </div>
                     <div className="item">
-                        <div>Attacks:{"\n"}</div>
-                        <button className="button-basic" onClick={this.handleAttack}>SQL injection</button>
-                    </div>
-                    <div className="item">
                         <IncidentTable className="incident-table" ref={this.incidentTable} />
                     </div>
+                    <div className="item-plot">
+                        <div className="title">
+                            Ngram Distribution
+                        </div>
+                        <PiePlot
+                            info={"ngram"}
+                            conversionTable={this.state.data["ids_info"]}
+                            ref={this.ngramPlot} 
+                        />
+                    </div>
                     <div className="item">
-                        <NgramTable className="ngram-table" ref={this.ngramTable}/>
+                        <div>Attacks:{"\n"}</div>
+                        <button className="button-basic" 
+                            onClick={this.handleAttack}>
+                            SQL injection
+                        </button>
+                        <button className="button-basic" 
+                            onClick={this.handleTryHardAttack}>
+                            Try hard SQL injection
+                        </button>
                     </div>
                     <div className="item">
                         <NgramTable className="ngram-table" ref={this.intToSysTable}/>
+                    </div>
+                    <div className="item">
+                        <div className="title">
+                            Ngrams in normal mode
+                        </div>
+                        <NgramTable className="ngram-table" ref={this.ngramTable}/>
                     </div>
                 </div>
                     

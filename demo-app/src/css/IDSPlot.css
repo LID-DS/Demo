@@ -1,9 +1,12 @@
 .ids-plot { 
+  margin-top: 45px;
   background-color: var(--item-bg-color-light);
 }
 .syscall-plot { 
-   background-color: var(--item-bg-color-light);
+  margin-top: 45px;
+  background-color: var(--item-bg-color-light);
 }          
 .dist-plot {
-   background-color: var(--item-bg-color-light);
+  margin-top: 45px;
+  background-color: var(--item-bg-color-light);
 }

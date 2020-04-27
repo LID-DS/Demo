@@ -18,13 +18,12 @@ export default class Ngram_Table extends React.PureComponent {
             column_1_width : 200,
             column_2_width : 200
         }
+        this.showNgramString = this.showNgramString.bind(this)
+        this.handleOverRow = this.handleOverRow.bind(this)
     }
 
     update_list = (raw_ngram_list) => {
-        var i
         var current_list = []
-        var label_1
-        var label_2
         //if second argument is string, then its the convert int to sys table
         try{
             if (typeof raw_ngram_list[0][1] === 'string' || raw_ngram_list[0][1] instanceof String) {
@@ -45,7 +44,7 @@ export default class Ngram_Table extends React.PureComponent {
         catch(err) {
             console.log("Wait for first ngrams") 
         }
-        
+        var i
         for (i=0; i<raw_ngram_list.length; i++){
             current_list.push({
                     ngram: raw_ngram_list[i][0], 
@@ -59,9 +58,18 @@ export default class Ngram_Table extends React.PureComponent {
         })
     }
 
+    showNgramString = (event) => {
+        console.log("mouse over row")
+        console.log(event) 
+    }
+        
+    handleOverRow = (event) => {
+        console.log("mouse over row")
+        console.log(event) 
+    }
+
     render() {
 	return (
-        <div>
 		<Table
 		    ref={(ref) => this.tableRef = ref}
 		    width={this.state.table_width}
@@ -71,6 +79,11 @@ export default class Ngram_Table extends React.PureComponent {
 		    rowCount={this.state.ngram_list.length}
 		    rowGetter={({ index }) => this.state.ngram_list[index]}
             isScrolling={true}
+            onRowClick={this.showNgramString}
+            onRowMouseOver={this.handleOverRow}
+            onHeaderClick={this.showNgramString}
+            onColumnClick={this.showNgramString}
+            onRowDoubleClick={this.handleOverRow}
 		>
 		    <Column
 		    width={this.state.column_1_width}
@@ -83,7 +96,6 @@ export default class Ngram_Table extends React.PureComponent {
 		    dataKey='count'
 		    />
 		</Table>
-        </div>
 	);
     }
 }
