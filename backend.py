@@ -92,8 +92,8 @@ class Backend:
                 self.userManager.add_user()
             if str(json) == 'remove': 
                 stopped_user = self.userManager.remove_user()
-                while(not stopped_user.is_finished):
-                    time.sleep(1)
+                #while(not stopped_user.is_finished):
+                #    time.sleep(0.1)
             if str(json) == 'add_head':
                 self.userManager.add_user(visible=True)
             #send how many users are active to frontend
@@ -104,7 +104,7 @@ class Backend:
             """
             start sql injection
             """
-            self.attackManager.run_sql_injection()
+            self.attackManager.run_sql_injection(str(json))
             
 
     def data_update(self):
@@ -117,22 +117,27 @@ class Backend:
         time_since_start = 0
         stats = {}
         while True:
-            stats['sum'] = str(self.statistic.get_sum())
-            stats['calls_per_second'] = self.statistic.get_calls_per_second()
-            stats['time'] = time_since_start # time_first_call
-            stats['syscall_type_dict_second'] = self.statistic.get_syscall_type_distribution_second()
-            stats['syscall_type_dict'] = self.statistic.get_syscall_type_distribution()
-            stats['ids_info'] = {
-                'score': self.statistic.get_ids_score(),
-                'state': self.statistic.ids._model_state.value,
-                'training_size': self.statistic.ids_info['training_size'],
-                'current_ngrams': self.statistic.ids_info['current_ngrams'],
-                'top_ngrams': self.statistic.get_top_ngrams(),
-                'int_to_sys': self.statistic.get_int_to_sys()
-            }
-            time_since_start += 1
-            self.socketio.emit('stats', stats)
-            time.sleep(delay)
+            try:
+                stats['sum'] = str(self.statistic.get_sum())
+                stats['calls_per_second'] = self.statistic.get_calls_per_second()
+                stats['time'] = time_since_start # time_first_call
+                stats['syscall_type_dict_second'] = self.statistic.get_syscall_type_distribution_second()
+                stats['syscall_type_dict'] = self.statistic.get_syscall_type_distribution()
+                stats['ids_info'] = {
+                    'score': self.statistic.get_ids_score(),
+                    'state': self.statistic.ids._model_state.value,
+                    'training_size': self.statistic.ids_info['training_size'],
+                    'current_ngrams': self.statistic.ids_info['current_ngrams'],
+                    'top_ngrams': self.statistic.get_top_ngrams(),
+                    'int_to_sys': self.statistic.get_int_to_sys()
+                }
+                time_since_start += 1
+                self.socketio.emit('stats', stats)
+                time.sleep(delay)
+
+            except:
+                print("Error building stats")
+
 
     def retrain_ids(self, training_size=None, trained_model=None):
         """
