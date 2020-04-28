@@ -38,8 +38,6 @@ wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo apt install ./google-chrome-stable_current_amd64.deb -y
 cd ..
 sudo apt install chromium-chromedriver -y
-# For Reconnaissance
-sudo apt install dirb
 
 sudo apt update
 
