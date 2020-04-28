@@ -38,6 +38,8 @@ wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo apt install ./google-chrome-stable_current_amd64.deb -y
 cd ..
 sudo apt install chromium-chromedriver -y
+# For Reconnaissance
+sudo apt install dirb
 
 sudo apt update
 
@@ -48,7 +50,6 @@ sudo apt install tmuxp -y
 #   docker juice shop
 #   react app
 #   webserver.py for syscall analysis
-#   userAction.py for automated traffic on juice shop
 
-#TODO userAction wait until page is reachable
+cd Demo/
 tmuxp load startDemo.yaml
