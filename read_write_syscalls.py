@@ -83,7 +83,6 @@ class SysdigHandling:
         get read system calls from sysdig subprocess call
         write system calls in deque
         """
-        print("writing")
         with self.start_sysdig_and_read_data() as sysdig_out:
             for line in sysdig_out.stdout:
                 self.deque_syscall.append(self.syscall_parser(line))

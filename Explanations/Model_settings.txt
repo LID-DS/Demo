@@ -1,0 +1,8 @@
+
+ngram size 7 training_size 1.000.000
+
+    False positives + no sql injection detection
+
+ngram size 10 training_size 1.000.000
+    
+    more false positives + attack detected sometimes 
