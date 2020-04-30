@@ -40,15 +40,21 @@ class UserActionInput extends React.PureComponent {
                     <button 
                         className="button-basic" 
                         onClick={this.handleAddUser}
-                    >Add User</button>
-                    <button 
-                        className="button-basic"
-                        onClick={this.handleRemoveUser}
-                    >Remove User</button>
+                    >
+                        Add User
+                    </button>
                     <button 
                         className="button-basic"
                         onClick={this.handleAddUserHead}
-                    >Add Visible User</button>
+                    >
+                        Add Visible User
+                    </button>
+                    <button 
+                        className="button-basic"
+                        onClick={this.handleRemoveUser}
+                    >
+                        Remove User
+                    </button>
                     
                 </div>
                 <div> 

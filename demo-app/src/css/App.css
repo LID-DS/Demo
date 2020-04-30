@@ -14,7 +14,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(1px + 2vmin);
+  font-size: calc(1px + 1.5vmin);
   color: #f9f5d7;    
 }
 
@@ -94,5 +94,6 @@ $admin-nav-width: 250px;
 }
 
 .title {
-  margin-top: 45px;
+  margin-top: 25px;
+  margin-bottom: 25px;
 }

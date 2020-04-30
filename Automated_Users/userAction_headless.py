@@ -240,6 +240,7 @@ class User:
         self.driver.refresh()
             
     def action(self):
+        # -->
         self.register()
         time.sleep(0.1)
         while(self.is_running):
@@ -247,10 +248,14 @@ class User:
                 self.is_finished = True
                 self.driver.quit()
                 return 
+            # -->
             self.login()
             time.sleep(1.5)
+            # -->
+            # includes leaving feedback
             self.go_shopping(max_products=10)
             time.sleep(1)
+            # -->
             self.logout()
             if (random.randint(0,10) > 1):
                 for i in range(0,10):

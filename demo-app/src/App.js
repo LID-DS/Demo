@@ -12,7 +12,7 @@ import TrafficLight from './TrafficLight';
 import PiePlot from './PiePlot';
 import NgramTable from './NgramTable';
 
-const IDS_THRESHOLD = 0.5
+const IDS_THRESHOLD = 0.4
 const PLOT_WINDOW_CUTOUT = 60
 
 const highlight_color = '#f9f5d7'
@@ -74,7 +74,7 @@ class App extends React.PureComponent{
     };
    
     //revceive info from TrainingInfo 
-    trainingChangeHandle = (retrain_info) => {
+    handleTrainingChanged = (retrain_info) => {
         this.sendToBackend(retrain_info) 
     }
     
@@ -98,6 +98,11 @@ class App extends React.PureComponent{
     handleTryHardAttack = () => {
         var info = "try hard" 
         this.state.websocket.emit('start attack', info)
+    }
+
+    handleEnum = () => {
+        // send signal to start dirb enumeration
+        this.state.websocket.emit('enum', null) 
     }
     
     updateSyscallDistribution = (data) => {
@@ -383,14 +388,23 @@ class App extends React.PureComponent{
                         />
                     </div>
                     <div className="item">
-                        <div>Attacks:{"\n"}</div>
+                        <div className="title">
+                            Reconnaissance:{"\n"}
+                        </div>
+                        <button className="button-basic" 
+                            onClick={this.handleEnum}>
+                            Launch Dirb Enum 
+                        </button>
+                        <div className="title">
+                            Attacks:{"\n"}
+                        </div>
                         <button className="button-basic" 
                             onClick={this.handleAttack}>
-                            SQL injection
+                            SQL Injection
                         </button>
                         <button className="button-basic" 
                             onClick={this.handleTryHardAttack}>
-                            Try hard SQL injection
+                            Try Hard SQL Injection
                         </button>
                     </div>
                     <div className="item">

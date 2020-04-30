@@ -14,7 +14,6 @@ class PiePlot extends React.PureComponent{
             labels: [],
             converted_labels: [],
             hover_text: [],
-            converted: false
         }
     }
 
@@ -35,10 +34,9 @@ class PiePlot extends React.PureComponent{
             labels: labels
         })
 
-        if(this.props.info === "ngram" && !this.state.converted && this.state.labels.length === 11){
+        if(this.props.info === "ngram" && this.state.labels.length === 11){
             this.setState({
                 converted_labels : this.convertLabels(this.state.labels, this.props.conversionTable['int_to_sys']),
-                converted : true 
             })
             console.log(this.state.converted_labels)
         }
