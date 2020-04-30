@@ -24,7 +24,12 @@ It consists of three parts.
 
         3.2.1 User Actions
             -> Start/Stop automated user 
-            -> Start/Stop visible automated user
+                -> Consists of :
+                    * Register user 
+                    * Login user
+                    * Go shopping (put items into basket)
+                    * Leave feedback
+                    * Logout 
             -> Launch perfect/realistic SQLInjection
         3.2.2 Model Modifications
             -> Retrain model with specific training size
@@ -35,6 +40,6 @@ It consists of three parts.
 How do I install the environment?
 1. run: ./startDemo.sh
 
-
 How do I run the environment?
+
 2. run: tmuxp load startDemo.yaml
