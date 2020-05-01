@@ -70,7 +70,7 @@ class User:
 
     def login(self):
         
-        print("User: " + str(self.user_number) + " " + 'Try logging in')
+        #print("User: " + str(self.user_number) + " " + 'Try logging in')
         #Open the website
         self.driver.get('http://localhost:3000/#/login')
 
@@ -78,7 +78,8 @@ class User:
             #get rid of pop up window by clicking in top right corner
             self.driver.find_element_by_xpath('//div[contains(@class,"cdk-overlay-pane")]//button[@aria-label="Close Welcome Banner"]').click()
         except:
-            print("User: " + str(self.user_number) + " " + 'No Welcome Banner')
+            pass
+            #print("User: " + str(self.user_number) + " " + 'No Welcome Banner')
 
         #Login with given credentials
         #find email box
