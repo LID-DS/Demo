@@ -7,7 +7,7 @@ INITIAL_TRAINING_SIZE = 10000000
 MAX_TOP_NGRAMS = 10
 
 
-class Statistic:
+class DataHandling:
 
     def __init__(self):
         """
