@@ -2,7 +2,6 @@ from contextlib import contextmanager
 import subprocess
 import collections
 import threading
-from statistics import Statistic
 import time
 import psutil 
 
@@ -24,9 +23,9 @@ class SysdigHandling:
 
             second thread reads syscalls from deque
         start a deque to write systemcalls to
-        create statistic class - where calculations on syscalls are made
+        create data_handling class - where calculations on syscalls are made
     """
-    def __init__(self, statistic):
+    def __init__(self, data_handling):
         # Initiate syscall deque
         self.deque_syscall = collections.deque()
         # Initiate write deque thread
@@ -35,8 +34,8 @@ class SysdigHandling:
         # Initiate read deque thread
         self.read_thread = threading.Thread(target=self.read_syscall, args=([]))
         self.read_thread.start()
-        # Initiate statistic
-        self.statistic = statistic
+        # Initiate data_handling
+        self.data_handling = data_handling
 
     @contextmanager
     def start_sysdig_and_read_data(self):
@@ -91,14 +90,14 @@ class SysdigHandling:
     def read_syscall(self):
         """
         read system calls from deque
-        if deque not empty send syscall to statistics
+        if deque not empty send syscall to data_handlings
         """
         while True:
             # check if deque is empty
             if self.deque_syscall:
                 syscall = self.deque_syscall.pop()
-                # send to statistics
-                self.statistic.update_statistic(syscall)
+                # send to data_handling
+                self.data_handling.update_statistic(syscall)
             else:
                 time.sleep(0.1)
 
