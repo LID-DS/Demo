@@ -4,7 +4,7 @@ from flask import Flask
 from flask_socketio import SocketIO, emit
 import logging
 
-from statistics import Statistic
+from data_handling import DataHandling
 from read_write_syscalls import SysdigHandling
 from demo_model_stide import DemoModelStide
 from Automated_Users.userAction_headless import UserManager
@@ -15,22 +15,22 @@ class Backend:
 
     def __init__(self):
         """
-        setup statistic to compute syscall statistics
+        setup data_handling to compute syscall statistics
         and evaluate syscalls with IDS
-        provides statistics of syscall an analysation of ids
+        provides data_handlings of syscall an analysation of ids
         """
-        self.statistic = Statistic()
+        self.data_handling = DataHandling()
         """
         setup sysdig handling to record system calls and send calls to ids
         """
-        self.sysdig_handling = SysdigHandling(self.statistic)
+        self.sysdig_handling = SysdigHandling(self.data_handling)
         """
         initialize socket
         """
         self.app = None
         self.initialize_socket()
         """
-        start repetetivly collecting data of statistic in new thread
+        start repetetivly collecting data of data_handling in new thread
         """
         update_thread = threading.Thread(target=self.data_update, args=())
         update_thread.start()
@@ -79,10 +79,10 @@ class Backend:
             if 'load model' was received from frontend 
             run _load_model of DemoStide
             creates now instance of ids
-            reinitialize statistic and with new ids
-            reinitialize sysdig_handling with new statistic instance
+            reinitialize data_handling and with new ids
+            reinitialize sysdig_handling with new data_handling instance
             """
-            trained_model = self.statistic.ids._load_model()
+            trained_model = self.data_handling.ids._load_model()
             self.retrain_ids(trained_model=trained_model)            
 
         @self.socketio.on('save model')
@@ -91,7 +91,7 @@ class Backend:
             if 'save model' was received from frontend, 
             save ids model
             """
-            self.statistic.ids._save_model()
+            self.data_handling.ids._save_model()
 
         @self.socketio.on('user action')
         def handle_message(json, methods=['GET', 'POST']):
@@ -126,10 +126,11 @@ class Backend:
             start enumeration with dirb
             """
             self.attackManager.run_enum()
+            self.socketio.emit('enum', "done")
         
     def data_update(self):
         """
-        collect data of syscall_statistics and ids
+        collect data of syscall_data_handlings and ids
         send React collected data with delay of delay seconds
         """
         delay = 1
@@ -138,19 +139,19 @@ class Backend:
         stats = {}
         while True:
             try:
-                stats['sum'] = str(self.statistic.get_sum())
-                stats['calls_per_second'] = self.statistic.get_calls_per_second()
+                stats['sum'] = str(self.data_handling.get_sum())
+                stats['calls_per_second'] = self.data_handling.get_calls_per_second()
                 stats['time'] = time_since_start # time_first_call
                 stats['syscall_type_dict_second'] = \
-                    self.statistic.get_syscall_type_distribution_second()
-                stats['syscall_type_dict'] = self.statistic.get_syscall_type_distribution()
+                    self.data_handling.get_syscall_type_distribution_second()
+                stats['syscall_type_dict'] = self.data_handling.get_syscall_type_distribution()
                 stats['ids_info'] = {
-                    'score': self.statistic.get_ids_score(),
-                    'state': self.statistic.ids._model_state.value,
-                    'training_size': self.statistic.ids_info['training_size'],
-                    'current_ngrams': self.statistic.ids_info['current_ngrams'],
-                    'top_ngrams': self.statistic.get_top_ngrams(),
-                    'int_to_sys': self.statistic.get_int_to_sys()
+                    'score': self.data_handling.get_ids_score(),
+                    'state': self.data_handling.ids._model_state.value,
+                    'training_size': self.data_handling.ids_info['training_size'],
+                    'current_ngrams': self.data_handling.ids_info['current_ngrams'],
+                    'top_ngrams': self.data_handling.get_top_ngrams(),
+                    'int_to_sys': self.data_handling.get_int_to_sys()
                 }
                 time_since_start += 1
                 self.socketio.emit('stats', stats)
@@ -162,14 +163,14 @@ class Backend:
     def retrain_ids(self, training_size=None, trained_model=None):
         """
         retrain ids 
-            reinitialize statistic with ids and start new sysdig process with new statistc
+            reinitialize data_handling with ids and start new sysdig process with new statistc
         :params training_size 
         :params trained_model
         """
         if trained_model == None:
-            self.statistic.ids = DemoModelStide(training_size=training_size)
+            self.data_handling.ids = DemoModelStide(training_size=training_size)
         else: 
-            self.statistic.ids = DemoModelStide(trained_model=trained_model)
+            self.data_handling.ids = DemoModelStide(trained_model=trained_model)
         
 if __name__ == "__main__":
     IDS = Backend()

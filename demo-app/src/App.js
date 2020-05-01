@@ -59,7 +59,8 @@ class App extends React.PureComponent{
             syscall_type_dist: {
                 complete: {} ,
                 top: {},
-            }
+            },
+            enum_running: false
         }
 
         this.syscallDistPlot = React.createRef();
@@ -103,6 +104,9 @@ class App extends React.PureComponent{
     handleEnum = () => {
         // send signal to start dirb enumeration
         this.state.websocket.emit('enum', null) 
+        this.setState({
+            enum_running: true
+        })
     }
     
     updateSyscallDistribution = (data) => {
@@ -251,6 +255,7 @@ class App extends React.PureComponent{
     }
 
     componentDidMount(){
+
         let socket = io('ws://localhost:5000/');
         socket.on('connect', function() {
             console.log('Connected.')
@@ -283,11 +288,19 @@ class App extends React.PureComponent{
                 this.incidentTable.current.add_incident(data['time'], data['ids_info']['score'])
             }
         }.bind(this));
+
         //if recieved message user action update count of active users 
         socket.on('user action', function(data) {
             this.userAction.current.updateCount(data)
         }.bind(this));
+
+        socket.on('enum', function(data) {
+            this.setState({
+                enum_running: false
+            })            
+        }.bind(this));
     }
+
     
     render() {
         return(
@@ -367,7 +380,7 @@ class App extends React.PureComponent{
                     </div>
                     <div className="item-plot">
                         <div className="title">
-                            System Call Distribution
+                            Live System Call Distribution
                         </div>
                         <PiePlot
                             info={"syscalldist"}
@@ -379,7 +392,7 @@ class App extends React.PureComponent{
                     </div>
                     <div className="item-plot">
                         <div className="title">
-                            Ngram Distribution
+                            Training Ngram Distribution
                         </div>
                         <PiePlot
                             info={"ngram"}
@@ -395,6 +408,7 @@ class App extends React.PureComponent{
                             onClick={this.handleEnum}>
                             Launch Dirb Enum 
                         </button>
+                        <EnumStatus is_runnning={this.state.enum_running}/>
                         <div className="title">
                             Attacks:{"\n"}
                         </div>
@@ -427,4 +441,14 @@ class App extends React.PureComponent{
         );
     };
 }
+
+function EnumStatus(props) {
+    if (props.is_runnning){
+        return <div>Enumeration running</div>
+    }
+    else {
+        return null
+    }
+}
+
 export default App;
