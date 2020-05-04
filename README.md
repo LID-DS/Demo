@@ -17,8 +17,8 @@ It consists of three parts.
 
         3.1.1 Plot showing system calls in last second
         3.1.2 Plot showing current probability of an intrusion 
-        3.1.3 PiePlot showing distribution of seen system calls
-        3.1.4 PiePlot showing distribution of seen ngrams
+        3.1.3 PiePlot showing distribution of seen of all system calls
+        3.1.4 PiePlot showing distribution of seen ngrams during training
 
     3.2 Available Actions
 
@@ -33,13 +33,11 @@ It consists of three parts.
             -> Launch perfect/realistic SQLInjection
         3.2.2 Model Modifications
             -> Retrain model with specific training size
-            -> Save/Load models  
- 
         
 
 How do I install the environment?
 1. run: ./startDemo.sh
 
 How do I run the environment?
-
 2. run: tmuxp load startDemo.yaml
+
