@@ -18,7 +18,8 @@ class Reconnaissance:
         directories = []
         with self.enum_process as dirb:
             for line in dirb.stdout:
-                directories.append(line)
+                print(re.findall(r"\+\s.*\s",str(line)))
+
         #split = " "
         #result_string = split.join(directories)
         #print(re.findall(".\w\+\s.*", result_string))
