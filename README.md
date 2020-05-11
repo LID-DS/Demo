@@ -10,36 +10,36 @@ It consists of three parts.
 
 2. Backend handling reading of syscalls and actual IDS
 
-    2.1 IDS uses demo_stide, which forms ngrams of syscalls and saves them in a dictionary
+    1. IDS uses demo_stide, which forms ngrams of syscalls and saves them in a dictionary
         Depending on how many ngrams of syscalls are previously saved in the dictionary,
         an anomaly score is calculated.
-    2.2 Below a path of one syscall triggered by the juice-shop application is shown.
+    2. Below a path of one syscall triggered by the juice-shop application is shown.
         
     ![Path of a System-Call](/Explanations/syscall_dataflow.svg)
 
 3. React Frontend for visualization of IDS 
     ![OWASP Juice Shop](/images/Dashboard.png)
 
-    3.1 Graphs:
+    1. Graphs:
 
-        3.1.1 Plot showing system calls in last second
-        3.1.2 Plot showing current probability of an intrusion 
-        3.1.3 PiePlot showing distribution of seen of all system calls
-        3.1.4 PiePlot showing distribution of seen ngrams during training
+        1. Plot showing system calls in last second
+        2. Plot showing current probability of an intrusion 
+        3. PiePlot showing distribution of seen of all system calls
+        4. PiePlot showing distribution of seen ngrams during training
 
-    3.2 Available Actions
+    2. Available Actions
 
-        3.2.1 User Actions
-            -> Start/Stop automated user 
-                -> Consists of :
+        1. User Actions
+            * Start/Stop automated user 
+                * Consists of :
                     * Register user 
                     * Login user
                     * Go shopping (put items into basket)
                     * Leave feedback
                     * Logout 
-            -> Launch perfect/realistic SQLInjection
-        3.2.2 Model Modifications
-            -> Retrain model with specific training size
+            * Launch perfect/realistic SQLInjection
+        2. Model Modifications
+            * Retrain model with specific training size
         
 
 How do I install the environment?
