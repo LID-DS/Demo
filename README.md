@@ -6,12 +6,14 @@ This is an environment for presenting and testing of intrusion detection systems
 It consists of three parts.
     
 1. Webserver running OWASP juice-shop webserver --> Vulnerable Application
+    ![OWASP Juice Shop](/images/JuiceShop2.png)
 
 2. Backend handling reading of syscalls and actual IDS
 
     2.1 IDS uses demo_stide, which forms ngrams of syscalls and saves them in dictionary
 
 3. React Frontend for visualization of IDS 
+    ![OWASP Juice Shop](/images/Dashboard.png)
 
     3.1 Graphs:
 
