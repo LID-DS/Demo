@@ -10,7 +10,12 @@ It consists of three parts.
 
 2. Backend handling reading of syscalls and actual IDS
 
-    2.1 IDS uses demo_stide, which forms ngrams of syscalls and saves them in dictionary
+    2.1 IDS uses demo_stide, which forms ngrams of syscalls and saves them in a dictionary
+        Depending on how many ngrams of syscalls are previously saved in the dictionary,
+        an anomaly score is calculated.
+    2.2 Below a path of one syscall triggered by the juice-shop application is shown.
+        
+    ![Path of a System-Call](/Explanations/syscall_dataflow.svg)
 
 3. React Frontend for visualization of IDS 
     ![OWASP Juice Shop](/images/Dashboard.png)
