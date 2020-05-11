@@ -11,8 +11,9 @@ import UserActionInput from './UserActionInput'
 import TrafficLight from './TrafficLight';
 import PiePlot from './PiePlot';
 import NgramTable from './NgramTable';
+import logo from './images/ScaDS_AI_Logo.png'
 
-const IDS_THRESHOLD = 0.4
+const IDS_THRESHOLD = 0.05
 const PLOT_WINDOW_CUTOUT = 60
 
 const highlight_color = '#f9f5d7'
@@ -92,13 +93,16 @@ class App extends React.PureComponent{
         this.state.websocket.emit('load model', null)
     }
     
-    handleAttack = () => {
-        this.state.websocket.emit('start attack', null)
+    handleSQLInjection = () => {
+        this.state.websocket.emit('start attack', 'sql')
     }
 
     handleTryHardAttack = () => {
-        var info = "try hard" 
-        this.state.websocket.emit('start attack', info)
+        this.state.websocket.emit('start attack', 'try hard sql')
+    }
+
+    handleFalseJWTLogin = () => {
+        this.state.websocket.emit('start attack', 'false jwt login')
     }
 
     handleEnum = () => {
@@ -336,10 +340,10 @@ class App extends React.PureComponent{
                               axis="x"
                               x={this.state.slider.threshold}
                               xmin={0}
-                              xmax={1}
-                              xstep={0.01}
+                              xmax={0.2}
+                              xstep={0.005}
                               onChange={({ x }) => this.setState({slider : {
-                                  threshold: x.toFixed(2)
+                                  threshold: x.toFixed(3)
                               }})}
                             />
                         </div>
@@ -413,12 +417,16 @@ class App extends React.PureComponent{
                             Attacks:{"\n"}
                         </div>
                         <button className="button-basic" 
-                            onClick={this.handleAttack}>
+                            onClick={this.handleSQLInjection}>
                             SQL Injection
                         </button>
                         <button className="button-basic" 
                             onClick={this.handleTryHardAttack}>
                             Try Hard SQL Injection
+                        </button>
+                        <button className="button-basic" 
+                            onClick={this.handleFalseJWTLogin}>
+                            Non Existing User Login
                         </button>
                     </div>
                     <div className="item">
@@ -434,7 +442,9 @@ class App extends React.PureComponent{
                     
               </div>
         <footer className="footer">
-            <p> License ... </p>
+            <a href="https://www.scads.de/en/">
+             <img src={logo} alt="ScaDS AI Logo"/>
+            </a>
         </footer>
 
         </div>

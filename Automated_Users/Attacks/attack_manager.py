@@ -1,6 +1,6 @@
 import threading
 
-from Automated_Users.Attacks.sql_get_user_credentials import SQLInjection
+from Automated_Users.Attacks.attacks import SQLInjection, FalseJWTLogin
 from Automated_Users.Attacks.reconnaissance import Reconnaissance
 
 
@@ -13,6 +13,7 @@ class AttackManager:
         self.sql_injection = SQLInjection(
                 base_url="http://localhost:3000")
         self.reconnaissance = Reconnaissance()
+        self.false_jwt = FalseJWTLogin()
 
     def run_sql_injection(self, info):
         """
@@ -42,4 +43,14 @@ class AttackManager:
         # wait for enumeration to finish 
         enum_thread.join()
         return 1
+    
+    def run_false_jwt_login(self):
+        """
+        start thread which tries to login as non existing user
+        using sql injection to recieve false JSON Web Token 
+        """
+        false_jwt_thread = threading.Thread(
+                target=self.false_jwt.run_attack(),
+                args=([]))
+        false_jwt_thread.start()
         

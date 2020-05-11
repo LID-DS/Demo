@@ -118,7 +118,11 @@ class Backend:
             """
             start sql injection
             """
-            self.attackManager.run_sql_injection(str(json))
+            if (str(json) == 'sql 'or str(json) == 'try hard sql'):
+                self.attackManager.run_sql_injection(str(json))
+            elif str(json) == 'false jwt login':
+                self.attackManager.run_false_jwt_login()
+
                 
         @self.socketio.on('enum')
         def handle_message(json, methods=['GET', 'POST']):
