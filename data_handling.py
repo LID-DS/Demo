@@ -28,7 +28,7 @@ class DataHandling:
         self.deque_syscall_type_per_second = collections.deque()
         self.syscall_type_dict_bucket = {}
         self.syscall_type_dict = {}
-        self.syscall_type_dict_last_second = {} 
+        self.syscall_type_dict_last_second = {}
         self.ids_info = {
             'score': 0,
             'score_list': [],
@@ -39,25 +39,25 @@ class DataHandling:
 
     def update_statistic(self, syscall):
         """
-        received syscall from syscallhandling 
+        received syscall from syscallhandling
         calc new:
             sum of syscalls
             syscalls in last <bucket_size> (e.g 1 second)
             syscall distribution
-            send syscall to IDS to gather ids information 
+            send syscall to IDS to gather ids information
                 score
                 state
                 training size
                 current seen ngrams
         first calc_syscall_type_distribution than calls_per_bucket
             -> calls_per_bucket removes bucket if scanned
-        """ 
+        """
         self.calc_sum()
         self.calc_syscall_type_distribution()
         self.calc_calls_per_bucket(syscall)
-        # hand over system call to IDS 
+        # hand over system call to IDS
         ids_info = {
-            'score': self.ids.consume_system_call(syscall), 
+            'score': self.ids.consume_system_call(syscall),
             'state': self.ids._model_state.value,
             'training_size': self.ids._training_size,
             'current_ngrams': self.ids._normal_ngrams["training_size"]
@@ -67,7 +67,7 @@ class DataHandling:
     def calc_syscall_type_distribution(self):
         """
         scan through deque and read syscall type dictionary
-        sum occurences of each syscall and save summed dictionary 
+        sum occurences of each syscall and save summed dictionary
         """
         # iterate through all syscall_type_dicts in deque
         # if MAX_BUCKETS=1 only one entry in deqeue_syscall_type_per_second
@@ -84,7 +84,7 @@ class DataHandling:
                         syscall_type_dict[syscall_type]
                     )
         if(self.deque_syscall_type_per_second):
-            self.syscall_type_dict_last_second = ( 
+            self.syscall_type_dict_last_second = (
                 self.deque_syscall_type_per_second.pop()
             )
 
@@ -101,7 +101,7 @@ class DataHandling:
             'state': ids_info['state'],
             'training_size': ids_info['training_size'],
             'current_ngrams': ids_info['current_ngrams']
-        } 
+        }
 
     def get_syscall_type_distribution_second(self):
         """
@@ -117,15 +117,16 @@ class DataHandling:
 
     def get_syscall_type_distribution(self):
         """
-        sort syscall type frequency 
-        embed sorted list in dictionary 
+        sort syscall type frequency
+        embed sorted list in dictionary
         :return sorted syscall_type_distribution
         """
-        #sort dictionary 
-        list_of_dicts = [] 
-        sorted_tuples = sorted(self.syscall_type_dict.items(), 
-                                reverse=True, 
-                                key=lambda x: x[1])
+        # sort dictionary
+        list_of_dicts = []
+        sorted_tuples = sorted(
+                self.syscall_type_dict.items(),
+                reverse=True,
+                key=lambda x: x[1])
 
         for elem in sorted_tuples:
             tmp_dict = {}
@@ -134,31 +135,35 @@ class DataHandling:
         # embed to dictionary (easier to send via websocket)
         sorted_dict = {
             "sorted_syscalls": list_of_dicts
-        } 
-        return sorted_dict 
+        }
+        return sorted_dict
 
     def get_ids_score(self):
         """
-        get highest ids score of current list of scores 
-        than reset score list 
+        get highest ids score of current list of scores
+        than reset score list
         if list empty return 0
         """
         # if list is not empty return highest score
         if self.ids_info['score_list']:
             # sort list and return highest score
-            sorted_ids_scores = sorted(self.ids_info['score_list'], reverse=True)
-            self.ids_info['score_list']= list()
+            sorted_ids_scores = sorted(
+                    self.ids_info['score_list'],
+                    reverse=True)
+            self.ids_info['score_list'] = list()
             highest_score = sorted_ids_scores[0]
             return highest_score
-        return 0 
+        return 0
 
     def get_sum(self):
         return self.syscall_sum
 
     def get_calls_per_second(self):
-        """ 
-        
-        """ 
+        """
+        gets called every second
+        count systemcalls in buckets
+        pop oldest bucket
+        """
         syscall_counter = 0
         for syscall_bucket in self.deque_syscall_per_second:
             syscall_counter += syscall_bucket[0]
@@ -168,7 +173,7 @@ class DataHandling:
 
     def get_top_ngrams(self):
         """
-        return MAX_TOP_NGRAMS most seen ngrams 
+        return MAX_TOP_NGRAMS most seen ngrams
         """
         # get current normal ngrams of ids
         ngram_dict = self.ids._normal_ngrams
@@ -180,18 +185,18 @@ class DataHandling:
         # sort dict so highest is in first position
         top_ngrams = dict(
             sorted(
-                ngram_dict.items(), 
-                key=operator.itemgetter(1), 
+                ngram_dict.items(),
+                key=operator.itemgetter(1),
                 reverse=True
             )[:MAX_TOP_NGRAMS + 1]
-        ) 
-        #remove first entry which stores only training_size
+        )
+        # remove first entry which stores only training_size
         del top_ngrams['training_size']
 
-        if len(self.ids._normal_ngrams) > MAX_TOP_NGRAMS + 1: 
+        if len(self.ids._normal_ngrams) > MAX_TOP_NGRAMS + 1:
             rest_ngrams = sorted(
-                    ngram_dict.items(), 
-                    key=operator.itemgetter(1), 
+                    ngram_dict.items(),
+                    key=operator.itemgetter(1),
                     reverse=True
                 )[MAX_TOP_NGRAMS + 1:]
             sum_of_other_ngrams = 0
@@ -201,7 +206,7 @@ class DataHandling:
         for key, value in top_ngrams.items():
             temp = [key, value]
             top_list.append(temp)
-        if len(self.ids._normal_ngrams) > MAX_TOP_NGRAMS + 1: 
+        if len(self.ids._normal_ngrams) > MAX_TOP_NGRAMS + 1:
             top_list.append(['others', sum_of_other_ngrams])
 
         return top_list
@@ -219,9 +224,9 @@ class DataHandling:
 
     def calc_calls_per_bucket(self, syscall):
         """
-        in intervall of bucket_update_delay sum syscall ocurrences 
-        if intervall is over add bucket (witch sum and syscall type distribution)
-            to dequeue.
+        in intervall of bucket_update_delay sum syscall ocurrences
+        if intervall is over add bucket to dequeue.
+            (with sum and syscall type distribution)
         if more than MAX_BUCKETS in dequeue pop oldest entry
         """
         rawtime_of_syscall = syscall[1]
@@ -232,24 +237,23 @@ class DataHandling:
         # count all syscall occurences per bucket_update_delay
         # additionaly count different types of calls
         if int(rawtime_of_syscall) - self.start_time < self.bucket_update_delay:
-            if self.bucket_counter == 0:
-                start_timestamp = int(rawtime_of_syscall)
             self.bucket_counter += 1
-            # TODO ADD SYSCALL TYPE CORRECT NOT ONE PER BUCKET
-            # add entry to dictionary, count type of systemcall to bucket information
+            # add entry to dictionary,
+            # count type of systemcall to bucket information
             if syscall_type in self.syscall_type_dict_bucket:
                 self.syscall_type_dict_bucket[syscall_type] += 1
             else:
                 self.syscall_type_dict_bucket[syscall_type] = 1
 
-        # add newest bucket to deque and pop oldest if more than MAX_BUCKETS entries
+        # add newest bucket to deque and
+        # pop oldest if more than MAX_BUCKETS entries
         else:
             deque_entry = [self.bucket_counter, self.start_time]
             self.deque_syscall_per_second.append(deque_entry)
-            self.deque_syscall_type_per_second.append(self.syscall_type_dict_bucket)
+            self.deque_syscall_type_per_second.append(
+                    self.syscall_type_dict_bucket)
             if len(self.deque_syscall_per_second) > MAX_BUCKETS:
-                dropped = self.deque_syscall_per_second.popleft()
+                self.deque_syscall_per_second.popleft()
             self.bucket_counter = 0
             self.syscall_type_dict_bucket = {}
             self.start_time = int(rawtime_of_syscall)
-

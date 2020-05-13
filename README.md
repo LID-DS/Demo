@@ -40,7 +40,6 @@ It consists of three parts.
             * Launch perfect/realistic SQLInjection
         2. Model Modifications
             * Retrain model with specific training size
-        
 
 **How do I install the environment?**
 * run: ./startDemo.sh
