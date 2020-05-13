@@ -9,14 +9,14 @@ sudo apt install python3-pip -y
 #Frontend
 #React
 # install nvm
-curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.35.2/install.sh | bash
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.35.3/install.sh | bash
 #TODO restart terminal so command nvm is usable
 #try
 . ~/.nvm/nvm.sh
 . ~/.profile
 . ~/.bashrc
 # install node and matching npm via nvm
-nvm install 12.6
+nvm install 12.16.1
 #install demo-app dependencies
 npm install --prefix demo-app/
 #Webshop
@@ -38,6 +38,7 @@ wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo apt install ./google-chrome-stable_current_amd64.deb -y
 cd ..
 sudo apt install chromium-chromedriver -y
+sudo apt install dirb
 
 sudo apt update
 
