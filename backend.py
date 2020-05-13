@@ -76,19 +76,19 @@ class Backend:
         @self.socketio.on('load model')
         def handle_message(json, methods=['GET', 'POST']):
             """
-            if 'load model' was received from frontend 
+            if 'load model' was received from frontend
             run _load_model of DemoStide
             creates now instance of ids
             reinitialize data_handling and with new ids
             reinitialize sysdig_handling with new data_handling instance
             """
             trained_model = self.data_handling.ids._load_model()
-            self.retrain_ids(trained_model=trained_model)            
+            self.retrain_ids(trained_model=trained_model)
 
         @self.socketio.on('save model')
         def handle_message(json, methods=['GET', 'POST']):
             """
-            if 'save model' was received from frontend, 
+            if 'save model' was received from frontend,
             save ids model
             """
             self.data_handling.ids._save_model()
@@ -104,14 +104,17 @@ class Backend:
             """
             if str(json) == 'add':
                 self.userManager.add_user()
-            if str(json) == 'remove': 
+            if str(json) == 'remove':
                 stopped_user = self.userManager.remove_user()
-                #while(not stopped_user.is_finished):
-                #    time.sleep(0.1)
+                #TODO isused???
+                # while(not stopped_user.is_finished):
+                # time.sleep(0.1)
             if str(json) == 'add_head':
                 self.userManager.add_user(visible=True)
             #send how many users are active to frontend
-            self.socketio.emit('user action', len(self.userManager.active_users))
+            self.socketio.emit(
+                    'user action',
+                    len(self.userManager.active_users))
 
         @self.socketio.on('start attack')
         def handle_message(json, methods=['GET', 'POST']):
@@ -122,8 +125,10 @@ class Backend:
                 self.attackManager.run_sql_injection(str(json))
             elif str(json) == 'false jwt login':
                 self.attackManager.run_false_jwt_login()
+            elif str(json) == 'xss simple':
+                print("testfirst")
+                self.attackManager.run_xss(str(json))
 
-                
         @self.socketio.on('enum')
         def handle_message(json, methods=['GET', 'POST']):
             """
@@ -131,7 +136,7 @@ class Backend:
             """
             self.attackManager.run_enum()
             self.socketio.emit('enum', "done")
-        
+
     def data_update(self):
         """
         collect data of syscall_data_handlings and ids
@@ -143,38 +148,62 @@ class Backend:
         stats = {}
         while True:
             try:
-                stats['sum'] = str(self.data_handling.get_sum())
-                stats['calls_per_second'] = self.data_handling.get_calls_per_second()
-                stats['time'] = time_since_start # time_first_call
-                stats['syscall_type_dict_second'] = \
-                    self.data_handling.get_syscall_type_distribution_second()
-                stats['syscall_type_dict'] = self.data_handling.get_syscall_type_distribution()
-                stats['ids_info'] = {
-                    'score': self.data_handling.get_ids_score(),
-                    'state': self.data_handling.ids._model_state.value,
-                    'training_size': self.data_handling.ids_info['training_size'],
-                    'current_ngrams': self.data_handling.ids_info['current_ngrams'],
-                    'top_ngrams': self.data_handling.get_top_ngrams(),
-                    'int_to_sys': self.data_handling.get_int_to_sys()
-                }
+                try:
+                    stats['sum'] = str(self.data_handling.get_sum())
+                except:
+                    print("sum failed")
+                try:
+                    stats['calls_per_second'] = self.data_handling.get_calls_per_second()
+                except:
+                    print("calls per second failed")
+                try:
+                    stats['time'] = time_since_start  # time_first_call
+                except:
+                    print("get time failed")
+                try:
+                    stats['syscall_type_dict_second'] = \
+                        self.data_handling.get_syscall_type_distribution_second()
+                except:
+                    print("syscall dict failed")
+                try:
+                    stats['syscall_type_dict'] = self.data_handling.get_syscall_type_distribution()
+                except:
+                    print("syscall dict  whole failed")
+
+                try:
+                    stats['ids_info'] = {
+                        'score': self.data_handling.get_ids_score(),
+                        'state': self.data_handling.ids._model_state.value,
+                        'training_size': self.data_handling.ids_info['training_size'],
+                        'current_ngrams': self.data_handling.ids_info['current_ngrams'],
+                        'top_ngrams': self.data_handling.get_top_ngrams(),
+                        'int_to_sys': self.data_handling.get_int_to_sys()
+                    }
+                except:
+                    print("ids info failed")
                 time_since_start += 1
                 self.socketio.emit('stats', stats)
                 time.sleep(delay)
 
             except:
                 print("Error building stats")
+                print(stats)
 
     def retrain_ids(self, training_size=None, trained_model=None):
         """
-        retrain ids 
-            reinitialize data_handling with ids and start new sysdig process with new statistc
-        :params training_size 
+        retrain ids
+            reinitialize data_handling with ids 
+            and start new sysdig process with new statistc
+        :params training_size
         :params trained_model
         """
-        if trained_model == None:
-            self.data_handling.ids = DemoModelStide(training_size=training_size)
-        else: 
-            self.data_handling.ids = DemoModelStide(trained_model=trained_model)
-        
+        if trained_model is None:
+            self.data_handling.ids = DemoModelStide(
+                    training_size=training_size)
+        else:
+            self.data_handling.ids = DemoModelStide(
+                    trained_model=trained_model)
+ 
+
 if __name__ == "__main__":
     IDS = Backend()

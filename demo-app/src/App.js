@@ -112,6 +112,11 @@ class App extends React.PureComponent{
             enum_running: true
         })
     }
+
+    handleXSSAttack = () => {
+        // start XSS Attack
+        this.state.websocket.emit('start attack', 'xss simple')
+    }
     
     updateSyscallDistribution = (data) => {
         // create list top of dictionaries 
@@ -405,29 +410,39 @@ class App extends React.PureComponent{
                         />
                     </div>
                     <div className="item">
-                        <div className="title">
-                            Reconnaissance:{"\n"}
+                        <div>
+                            <div className="title">
+                                Reconnaissance:{"\n"}
+                            </div>
+                            <button className="button-basic" 
+                                onClick={this.handleEnum}>
+                                Launch Dirb Enum 
+                            </button>
+                            <EnumStatus is_runnning={this.state.enum_running}/>
+                            <div className="title">
+                                Attacks:{"\n"}
+                            </div>
+                            <button className="button-basic" 
+                                onClick={this.handleSQLInjection}>
+                                SQL Injection
+                            </button>
+                            <button className="button-basic" 
+                                onClick={this.handleTryHardAttack}>
+                                Try Hard SQL Injection
+                            </button>
                         </div>
-                        <button className="button-basic" 
-                            onClick={this.handleEnum}>
-                            Launch Dirb Enum 
-                        </button>
-                        <EnumStatus is_runnning={this.state.enum_running}/>
-                        <div className="title">
-                            Attacks:{"\n"}
+                        <div>
+                            <button className="button-basic" 
+                                onClick={this.handleFalseJWTLogin}>
+                                Non Existing User Login
+                            </button>
                         </div>
-                        <button className="button-basic" 
-                            onClick={this.handleSQLInjection}>
-                            SQL Injection
-                        </button>
-                        <button className="button-basic" 
-                            onClick={this.handleTryHardAttack}>
-                            Try Hard SQL Injection
-                        </button>
-                        <button className="button-basic" 
-                            onClick={this.handleFalseJWTLogin}>
-                            Non Existing User Login
-                        </button>
+                        <div>
+                            <button className="button-basic" 
+                                onClick={this.handleXSSAttack}>
+                                Simple Search Xss
+                            </button>
+                        </div>
                     </div>
                     <div className="item">
                         <NgramTable className="ngram-table" ref={this.intToSysTable}/>
