@@ -290,17 +290,13 @@ class App extends React.PureComponent{
             this.updateNgramPlot(data)
             //update table of converted syscalls to int (of ids) 
             this.intToSysTable.current.update_list(data['ids_info']['int_to_sys'])
-
+            // update useraction Info
+            this.userAction.current.updateCount(data['userAction'])
             //Add incident to  table if alarm state of ids plot is reached
             // -> depends on set threshold in plot
             if (this.state.alarm === 1){
                 this.incidentTable.current.add_incident(data['time'], data['ids_info']['score'])
             }
-        }.bind(this));
-
-        //if recieved message user action update count of active users 
-        socket.on('user action', function(data) {
-            this.userAction.current.updateCount(data)
         }.bind(this));
 
         socket.on('enum', function(data) {

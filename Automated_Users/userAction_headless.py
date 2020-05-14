@@ -276,7 +276,6 @@ class User:
         self.driver.quit()
             
         #wait for last actions, then set true so we know thread has finished
-
     
     def suicide(self):
         self.is_running = False
@@ -287,6 +286,7 @@ class UserManager:
     def __init__(self):
         self.active_users = []
         self.active_threads = []   
+        self.training_running = False 
     
     def checkSite(self):
         status_of_js = os.system('sudo docker ps | grep juice-shop')
@@ -309,11 +309,11 @@ class UserManager:
         user_thread.start()
         #self.active_threads.append(user_thread)
 
-    """
-    set is_running Flag to false to stop userActions and end the thread
-    remove user from active user list
-    """
     def remove_user(self):
+        """
+        set is_running Flag to false to stop userActions and end the thread
+        remove user from active user list
+        """
         #get last user of list 
         if(len(self.active_users) < 1):
             print("No active users")
@@ -324,9 +324,36 @@ class UserManager:
         self.active_users = self.active_users[:-1]
         return user 
 
+    def remove_all_user(self):
+        for i in range(0,len(self.active_users)):
+            self.active_users[i].suicide()
+        self.active_users = []
+
     def show_actions(self):
         return 0
         #run user which is not headless
+
+    def start_training_sequence(self):
+        """
+        automated sequence of adding removing users
+        add a random number[1:MAX_USERS] of users
+        """
+        self.training_running = True
+        while(self.training_running):
+            # add users, but never more than MAX_USERS
+            diff_to_MAX_USERS = MAX_USERS - len(self.active_users)
+            for i in range(0,random.randint(1,diff_to_MAX_USERS)):
+                self.add_user()
+            if not self.training_running:
+                break
+            time.sleep(15)
+            # remove users  
+            for j in range(0,len(self.active_users)):
+                self.remove_user()
+            if not self.training_running:
+                break
+            time.sleep(15)
+        self.remove_all_user()
         
 if __name__ == "__main__":
     userManager = UserManager()

@@ -104,29 +104,28 @@ class Backend:
             """
             if str(json) == 'add':
                 self.userManager.add_user()
-            if str(json) == 'remove':
+            elif str(json) == 'remove':
                 stopped_user = self.userManager.remove_user()
                 #TODO isused???
                 # while(not stopped_user.is_finished):
                 # time.sleep(0.1)
-            if str(json) == 'add_head':
+            elif str(json) == 'add_head':
                 self.userManager.add_user(visible=True)
-            #send how many users are active to frontend
-            self.socketio.emit(
-                    'user action',
-                    len(self.userManager.active_users))
+            elif str(json) == 'start_training':
+                self.userManager.start_training_sequence()
+            elif str(json) == 'stop_training':
+                self.userManager.training_running = False
 
         @self.socketio.on('start attack')
         def handle_message(json, methods=['GET', 'POST']):
             """
             start sql injection
             """
-            if (str(json) == 'sql 'or str(json) == 'try hard sql'):
+            if (str(json) == 'sql' or str(json) == 'try hard sql'):
                 self.attackManager.run_sql_injection(str(json))
             elif str(json) == 'false jwt login':
                 self.attackManager.run_false_jwt_login()
             elif str(json) == 'xss simple':
-                print("testfirst")
                 self.attackManager.run_xss(str(json))
 
         @self.socketio.on('enum')
@@ -169,7 +168,6 @@ class Backend:
                     stats['syscall_type_dict'] = self.data_handling.get_syscall_type_distribution()
                 except:
                     print("syscall dict  whole failed")
-
                 try:
                     stats['ids_info'] = {
                         'score': self.data_handling.get_ids_score(),
@@ -181,6 +179,14 @@ class Backend:
                     }
                 except:
                     print("ids info failed")
+                try:
+                    stats['userAction'] = {
+                        'userCount': len(self.userManager.active_users),
+                        'training_running': self.userManager.training_running
+                    }
+                except:
+                    print("userCount info failed")
+
                 time_since_start += 1
                 self.socketio.emit('stats', stats)
                 time.sleep(delay)

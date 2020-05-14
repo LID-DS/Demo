@@ -5,6 +5,7 @@ class UserActionInput extends React.PureComponent {
         super(props)
         this.state = {
             userCount: 0,
+            training_running: false,
             removingUser: false
         }
         this.App = React.createRef();
@@ -23,12 +24,25 @@ class UserActionInput extends React.PureComponent {
         this.setState({removingUser: true})
     } 
 
-    updateCount = (userCount) => {
-        console.log("change userCount")
-        this.setState({
-            userCount: userCount,
-            removingUser: false 
-        }) 
+    handleStartTraining = () => {
+        this.props.onChildClick('start_training')
+    }
+
+    handleStopTraining = () => {
+        this.props.onChildClick('stop_training')
+    }
+
+    updateCount = (userAction) => {
+        console.log(userAction)
+        if (userAction != null){
+            let userCount = userAction['userCount']
+            let training_running = userAction['training_running']
+            this.setState({
+                userCount: userCount,
+                training_running: training_running,
+                removingUser: false 
+            }) 
+        }
     }
 
     render() {
@@ -55,8 +69,20 @@ class UserActionInput extends React.PureComponent {
                     >
                         Remove User
                     </button>
-                    
+                    <button 
+                        className="button-basic"
+                        onClick={this.handleStartTraining}
+                    >
+                        Start Training Sequence 
+                    </button>
+                    <button 
+                        className="button-basic"
+                        onClick={this.handleStopTraining}
+                    >
+                        Stop Training Sequence 
+                    </button>
                 </div>
+                <div><TrainingInfo userInfo={this.state.training_running}/></div>
                 <div> 
                         <Info userInfo={this.state}/>
                 </div>
@@ -64,6 +90,15 @@ class UserActionInput extends React.PureComponent {
         );
     }
 };
+
+function TrainingInfo(probs) {
+    if (probs.userInfo == true) {
+        return (<div>Training Sequence Running</div>)
+    }
+    else {
+        return null 
+    }
+}
 
 function Info(probs) {
     if (probs.userInfo.removingUser) {
@@ -81,7 +116,6 @@ function Info(probs) {
     }
     if (probs.userInfo.userCount > 0) {
         return <div className="active-user">Active users: {probs.userInfo.userCount}</div>
-                        
     }
 }
 
