@@ -38,7 +38,6 @@ class PiePlot extends React.PureComponent{
             this.setState({
                 converted_labels : this.convertLabels(this.state.labels, this.props.conversionTable['int_to_sys']),
             })
-            console.log(this.state.converted_labels)
         }
     }
 
