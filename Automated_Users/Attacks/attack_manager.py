@@ -47,7 +47,6 @@ class AttackManager:
         """
         start thread with new xss attack
         """
-        print("testlast")
         self.start_threaded_attack(self.xss_attack.run_simple())
 
 

