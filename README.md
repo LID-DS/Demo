@@ -16,7 +16,7 @@ It consists of three parts.
     2. Below a path of one syscall triggered by the juice-shop application is shown.
  ![Path of a System-Call](/Explanations/syscall_dataflow.svg)
 
-**3. React Frontend for visualization of IDS **
+**3. React Frontend for visualization of IDS**
     ![OWASP Juice Shop](/images/Dashboard.png)
 
     1. Graphs:
