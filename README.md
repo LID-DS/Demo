@@ -1,23 +1,22 @@
 
 
-What is this?
+# What is this?
     
 This is an environment for presenting and testing of intrusion detection systems (IDS) using system calls.
 It consists of three parts.
     
-1. Webserver running OWASP juice-shop webserver --> Vulnerable Application
+**1. Webserver running OWASP juice-shop webserver --> Vulnerable Application**
     ![OWASP Juice Shop](/images/JuiceShop2.png)
 
-2. Backend handling reading of syscalls and actual IDS
+**2. Backend handling reading of syscalls and actual IDS**
 
     1. IDS uses demo_stide, which forms ngrams of syscalls and saves them in a dictionary
         Depending on how many ngrams of syscalls are previously saved in the dictionary,
         an anomaly score is calculated.
     2. Below a path of one syscall triggered by the juice-shop application is shown.
-        
-    ![Path of a System-Call](/Explanations/syscall_dataflow.svg)
+ ![Path of a System-Call](/Explanations/syscall_dataflow.svg)
 
-3. React Frontend for visualization of IDS 
+**3. React Frontend for visualization of IDS **
     ![OWASP Juice Shop](/images/Dashboard.png)
 
     1. Graphs:
