@@ -12,6 +12,7 @@ import TrafficLight from './TrafficLight';
 import PiePlot from './PiePlot';
 import NgramTable from './NgramTable';
 import logo from './images/ScaDS_AI_Logo.png'
+import AttackInput from './AttackInput'
 
 const IDS_THRESHOLD = 0.05
 const PLOT_WINDOW_CUTOUT = 60
@@ -61,7 +62,6 @@ class App extends React.PureComponent{
                 complete: {} ,
                 top: {},
             },
-            enum_running: false
         }
 
         this.syscallDistPlot = React.createRef();
@@ -73,6 +73,7 @@ class App extends React.PureComponent{
         this.ngramTable = React.createRef();
         this.intToSysTable = React.createRef();
         this.ngramPlot = React.createRef();
+        this.attackInput = React.createRef();
     };
    
     //revceive info from TrainingInfo 
@@ -93,29 +94,8 @@ class App extends React.PureComponent{
         this.state.websocket.emit('load model', null)
     }
     
-    handleSQLInjection = () => {
-        this.state.websocket.emit('start attack', 'sql')
-    }
-
-    handleTryHardAttack = () => {
-        this.state.websocket.emit('start attack', 'try hard sql')
-    }
-
-    handleFalseJWTLogin = () => {
-        this.state.websocket.emit('start attack', 'false jwt login')
-    }
-
-    handleEnum = () => {
-        // send signal to start dirb enumeration
-        this.state.websocket.emit('enum', null) 
-        this.setState({
-            enum_running: true
-        })
-    }
-
-    handleXSSAttack = () => {
-        // start XSS Attack
-        this.state.websocket.emit('start attack', 'xss simple')
+    handleAttackInput = (form, specify) => {
+        this.state.websocket.emit(form, specify)
     }
     
     updateSyscallDistribution = (data) => {
@@ -300,9 +280,7 @@ class App extends React.PureComponent{
         }.bind(this));
 
         socket.on('enum', function(data) {
-            this.setState({
-                enum_running: false
-            })            
+            this.attackInput.current.updateEnum(false)
         }.bind(this));
     }
 
@@ -393,7 +371,9 @@ class App extends React.PureComponent{
                         />
                     </div>
                     <div className="item">
-                        <IncidentTable className="incident-table" ref={this.incidentTable} />
+                        <IncidentTable 
+                            className="incident-table" 
+                            ref={this.incidentTable} />
                     </div>
                     <div className="item-plot">
                         <div className="title">
@@ -406,39 +386,10 @@ class App extends React.PureComponent{
                         />
                     </div>
                     <div className="item">
-                        <div>
-                            <div className="title">
-                                Reconnaissance:{"\n"}
-                            </div>
-                            <button className="button-basic" 
-                                onClick={this.handleEnum}>
-                                Launch Dirb Enum 
-                            </button>
-                            <EnumStatus is_runnning={this.state.enum_running}/>
-                            <div className="title">
-                                Attacks:{"\n"}
-                            </div>
-                            <button className="button-basic" 
-                                onClick={this.handleSQLInjection}>
-                                SQL Injection
-                            </button>
-                            <button className="button-basic" 
-                                onClick={this.handleTryHardAttack}>
-                                Try Hard SQL Injection
-                            </button>
-                        </div>
-                        <div>
-                            <button className="button-basic" 
-                                onClick={this.handleFalseJWTLogin}>
-                                Non Existing User Login
-                            </button>
-                        </div>
-                        <div>
-                            <button className="button-basic" 
-                                onClick={this.handleXSSAttack}>
-                                Simple Search Xss
-                            </button>
-                        </div>
+                        <AttackInput 
+                            onChildClick={this.handleAttackInput} 
+                            ref={this.attackInput}
+                        />
                     </div>
                     <div className="item">
                         <NgramTable className="ngram-table" ref={this.intToSysTable}/>
@@ -463,13 +414,8 @@ class App extends React.PureComponent{
     };
 }
 
-function EnumStatus(props) {
-    if (props.is_runnning){
-        return <div>Enumeration running</div>
-    }
-    else {
-        return null
-    }
-}
 
 export default App;
+
+
+
