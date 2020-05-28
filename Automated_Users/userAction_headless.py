@@ -335,8 +335,10 @@ class UserManager:
 
     def start_training_sequence(self):
         """
-        automated sequence of adding removing users
-        add a random number[1:MAX_USERS] of users
+        automated sequence of adding & removing users
+        loop until stop_sequence button is pressed
+            add a random number[1:MAX_USERS] of users
+            delete random number of users
         """
         self.training_running = True
         while(self.training_running):
@@ -347,8 +349,9 @@ class UserManager:
             if not self.training_running:
                 break
             time.sleep(15)
-            # remove users  
-            for j in range(0,len(self.active_users)):
+            # remove random number of users 
+            random_count = random.randint(1,len(self.active_users))  
+            for j in range(0,random_count):
                 self.remove_user()
             if not self.training_running:
                 break
