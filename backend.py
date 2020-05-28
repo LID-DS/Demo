@@ -127,6 +127,8 @@ class Backend:
                 self.attackManager.run_false_jwt_login()
             elif str(json) == 'xss simple':
                 self.attackManager.run_xss(str(json))
+            elif str(json) == 'xss advanced':
+                self.attackManager.run_xss(str(json))
 
         @self.socketio.on('enum')
         def handle_message(json, methods=['GET', 'POST']):
