@@ -33,7 +33,6 @@ class UserActionInput extends React.PureComponent {
     }
 
     updateCount = (userAction) => {
-        console.log(userAction)
         if (userAction != null){
             let userCount = userAction['userCount']
             let training_running = userAction['training_running']
@@ -82,7 +81,10 @@ class UserActionInput extends React.PureComponent {
                         Stop Training Sequence 
                     </button>
                 </div>
-                <div><TrainingInfo userInfo={this.state.training_running}/></div>
+                <div>
+                    <TrainingInfo 
+                        userInfo={this.state.training_running}/>
+                </div>
                 <div> 
                         <Info userInfo={this.state}/>
                 </div>
@@ -92,7 +94,7 @@ class UserActionInput extends React.PureComponent {
 };
 
 function TrainingInfo(probs) {
-    if (probs.userInfo == true) {
+    if (probs.userInfo === true) {
         return (<div>Training Sequence Running</div>)
     }
     else {
