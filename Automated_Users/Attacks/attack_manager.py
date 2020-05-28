@@ -1,6 +1,6 @@
 import threading
 
-from Automated_Users.Attacks.attacks import SQLInjection, FalseJWTLogin, XSSAttack
+from Automated_Users.Attacks.attacks import SQLInjection, FalseJWTLogin, XSSAttack, SensitiveDataExposure
 from Automated_Users.Attacks.reconnaissance import Reconnaissance
 
 
@@ -10,11 +10,11 @@ class AttackManager:
         """
         initialize sql injection and reconnaissance
         """
-        self.sql_injection = SQLInjection(
-                base_url="http://localhost:3000")
+        self.sql_injection = SQLInjection()
         self.reconnaissance = Reconnaissance()
         self.false_jwt = FalseJWTLogin()
         self.xss_attack = XSSAttack()
+        self.senitive_data_exposure = SensitiveDataExposure()
 
     def run_sql_injection(self, info):
         """
@@ -41,16 +41,29 @@ class AttackManager:
         start thread which tries to login as non existing user
         using sql injection to recieve false JSON Web Token 
         """
-        self.start_threaded_attack(self.false_jwt.run_attack)
+        self.start_threaded_attack(self.false_jwt.run)
         
     def run_xss(self, xss_type):
         """
         start thread with new xss attack
         """
-        self.start_threaded_attack(self.xss_attack.run_simple())
+        if xss_type == 'xss simple':
+            self.start_threaded_attack(
+                    self.xss_attack.run("simple"))
+        elif xss_type == 'xss advanced':
+            self.start_threaded_attack(
+                    self.xss_attack.run("advanced"))
 
+    def run_sensitive_file_exposure(self, exposed_file_path):
+        """
+        there are several exposed files on the server
+        -> access these files
+        """
+        self.start_threaded_attack(
+            self.sensitive_data_exposure.run(exposed_file_path))
 
-    def start_threaded_attack(self, attack, wait=False, attributes=None):
+    def start_threaded_attack(
+            self, attack, wait=False, attributes=None):
         """
         generic method to start attack in thread
         """
@@ -60,4 +73,3 @@ class AttackManager:
         attack_thread.start()
         if wait:
             attack_thread.join()
-
