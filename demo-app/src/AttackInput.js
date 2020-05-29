@@ -39,6 +39,14 @@ class UserActionInput extends React.PureComponent {
         this.props.onChildClick('start attack', 'xss advanced')
     }
 
+    handleSensitiveDataExposure = () => {
+        this.props.onChildClick('start attack', 'data exposure simple')
+    }
+    
+    handleSensitiveDataExposureAdvanced = () => {
+        this.props.onChildClick('start attack', 'data exposure advanced')
+    }
+
     updateEnum = (state) => {
         this.setState({
            enum_running: state
@@ -52,7 +60,7 @@ class UserActionInput extends React.PureComponent {
                     <div className="title">
                         Reconnaissance:{"\n"}
                     </div>
-                    <div>
+                    <div className="enumeration">
                         <button 
                             className="button-basic" 
                             onClick={this.handleEnum}>
@@ -63,27 +71,45 @@ class UserActionInput extends React.PureComponent {
                     <div className="title">
                         Attacks:{"\n"}
                     </div>
-                    <button className="button-basic" 
-                        onClick={this.handleSQLInjection}>
-                        SQL Injection
-                    </button>
-                    <button className="button-basic" 
-                        onClick={this.handleTryHardAttack}>
-                        Try Hard SQL Injection
-                    </button>
-                    <button className="button-basic" 
-                        onClick={this.handleFalseJWTLogin}>
-                        Non Existing User Login
-                    </button>
-                    <button className="button-basic" 
-                        onClick={this.handleXSSAttack}>
-                        Simple Xss
-                    </button>
-                    <button 
-                        className="button-basic" 
-                        onClick={this.handleAdvancedXSSAttack}>
-                        Advanced Xss
-                    </button>
+                    <div className="button-container">
+                        <button className="button-basic" 
+                            onClick={this.handleSQLInjection}>
+                            SQL Injection
+                        </button>
+                        <button className="button-basic" 
+                            onClick={this.handleTryHardAttack}>
+                            Try Hard SQL Injection
+                        </button>
+                    </div>
+                    <div className="button-container">
+                        <button className="button-basic" 
+                            onClick={this.handleFalseJWTLogin}>
+                            Non Existing User Login
+                        </button>
+                        <button className="button-basic" 
+                            onClick={this.handleXSSAttack}>
+                            Simple Xss
+                        </button>
+                        <button 
+                            className="button-basic" 
+                            onClick={this.handleAdvancedXSSAttack}>
+                            Advanced Xss
+                        </button>
+                    </div>
+                    <div classname="button-container">
+                        <button 
+                            className="button-basic"
+                            onClick={
+                                this.handleSensitiveDataExposure}>
+                            Data Exposure
+                        </button>
+                        <button 
+                            className="button-basic"
+                            onClick={
+                                this.handleSensitiveDataExposureAdvanced}>
+                            Data Exposure Advanced
+                        </button>
+                    </div>                        
                 </div>
             </div>
         );
@@ -91,12 +117,12 @@ class UserActionInput extends React.PureComponent {
 };
 
 function EnumStatus(props) {
-    console.log(props.is_running)
-    if (props.is_runnning){
+    const is_running = props.is_running
+    if (is_running){
         return <div>Enumeration running</div>
     }
     else {
-        return <div>Not running</div>
+        return null
     }
 }
 

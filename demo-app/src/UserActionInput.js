@@ -68,6 +68,8 @@ class UserActionInput extends React.PureComponent {
                     >
                         Remove User
                     </button>
+                </div>
+                <div className="button-container">
                     <button 
                         className="button-basic"
                         onClick={this.handleStartTraining}
