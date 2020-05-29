@@ -14,7 +14,7 @@ class AttackManager:
         self.reconnaissance = Reconnaissance()
         self.false_jwt = FalseJWTLogin()
         self.xss_attack = XSSAttack()
-        self.senitive_data_exposure = SensitiveDataExposure()
+        self.sensitive_data_exposure = SensitiveDataExposure()
 
     def run_sql_injection(self, info):
         """
@@ -54,7 +54,7 @@ class AttackManager:
             self.start_threaded_attack(
                     self.xss_attack.run("advanced"))
 
-    def run_sensitive_file_exposure(self, exposed_file_path):
+    def run_sensitive_data_exposure(self, exposed_file_path):
         """
         there are several exposed files on the server
         -> access these files

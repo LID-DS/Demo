@@ -129,6 +129,12 @@ class Backend:
                 self.attackManager.run_xss(str(json))
             elif str(json) == 'xss advanced':
                 self.attackManager.run_xss(str(json))
+            elif str(json) == 'data exposure simple':
+                exposed_file_path = "/ftp/acquisitions.md" 
+                self.attackManager.run_sensitive_data_exposure(exposed_file_path)
+            elif str(json) == 'data exposure advanced':
+                exposed_file_path = "/support/logs" 
+                self.attackManager.run_sensitive_data_exposure(exposed_file_path)
 
         @self.socketio.on('enum')
         def handle_message(json, methods=['GET', 'POST']):
