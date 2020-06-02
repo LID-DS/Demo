@@ -89,7 +89,7 @@ class FalseJWTLogin(Attack):
         add cookie to prevent welcome banner
         """
         driver = webdriver.Chrome(options=self.chrome_options)
-        driver.get(self.base_url + "/login")
+        driver.get(self.base_url + "/#/login")
         # get rid of pop up window by clicking in top right corner
         driver.find_element_by_xpath(
                 """//div[contains(@class,"cdk-overlay-pane")]
