@@ -4,6 +4,7 @@ import random
 import threading
 import os 
 import time
+import requests
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options
@@ -23,8 +24,9 @@ class User:
         else:
             #needs to be in full screen  
             self.chrome_options.add_argument("--kiosk")
-        self.chrome_options.add_argument("--no-sandbox")
         self.chrome_options.add_argument("--window-size=1480,996")
+        # needed for running as root
+        self.chrome_options.add_argument("--no-sandbox")
         self.driver = webdriver.Chrome(options=self.chrome_options)
         self.email = email
         self.password = password
@@ -48,21 +50,27 @@ class User:
         except:
             pass
         #find email box
-        reg_email_box = self.driver.find_element_by_xpath('//div[contains(@id, "registration-form")]//input[@id="emailControl"]')
+        reg_email_box = self.driver.find_element_by_xpath(
+                '//div[contains(@id, "registration-form")]//input[@id="emailControl"]')
         reg_email_box.send_keys(self.email)
         #find password box
-        reg_password_box = self.driver.find_element_by_xpath('//div[contains(@id, "registration-form")]//input[@id="passwordControl"]')
+        reg_password_box = self.driver.find_element_by_xpath(
+                '//div[contains(@id, "registration-form")]//input[@id="passwordControl"]')
         reg_password_box.send_keys(self.password)
         #find repeat password box
-        reg_password_repeat_box = self.driver.find_element_by_xpath('//div[contains(@id, "registration-form")]//input[@id="repeatPasswordControl"]')
+        reg_password_repeat_box = self.driver.find_element_by_xpath(
+                '//div[contains(@id, "registration-form")]//input[@id="repeatPasswordControl"]')
         reg_password_repeat_box.send_keys(self.password)
         #occasional overlapping without sleep
         time.sleep(1)
         #select security question
-        self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-register/div/mat-card/div[2]/div[1]/mat-form-field[1]/div/div[1]/div[3]').click()
-        self.driver.find_element_by_xpath('//div[contains(@id, "cdk-overlay-2")]//mat-option[@id="mat-option-0"]').click()
+        self.driver.find_element_by_xpath(
+                '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-register/div/mat-card/div[2]/div[1]/mat-form-field[1]/div/div[1]/div[3]').click()
+        self.driver.find_element_by_xpath(
+                '//div[contains(@id, "cdk-overlay-2")]//mat-option[@id="mat-option-0"]').click()
         #answer security question
-        security_answer_box = self.driver.find_element_by_xpath('//div[contains(@id, "registration-form")]//input[@id="securityAnswerControl"]')
+        security_answer_box = self.driver.find_element_by_xpath(
+                '//div[contains(@id, "registration-form")]//input[@id="securityAnswerControl"]')
         security_answer_box.send_keys(self.security_question)
         #click registration button
         self.driver.find_element_by_id('registerButton').click()
@@ -172,9 +180,13 @@ class User:
         except:
             return None
 
-        #select feedback window
-        feedback_path = '//div[contains(@class, "cdk-overlay-pane")]//textarea[contains(@class, "mat-input-element")]'
-        feedback_input = self.driver.find_element_by_xpath(feedback_path)
+        try:
+            #select feedback window
+            feedback_path = '//div[contains(@class, "cdk-overlay-pane")]//textarea[contains(@class, "mat-input-element")]'
+            feedback_input = self.driver.find_element_by_xpath(feedback_path)
+        except:
+            print("Error finding feedback field")
+            return None
         return feedback_input
 
     def put_products_in_basket(self, selected_products):
@@ -241,6 +253,13 @@ class User:
         self.driver.refresh()
             
     def action(self):
+        """
+        register and 
+        loop
+        --> login user
+        --> go shopping(includes leaving feedback) 
+        --> logout
+        """
         # -->
         self.register()
         time.sleep(0.1)
@@ -274,10 +293,12 @@ class User:
                 time.sleep(5)
                 self.driver = webdriver.Chrome(options=self.chrome_options)
         self.driver.quit()
-            
         #wait for last actions, then set true so we know thread has finished
     
     def suicide(self):
+        """
+        stop user
+        """
         self.is_running = False
 
         
@@ -289,15 +310,25 @@ class UserManager:
         self.training_running = False 
     
     def checkSite(self):
-        status_of_js = os.system('sudo docker ps | grep juice-shop')
-        while status_of_js == 256:
-            print('Juice Shop offline') 
+        """
+        check if juice-shop is online 
+        """
+        site_offline = True
+        while site_offline:
+            try:
+                requests.get('http://localhost:3000')
+                site_offline=False
+            except:
+                print("Juice Shop is offline") 
             time.sleep(5)
-            status_of_js = os.system('sudo docker ps | grep juice-shop')
     
     def add_user(self, visible=False): 
+        """
+        create user with email, password, security question
+        """
         if(len(self.active_users) >= MAX_USERS):
             print("MAX_USERS reached")
+            return
         self.checkSite()
         password = "testpassword"
         security_question = "middlename"
@@ -305,8 +336,11 @@ class UserManager:
         new_user = User(email, password, security_question, user_number=len(self.active_users), visible=visible)
         self.active_users.append(new_user)
         print("User: {} was added".format(new_user.user_number))
-        user_thread = threading.Thread(target=new_user.action, args=([]))
-        user_thread.start()
+        try:    
+            user_thread = threading.Thread(target=new_user.action, args=([]))
+            user_thread.start()
+        except Exception:
+            print("Error starting user action")
         #self.active_threads.append(user_thread)
 
     def remove_user(self):
@@ -360,42 +394,9 @@ class UserManager:
         
 if __name__ == "__main__":
     userManager = UserManager()
-    userManager.add_user()
-    userManager.add_user()
+    userManager.add_user(True)
+    userManager.add_user(True)
     time.sleep(3)
     userManager.remove_user()
     time.sleep(3)
     userManager.remove_user()
-    
-"""    
-    #wait until website is reachable
-    while True:
-        status_of_js = os.system('sudo docker ps | grep juice-shop')
-        if status_of_js  == 256:
-            print('Juice Shop offline') 
-            time.sleep(5)
-        else: break
-
-    print('Juice Shop is online')
-    
-    parallel_users = 4
-
-    #credentials
-    users = []
-    password = "testpassword"
-    security_question = "middlename"
-    # random addition so not using same email while debugging
-    random_addition = random.randint(0,9999999999)
-    
-    #create user objects
-    for num_user in range(parallel_users):
-        email = "testmail{}{}@test.de".format(num_user, random_addition) 
-        users.append(User(email, password, security_question, num_user)) 
-
-    i = 0
-    for user in users:
-        print('start surfing user: {}'.format(i))
-        i += 1
-        user_thread = threading.Thread(target=user.action, args=([]))
-        user_thread.start()
-"""    
