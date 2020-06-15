@@ -343,7 +343,7 @@ class App extends React.PureComponent{
                     </div>
                     <div className="item">
                         <div className="info">
-                                <UserInput className="training-input" 
+                                <UserInput className="training-input"
                                     inputRef={el => (this.inputElement = el)} />
                                 <button className="button-basic" 
                                     onClick={this.handleRetrain}>
@@ -392,13 +392,17 @@ class App extends React.PureComponent{
                         />
                     </div>
                     <div className="item">
-                        <NgramTable className="ngram-table" ref={this.intToSysTable}/>
+                        <NgramTable 
+                            className="ngram-table" 
+                            ref={this.intToSysTable}/>
                     </div>
                     <div className="item">
                         <div className="title">
                             Ngrams in normal mode
                         </div>
-                        <NgramTable className="ngram-table" ref={this.ngramTable}/>
+                        <NgramTable 
+                            className="ngram-table" 
+                            ref={this.ngramTable}/>
                     </div>
                 </div>
                     

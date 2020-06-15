@@ -5,13 +5,14 @@ import threading
 import time
 import psutil
 
+IN_DOCKER=False
 
 class SysdigHandling:
 
     """
     on initiation:
         start two threads for reading syscalls
-            first thread reads syscalls with sysdig and writes them to deque
+        first reads syscalls with sysdig and writes them to deque
                 with attributes:
                     containerID
                     rawtime
@@ -47,14 +48,23 @@ class SysdigHandling:
         start sysdig process on docker container with params:
             container_ID, raw_time, latency, process_name,
             thread_ID, direction, syscall_type, syscall_arguments
+            or start only listening node process
         """
         self.sysdig_process = None
         try:
-            # collect information for all containers except host
-            sensor_command_line = ['sudo', '/usr/bin/sysdig',
-                                   # '--unbuffered',
-                                    '-p %container.id %evt.rawtime %evt.latency %proc.name %thread.tid %evt.dir %syscall.type %evt.args',
-                                   'container.id!=host and syscall.type!=container']
+            if IN_DOCKER:
+                print("Sysdig monitoring docker container")
+                # collect information for all containers except host
+                sensor_command_line = ['sudo', '/usr/bin/sysdig',
+                                       # '--unbuffered',
+                                        '-p %container.id %evt.rawtime %evt.latency %proc.name %thread.tid %evt.dir %syscall.type %evt.args',
+                                       'container.id!=host and syscall.type!=container']
+            else:
+                print("Sysdig monitoring Node App")
+                # listen node process
+                sensor_command_line = ['sudo', '/usr/bin/sysdig',
+                        'proc.name=node',
+                        '-p %evt.rawtime %evt.latency %proc.name %thread.tid %evt.dir %syscall.type %evt.args']
             self.sysdig_process = subprocess.Popen(
                     sensor_command_line,
                     stdout=subprocess.PIPE,
@@ -78,8 +88,12 @@ class SysdigHandling:
         # 6 - syscall type
         # 7 - arguments of syscall as list:
         syscall = syscall.split()
-        parsed_syscall = []
-        parsed_syscall[0:7] = syscall[0:7]
+        parsed_syscall = [8]
+        if IN_DOCKER:
+            parsed_syscall[0:7] = syscall[0:7]
+        else: 
+            parsed_syscall[0] = 0  
+            parsed_syscall[1:7] = syscall[0:6]
         list_of_arguments = syscall[7:]
         parsed_syscall.append(list_of_arguments)
         return parsed_syscall

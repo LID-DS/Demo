@@ -18,20 +18,22 @@ export default class Ngram_Table extends React.PureComponent {
             column_1_width : 200,
             column_2_width : 200
         }
-        this.showNgramString = this.showNgramString.bind(this)
-        this.handleOverRow = this.handleOverRow.bind(this)
     }
 
     update_list = (raw_ngram_list) => {
         var current_list = []
-        //if second argument is string, then its the convert int to sys table
         try{
+            //if second argument is string, 
+            //show ngram integers converted to strings(1,2,...)
+            //and print appropriate labels
             if (typeof raw_ngram_list[0][1] === 'string' || raw_ngram_list[0][1] instanceof String) {
                 this.setState({
                     label_1 : "Number",
                     label_2 : "Syscall Type"
                 })
             }
+            //otherwise show table of ngram counts
+            //and print appropriate labels
             else {
                 this.setState({
                     label_1 : "Ngram",
@@ -44,6 +46,7 @@ export default class Ngram_Table extends React.PureComponent {
         catch(err) {
             console.log("Wait for first ngrams") 
         }
+        //Add entries to list which is rendered
         var i
         for (i=0; i<raw_ngram_list.length; i++){
             current_list.push({
@@ -56,16 +59,6 @@ export default class Ngram_Table extends React.PureComponent {
                 ngram_list: current_list
             }
         })
-    }
-
-    showNgramString = (event) => {
-        console.log("mouse over row")
-        console.log(event) 
-    }
-        
-    handleOverRow = (event) => {
-        console.log("mouse over row")
-        console.log(event) 
     }
 
     render() {

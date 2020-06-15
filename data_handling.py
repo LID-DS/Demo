@@ -5,6 +5,7 @@ from demo_model_stide import DemoModelStide
 MAX_BUCKETS = 1
 INITIAL_TRAINING_SIZE = 10000000
 MAX_TOP_NGRAMS = 10
+ALARM_THRESHOLD = 0.05
 
 
 class DataHandling:
@@ -212,6 +213,10 @@ class DataHandling:
         return top_list
 
     def get_int_to_sys(self):
+        """
+        create list of conversion of integer used in ids
+        and the actual syscall string
+        """
         int_to_syscall_list = []
         for key, value in self.ids._int_to_syscall.items():
             temp = [key, value]

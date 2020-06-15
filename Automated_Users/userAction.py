@@ -205,8 +205,10 @@ class User:
 
 if __name__ == "__main__":
     
-
-    driver = webdriver.Firefox()
+    chrome_options = Options()
+    chrome_options.add_argument("--kiosk")
+    chrome_options.add_argument("--no-sandbox")
+    driver = webdriver.Chrome(options=chrome_options)
 
     parallel_users = 1
 

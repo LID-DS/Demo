@@ -2,6 +2,7 @@ from collections import deque
 from enum import Enum
 from enum import IntEnum
 import pickle
+from analyse_alarm import Analysis
 
 
 class Index(IntEnum):
@@ -40,6 +41,10 @@ class DemoModelStide:
         :param training_size: the number of system calls
             seen before switching into detection mode
         """
+        ###
+        self._alarm_threshold = 0.05
+        self._consecutive_alarm_end = False
+        ###
         self._ngram_length = ngram_length
         self._window_length = window_length
 
@@ -79,6 +84,9 @@ class DemoModelStide:
             self._syscall_to_int = trained_model._syscall_to_int
             # dict to convert system calls from int to string ( 1 -> "close")
             self._int_to_syscall = trained_model._int_to_syscall
+        ###
+        self.analysis = Analysis(self._window_length, self)
+        ###
 
     def _get_syscall_as_int(self, syscall_string):
         """
@@ -118,8 +126,9 @@ class DemoModelStide:
             print("  saw {} different ngrams".format(distinct_ngrams))
             self._model_state = ModelState.Detection
             # initialize the mismatch buffer here
-            self._mismatch_buffer = deque(iterable=[0] * self._window_length,
-                                          maxlen=self._window_length)
+            self._mismatch_buffer = deque(
+                iterable=[0] * self._window_length,
+                maxlen=self._window_length)
             self._moving_sum_value = 0
 
     def _detect(self, ngram_tuple):
@@ -129,6 +138,10 @@ class DemoModelStide:
         :param ngram_tuple:
         :return: the moving average mismatch value (float)
         """
+        ###
+        #self.analysis.track_mv_window(ngram_tuple)
+        ###
+         
         # first get the most left value from the window of this container
         left_value = self._mismatch_buffer.popleft()
 
@@ -147,6 +160,24 @@ class DemoModelStide:
         # for this simple case.
         self._moving_sum_value = \
             self._moving_sum_value - left_value + right_value
+        ###
+        mv_sum = self._moving_sum_value / self._window_length
+        if mv_sum >= self._alarm_threshold:
+            self._consecutive_alarm_end = True
+            self.analysis.handle_alarm(
+                    ngram_tuple=ngram_tuple,
+                    consecutive_end=self._consecutive_alarm_end,
+                    score=mv_sum,
+                    mismatch_value=right_value)    
+            #self.analysis.save_current_window(mv_sum, right_value)
+        elif self._consecutive_alarm_end:
+            self._consecutvie_alarm_end = False
+            self.analysis.handle_alarm(
+                    ngram_tuple=None,
+                    consecutive_end=self._consecutive_alarm_end,
+                    score=None,
+                    mismatch_value=None)
+        ###
         return self._moving_sum_value / self._window_length
 
     def consume_system_call(self, syscall):

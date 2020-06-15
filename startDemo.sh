@@ -33,6 +33,7 @@ curl -s https://s3.amazonaws.com/download.draios.com/stable/install-sysdig | sud
 echo 'demo ALL=(ALL) NOPASSWD: /usr/bin/python3' | sudo tee -a /etc/sudoers
 
 #UserActions
+#TODO update chromdriver download
 mkdir Downloads && cd Downloads
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb 
 sudo apt install ./google-chrome-stable_current_amd64.deb -y

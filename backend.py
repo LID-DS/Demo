@@ -32,7 +32,9 @@ class Backend:
         """
         start repetetivly collecting data of data_handling in new thread
         """
-        update_thread = threading.Thread(target=self.data_update, args=())
+        update_thread = threading.Thread(
+                target=self.data_update, 
+                args=())
         update_thread.start()
         """
         enable controlling of automated user actions
@@ -57,7 +59,9 @@ class Backend:
         -> access user actions
           -> including attacks
         """
-        logging.basicConfig(filename='error.log', level=logging.ERROR)
+        logging.basicConfig(
+                filename='error.log', 
+                level=logging.ERROR)
         console = logging.StreamHandler()
         console.setLevel(logging.ERROR)
         log = logging.getLogger('werkzeug')
@@ -129,6 +133,14 @@ class Backend:
                 self.attackManager.run_xss(str(json))
             elif str(json) == 'xss advanced':
                 self.attackManager.run_xss(str(json))
+            elif str(json) == 'data exposure simple':
+                exposed_file_path = "/ftp/acquisitions.md" 
+                self.attackManager.run_sensitive_data_exposure(
+                        exposed_file_path)
+            elif str(json) == 'data exposure advanced':
+                exposed_file_path = "/support/logs" 
+                self.attackManager.run_sensitive_data_exposure(
+                        exposed_file_path)
 
         @self.socketio.on('enum')
         def handle_message(json, methods=['GET', 'POST']):
@@ -154,11 +166,13 @@ class Backend:
                 except:
                     print("sum failed")
                 try:
-                    stats['calls_per_second'] = self.data_handling.get_calls_per_second()
+                    stats['calls_per_second'] = \
+                        self.data_handling.get_calls_per_second()
                 except:
                     print("calls per second failed")
                 try:
-                    stats['time'] = time_since_start  # time_first_call
+                    # time_first_call
+                    stats['time'] = time_since_start  
                 except:
                     print("get time failed")
                 try:
@@ -167,7 +181,8 @@ class Backend:
                 except:
                     print("syscall dict failed")
                 try:
-                    stats['syscall_type_dict'] = self.data_handling.get_syscall_type_distribution()
+                    stats['syscall_type_dict'] = \
+                        self.data_handling.get_syscall_type_distribution()
                 except:
                     print("syscall dict  whole failed")
                 try:
