@@ -20,9 +20,16 @@ nvm install 12.16.1
 #install demo-app dependencies
 npm install --prefix demo-app/
 #Webshop
+#Docker version
 sudo apt install docker.io -y
 #allow docker to run as sudo without entering password
 echo 'demo ALL=(ALL) NOPASSWD: /usr/bin/docker' | sudo tee -a /etc/sudoers
+#build from sources
+mkdir Juice_Shop_Source
+cd Juice_Shop_Source
+git clone https://github.com/bkimminich/juice-shop.git
+cd juice-shop
+npm install -y
 
 #Backend
 #install python dependencies
@@ -52,4 +59,4 @@ sudo apt install tmuxp -y
 #   webserver.py for syscall analysis
 
 cd Demo/
-tmuxp load startDemo.yaml
+#tmuxp load startDemo.yaml
