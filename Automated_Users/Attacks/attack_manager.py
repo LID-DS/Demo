@@ -1,6 +1,6 @@
 import threading
 
-from Automated_Users.Attacks.attacks import SQLInjection, FalseJWTLogin, XSSAttack, SensitiveDataExposure
+from Automated_Users.Attacks.attacks import SQLInjection, FalseJWTLogin, XSSAttack, SensitiveDataExposure, RemoteCodeExecution
 from Automated_Users.Attacks.reconnaissance import Reconnaissance
 
 
@@ -15,6 +15,7 @@ class AttackManager:
         self.false_jwt = FalseJWTLogin()
         self.xss_attack = XSSAttack()
         self.sensitive_data_exposure = SensitiveDataExposure()
+        self.remote_code_execution = RemoteCodeExecution()
 
     def run_sql_injection(self, info):
         """
@@ -61,6 +62,15 @@ class AttackManager:
         """
         self.start_threaded_attack(
             self.sensitive_data_exposure.run(exposed_file_path))
+    
+    def run_remote_code_execution(self, token=None, payload=None):
+        """
+        vulnerability in B2B api
+        able to run code which keeps server busy -> regular expression
+        """
+        self.start_threaded_attack(
+                self.remote_code_execution.run(token, payload))
+
 
     def start_threaded_attack(
             self, attack, wait=False, attributes=None):

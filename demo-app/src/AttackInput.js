@@ -47,6 +47,10 @@ class UserActionInput extends React.PureComponent {
         this.props.onChildClick('start attack', 'data exposure advanced')
     }
 
+    handleRemoteCodeExecution = () => {
+        this.props.onChildClick('start attack', 'remote code execution')
+    }
+
     updateEnum = (state) => {
         this.setState({
            enum_running: state
@@ -110,6 +114,14 @@ class UserActionInput extends React.PureComponent {
                             Data Exposure Advanced
                         </button>
                     </div>                        
+                    <div className="button-container">
+                        <button
+                            className="button-basic"
+                            onClick={
+                                this.handleRemoteCodeExecution}>
+                            Remote Code Execution
+                        </button>
+                    </div>
                 </div>
             </div>
         );

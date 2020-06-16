@@ -125,6 +125,7 @@ class Backend:
             """
             start sql injection
             """
+            print("attack input")
             if (str(json) == 'sql' or str(json) == 'try hard sql'):
                 self.attackManager.run_sql_injection(str(json))
             elif str(json) == 'false jwt login':
@@ -141,6 +142,8 @@ class Backend:
                 exposed_file_path = "/support/logs" 
                 self.attackManager.run_sensitive_data_exposure(
                         exposed_file_path)
+            elif str(json) == 'remote code execution':
+                self.attackManager.run_remote_code_execution()
 
         @self.socketio.on('enum')
         def handle_message(json, methods=['GET', 'POST']):
