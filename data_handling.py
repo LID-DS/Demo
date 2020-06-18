@@ -20,7 +20,7 @@ class DataHandling:
                     syscall distribution
                 collection of ids information (score, state...)
         """
-        self.ids = DemoModelStide(training_size=INITIAL_TRAINING_SIZE)
+        self.ids = DemoModelStide(ngram_length=7,training_size=INITIAL_TRAINING_SIZE)
         self.syscall_sum = 0
         self.start_time = 0
         self.bucket_counter = 0
@@ -40,7 +40,7 @@ class DataHandling:
 
     def update_statistic(self, syscall):
         """
-        received syscall from syscallhandling
+        receive syscall from syscallhandling)
         calc new:
             sum of syscalls
             syscalls in last <bucket_size> (e.g 1 second)
@@ -64,6 +64,7 @@ class DataHandling:
             'current_ngrams': self.ids._normal_ngrams["training_size"]
         }
         self.handle_ids_info(ids_info)
+
 
     def calc_syscall_type_distribution(self):
         """
@@ -91,7 +92,7 @@ class DataHandling:
 
     def handle_ids_info(self, ids_info):
         """
-        Add ids scores to save until next statistic update
+        Add ids scores until next statistic update
         than score list is reset
         """
         if not ids_info['score'] is None:
@@ -174,7 +175,7 @@ class DataHandling:
 
     def get_top_ngrams(self):
         """
-        return MAX_TOP_NGRAMS most seen ngrams
+        return MAX_TOP_NGRAMS most seen ngrams of ids
         """
         # get current normal ngrams of ids
         ngram_dict = self.ids._normal_ngrams

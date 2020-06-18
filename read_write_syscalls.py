@@ -110,7 +110,7 @@ class SysdigHandling:
     def read_syscall(self):
         """
         read system calls from deque
-        if deque not empty send syscall to data_handlings
+        if deque not empty send syscall to data_handling
         """
         while True:
             # check if deque is empty
