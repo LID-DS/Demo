@@ -51,6 +51,10 @@ class UserActionInput extends React.PureComponent {
         this.props.onChildClick('start attack', 'remote code execution')
     }
 
+    handleFileOverride= () => {
+        this.props.onChildClick('start attack', 'file override')
+    }
+
     updateEnum = (state) => {
         this.setState({
            enum_running: state
@@ -95,7 +99,7 @@ class UserActionInput extends React.PureComponent {
                             Simple Xss
                         </button>
                         <button 
-                            className="button-basic" 
+                            className="button-xss-advanced" 
                             onClick={this.handleAdvancedXSSAttack}>
                             Advanced Xss
                         </button>
@@ -122,11 +126,20 @@ class UserActionInput extends React.PureComponent {
                             Remote Code Execution
                         </button>
                     </div>
+                    <div className="button-container">
+                        <button
+                            className="button-basic"
+                            onClick={
+                                this.handleFileOverride}>
+                            File Override
+                        </button>
+                    </div>
                 </div>
             </div>
         );
     }
 };
+
 
 function EnumStatus(props) {
     const is_running = props.is_running

@@ -24,3 +24,13 @@ button {
 .user-logout {
     color: #470a0a;
 }
+.button-xss-advanced {
+    background-color: var(--main-bg-color);
+    border: none;
+    color: #f9f5d7;
+    padding: 15px 32px;
+    text-align: center;
+}
+.button-xss-advanced:hover {
+    background-color: #470a0a;
+}

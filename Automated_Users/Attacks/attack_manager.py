@@ -1,6 +1,6 @@
 import threading
 
-from Automated_Users.Attacks.attacks import SQLInjection, FalseJWTLogin, XSSAttack, SensitiveDataExposure, RemoteCodeExecution
+from Automated_Users.Attacks.attacks import SQLInjection, FalseJWTLogin, XSSAttack, SensitiveDataExposure, RemoteCodeExecution, FileOverride
 from Automated_Users.Attacks.reconnaissance import Reconnaissance
 
 
@@ -16,6 +16,7 @@ class AttackManager:
         self.xss_attack = XSSAttack()
         self.sensitive_data_exposure = SensitiveDataExposure()
         self.remote_code_execution = RemoteCodeExecution()
+        self.file_override = FileOverride()
 
     def run_sql_injection(self, info):
         """
@@ -70,6 +71,14 @@ class AttackManager:
         """
         self.start_threaded_attack(
                 self.remote_code_execution.run(token, payload))
+
+    def run_file_override(self):
+        """
+        vulnerability in file upload at /#/complain
+        able to upload zip with file traversal -> override ftp/legal.md
+        """
+        self.start_threaded_attack(
+                self.file_override.run())
 
 
     def start_threaded_attack(

