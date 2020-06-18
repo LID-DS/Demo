@@ -1,8 +1,11 @@
 import threading
 import time
+import logging
+import subprocess
+import psutil
+
 from flask import Flask
 from flask_socketio import SocketIO, emit
-import logging
 
 from data_handling import DataHandling
 from read_write_syscalls import SysdigHandling
@@ -10,8 +13,30 @@ from demo_model_stide import DemoModelStide
 from Automated_Users.userAction_headless import UserManager
 from Automated_Users.Attacks.attack_manager import AttackManager
 
+IN_DOCKER = False
 
 class Backend:
+
+    def start_webshop(self):
+        """
+        start webshop
+        Process tree:
+        npm
+        ---sh
+        ------node
+        :return : pid of webshop process
+        """
+        npm_subprocess = subprocess.Popen(
+                ['npm', 'start'],
+                cwd="Juice_Shop/juice-shop/")
+        time.sleep(5)
+
+        return npm_subprocess.pid 
+
+    def get_child_pid(self,pid):
+        sh_process = psutil.Process(pid).children()[0]
+        webshop_pid = sh_process.children()[0].pid
+        return webshop_pid
 
     def __init__(self):
         """
@@ -21,9 +46,19 @@ class Backend:
         """
         self.data_handling = DataHandling()
         """
-        setup sysdig handling to record system calls and send calls to ids
+        if not run in docker start webshop and save PID of started npm processes
         """
-        self.sysdig_handling = SysdigHandling(self.data_handling)
+        if not IN_DOCKER:
+            npm_pid = self.start_webshop()
+            webshop_pid = self.get_child_pid(npm_pid)
+            print(webshop_pid)
+        else: webshop_pid = None
+        """
+        setup sysdig handling to record system calls for specified pid
+        """
+        self.sysdig_handling = SysdigHandling(
+                data_handling=self.data_handling,
+                pid=webshop_pid)
         """
         initialize socket
         """
@@ -59,11 +94,11 @@ class Backend:
         -> access user actions
           -> including attacks
         """
-        logging.basicConfig(
-                filename='error.log',
-                level=logging.ERROR)
-        console = logging.StreamHandler()
-        console.setLevel(logging.ERROR)
+        #logging.basicConfig(
+        #        filename='error.log',
+        #        level=logging.ERROR)
+        #console = logging.StreamHandler()
+        #console.setLevel(logging.ERROR)
         log = logging.getLogger('werkzeug')
         log.setLevel(logging.ERROR)
 

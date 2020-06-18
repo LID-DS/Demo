@@ -5,7 +5,7 @@ import threading
 import time
 import psutil
 
-IN_DOCKER=False
+IN_DOCKER = False 
 
 class SysdigHandling:
 
@@ -24,16 +24,16 @@ class SysdigHandling:
                     syscall type
                     arguments of syscall as list
 
-            second thread reads syscalls from deque
+        second thread reads syscalls from deque
         start a deque to write systemcalls to
         create data_handling class - where calculations on syscalls are made
     """
-    def __init__(self, data_handling):
+    def __init__(self, data_handling, pid):
         # Initiate syscall deque
         self.deque_syscall = collections.deque()
         # Initiate write deque thread
         self.write_thread = threading.Thread(
-                target=self.write_syscalls, args=())
+                target=self.write_syscalls, args=([pid]))
         self.write_thread.start()
         # Initiate read deque thread
         self.read_thread = threading.Thread(
@@ -43,7 +43,7 @@ class SysdigHandling:
         self.data_handling = data_handling
 
     @contextmanager
-    def start_sysdig_and_read_data(self):
+    def start_sysdig_and_read_data(self, pid):
         """
         start sysdig process on docker container with params:
             container_ID, raw_time, latency, process_name,
@@ -61,10 +61,13 @@ class SysdigHandling:
                                        'container.id!=host and syscall.type!=container']
             else:
                 print("Sysdig monitoring Node App")
+                pid_argument = "proc.pid=" + str(pid)
+                formatting = "-p %evt.rawtime %evt.latency %proc.name %thread.tid %evt.dir %syscall.type %evt.args"
                 # listen node process
                 sensor_command_line = ['sudo', '/usr/bin/sysdig',
-                        'proc.name=node',
-                        '-p %evt.rawtime %evt.latency %proc.name %thread.tid %evt.dir %syscall.type %evt.args']
+                        pid_argument,
+                        formatting]
+                print(sensor_command_line)
             self.sysdig_process = subprocess.Popen(
                     sensor_command_line,
                     stdout=subprocess.PIPE,
@@ -98,12 +101,12 @@ class SysdigHandling:
         parsed_syscall.append(list_of_arguments)
         return parsed_syscall
 
-    def write_syscalls(self):
+    def write_syscalls(self, pid):
         """
         get read system calls from sysdig subprocess call
         write system calls in deque
         """
-        with self.start_sysdig_and_read_data() as sysdig_out:
+        with self.start_sysdig_and_read_data(pid) as sysdig_out:
             for line in sysdig_out.stdout:
                 self.deque_syscall.append(self.syscall_parser(line))
 
