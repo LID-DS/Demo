@@ -46,6 +46,7 @@ class SQLInjection(Attack):
             "C%20%278%27%2C%20%279%27%20FROM%20Users--"
         driver.get(self.base_url + sql_query)
         time.sleep(3)
+        driver.quit()
 
     def run_tryhard(self):
         driver = webdriver.Chrome(options=self.chrome_options)
@@ -83,6 +84,7 @@ class SQLInjection(Attack):
                    "rd%2C%20%274%27%2C%20%275%27%2C%20%276%27%2C%20%277%2"
                    "7%2C%20%278%27%2C%20%279%27%20FROM%20Users--")
         time.sleep(2)
+        driver.quit()
 
 
 class FalseJWTLogin(Attack):

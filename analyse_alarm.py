@@ -47,9 +47,7 @@ class Analysis:
 
     def handle_alarm(self,
             ngram_tuple,
-            consecutive_end,
-            score,
-            mismatch_value):
+            score):
         """
         add ngram_tuple which triggered an alarm 
         to list of consecutive alarms
@@ -57,19 +55,18 @@ class Analysis:
         :param ngram_tuple: ngram_tuple handled by ids
         :param consecutive: if consecutive ended
         """
-        if consecutive_end:
-            self.consecutive_alarm_list.append(ngram_tuple)
+        if ngram_tuple != None:
+            self.consecutive_alarm_list.append([ngram_tuple, score])
         else:
+            print("consecutive end")
             new_filename = "alarm_info/" + \
                 str(date.today()) + "_" + \
                 time.strftime("%I:%M:%S") + "_" + \
-                str(score).replace('.', '') + \
                 ".txt"
             with open(new_filename, "a") as f:
                 for ngram_tuple in self.consecutive_alarm_list:
                     f.write(
-                        self.ids._ngram_tuple_to_str(ngram_tuple) +
-                        " " + str(mismatch_value) +
+                        str(ngram_tuple[0]) + str(ngram_tuple[1]) +#self.ids._ngram_tuple_to_str(ngram_tuple) +
                         "\n")
 
 

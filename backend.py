@@ -33,7 +33,7 @@ class Backend:
         start repetetivly collecting data of data_handling in new thread
         """
         update_thread = threading.Thread(
-                target=self.data_update, 
+                target=self.data_update,
                 args=())
         update_thread.start()
         """
@@ -60,7 +60,7 @@ class Backend:
           -> including attacks
         """
         logging.basicConfig(
-                filename='error.log', 
+                filename='error.log',
                 level=logging.ERROR)
         console = logging.StreamHandler()
         console.setLevel(logging.ERROR)
@@ -110,7 +110,7 @@ class Backend:
                 self.userManager.add_user()
             elif str(json) == 'remove':
                 stopped_user = self.userManager.remove_user()
-                #TODO isused???
+                # TODO isused???
                 # while(not stopped_user.is_finished):
                 # time.sleep(0.1)
             elif str(json) == 'add_head':
@@ -135,15 +135,17 @@ class Backend:
             elif str(json) == 'xss advanced':
                 self.attackManager.run_xss(str(json))
             elif str(json) == 'data exposure simple':
-                exposed_file_path = "/ftp/acquisitions.md" 
+                exposed_file_path = "/ftp/acquisitions.md"
                 self.attackManager.run_sensitive_data_exposure(
                         exposed_file_path)
             elif str(json) == 'data exposure advanced':
-                exposed_file_path = "/support/logs" 
+                exposed_file_path = "/support/logs"
                 self.attackManager.run_sensitive_data_exposure(
                         exposed_file_path)
             elif str(json) == 'remote code execution':
                 self.attackManager.run_remote_code_execution()
+            elif str(json) == 'file override':
+                self.attackManager.run_file_override()
 
         @self.socketio.on('enum')
         def handle_message(json, methods=['GET', 'POST']):
@@ -159,66 +161,68 @@ class Backend:
         send React collected data with delay of delay seconds
         """
         delay = 1
-        #TODO time steps more sophisticated
+        # TODO time steps more sophisticated
         time_since_start = 0
         stats = {}
         while True:
             try:
                 try:
                     stats['sum'] = str(self.data_handling.get_sum())
-                except:
+                except Exception:
                     print("sum failed")
                 try:
                     stats['calls_per_second'] = \
                         self.data_handling.get_calls_per_second()
-                except:
+                except Exception:
                     print("calls per second failed")
                 try:
                     # time_first_call
-                    stats['time'] = time_since_start  
-                except:
+                    stats['time'] = time_since_start
+                except Exception:
                     print("get time failed")
                 try:
                     stats['syscall_type_dict_second'] = \
                         self.data_handling.get_syscall_type_distribution_second()
-                except:
+                except Exception:
                     print("syscall dict failed")
                 try:
                     stats['syscall_type_dict'] = \
                         self.data_handling.get_syscall_type_distribution()
-                except:
+                except Exception:
                     print("syscall dict  whole failed")
                 try:
                     stats['ids_info'] = {
                         'score': self.data_handling.get_ids_score(),
                         'state': self.data_handling.ids._model_state.value,
-                        'training_size': self.data_handling.ids_info['training_size'],
-                        'current_ngrams': self.data_handling.ids_info['current_ngrams'],
+                        'training_size':
+                            self.data_handling.ids_info['training_size'],
+                        'current_ngrams':
+                            self.data_handling.ids_info['current_ngrams'],
                         'top_ngrams': self.data_handling.get_top_ngrams(),
                         'int_to_sys': self.data_handling.get_int_to_sys()
                     }
-                except:
+                except Exception:
                     print("ids info failed")
                 try:
                     stats['userAction'] = {
                         'userCount': len(self.userManager.active_users),
                         'training_running': self.userManager.training_running
                     }
-                except:
+                except Exception:
                     print("userCount info failed")
 
                 time_since_start += 1
                 self.socketio.emit('stats', stats)
                 time.sleep(delay)
 
-            except:
+            except Exception:
                 print("Error building stats")
                 print(stats)
 
     def retrain_ids(self, training_size=None, trained_model=None):
         """
         retrain ids
-            reinitialize data_handling with ids 
+            reinitialize data_handling with ids
             and start new sysdig process with new statistc
         :params training_size
         :params trained_model
@@ -229,7 +233,6 @@ class Backend:
         else:
             self.data_handling.ids = DemoModelStide(
                     trained_model=trained_model)
- 
 
 if __name__ == "__main__":
     IDS = Backend()
