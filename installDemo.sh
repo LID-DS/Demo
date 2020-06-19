@@ -31,6 +31,7 @@ git clone https://github.com/bkimminich/juice-shop.git
 cd juice-shop
 npm install -y
 
+cd ../..
 #Backend
 #install python dependencies
 pip3 install -r requirements.txt
