@@ -15,28 +15,8 @@ from Automated_Users.Attacks.attack_manager import AttackManager
 
 IN_DOCKER = False
 
+
 class Backend:
-
-    def start_webshop(self):
-        """
-        start webshop
-        Process tree:
-        npm
-        ---sh
-        ------node
-        :return : pid of webshop process
-        """
-        npm_subprocess = subprocess.Popen(
-                ['npm', 'start'],
-                cwd="Juice_Shop/juice-shop/")
-        time.sleep(5)
-
-        return npm_subprocess.pid 
-
-    def get_child_pid(self,pid):
-        sh_process = psutil.Process(pid).children()[0]
-        webshop_pid = sh_process.children()[0].pid
-        return webshop_pid
 
     def __init__(self):
         """
@@ -46,13 +26,15 @@ class Backend:
         """
         self.data_handling = DataHandling()
         """
-        if not run in docker start webshop and save PID of started npm processes
+        if not run in docker start webshop 
+        and save PID of started npm processes
         """
         if not IN_DOCKER:
             npm_pid = self.start_webshop()
             webshop_pid = self.get_child_pid(npm_pid)
             print(webshop_pid)
-        else: webshop_pid = None
+        else: 
+            webshop_pid = None
         """
         setup sysdig handling to record system calls for specified pid
         """
@@ -94,11 +76,6 @@ class Backend:
         -> access user actions
           -> including attacks
         """
-        #logging.basicConfig(
-        #        filename='error.log',
-        #        level=logging.ERROR)
-        #console = logging.StreamHandler()
-        #console.setLevel(logging.ERROR)
         log = logging.getLogger('werkzeug')
         log.setLevel(logging.ERROR)
 
@@ -268,6 +245,31 @@ class Backend:
         else:
             self.data_handling.ids = DemoModelStide(
                     trained_model=trained_model)
+
+    def start_webshop(self):
+        """
+        start webshop
+        :return : pid of npm process
+        """
+        npm_subprocess = subprocess.Popen(
+                ['npm', 'start'],
+                cwd="Juice_Shop/juice-shop/")
+        time.sleep(5)
+        return npm_subprocess.pid
+
+    def get_child_pid(self, pid):
+        """
+        Process tree:
+        npm
+        ---sh
+        ------node
+        :params: pid of npm process
+        :returns: pid of node process
+        """
+        sh_process = psutil.Process(pid).children()[0]
+        webshop_pid = sh_process.children()[0].pid
+        return webshop_pid
+
 
 if __name__ == "__main__":
     IDS = Backend()

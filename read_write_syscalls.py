@@ -67,7 +67,6 @@ class SysdigHandling:
                 sensor_command_line = ['sudo', '/usr/bin/sysdig',
                         pid_argument,
                         formatting]
-                print(sensor_command_line)
             self.sysdig_process = subprocess.Popen(
                     sensor_command_line,
                     stdout=subprocess.PIPE,
