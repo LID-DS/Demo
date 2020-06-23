@@ -33,10 +33,12 @@ class User:
         self.security_question = security_question   
         self.user_number = user_number
         self.logout_count = 0
-        #to stop thread
+        # to stop thread
         self.is_running = True
-        #to see if thread has stopped
+        # to see if thread has stopped
         self.is_finished = False
+        # relative directory path
+        self.dirname = os.path.abspath(os.curdir)
 
     def reset(self):
         self.__init__(self.email, self.password, self.security_question, self.user_number)
@@ -167,6 +169,7 @@ class User:
         return basket_button
 
     def get_product_feedback_field(self, product_number):
+
         product_path = '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-search-result/div/div/div[2]/mat-grid-list/div/mat-grid-tile[{}]/figure/mat-card/div[{}]' 
         
         # product 7,9,11 have extra banner -> different xpath
@@ -227,6 +230,25 @@ class User:
             close_button = self.driver.find_element_by_xpath(close_path) 
             close_button.click()
 
+    def complain(self, file_path="/Files/test_receipt.zip"):
+
+        print("User " + str(self.user_number) + " complaining")
+        file_path = self.dirname + file_path
+        self.driver.get('http://localhost:3000/#/complain')
+        feedback_textarea = self.driver.find_element_by_xpath('//*[@id="complaintMessage"]')
+        feedback_textarea.send_keys("I hate your products.")
+        print("uploading file")
+        time.sleep(2)
+        input_file_path = self.driver.find_element_by_xpath('//*[@id="file"]')
+        input_file_path.send_keys(file_path)
+        time.sleep(2)
+        print("submitting")
+        self.driver.find_element_by_xpath(
+            '//*[@id="submitButton"]').click()
+        print("Done complaining")
+        time.sleep(2)
+        
+
     def go_shopping(self, max_products):
 
         #print("User: " + str(self.user_number) + " " + "Go shopping")
@@ -258,6 +280,7 @@ class User:
         loop
         --> login user
         --> go shopping(includes leaving feedback) 
+        --> complain with uploading zip
         --> logout
         """
         # -->
@@ -275,6 +298,10 @@ class User:
             # includes leaving feedback
             self.go_shopping(max_products=10)
             time.sleep(1)
+            #-->
+            # TODO
+            if random.randint(0,5) > 3:
+                self.complain()
             # -->
             self.logout()
             if (random.randint(0,10) > 1):
