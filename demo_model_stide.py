@@ -160,20 +160,40 @@ class DemoModelStide:
         self._moving_sum_value = \
             self._moving_sum_value - left_value + right_value
         ###
-#        mv_sum = self._moving_sum_value / self._window_length
-#        if mv_sum > self._alarm_threshold:
-#            self._consecutive_alarm = True
-#            if right_value == 1:
-#                self.analysis.handle_alarm(
-#                        ngram_tuple=ngram_tuple,
-#                        score=mv_sum)
-#            #self.analysis.save_current_window(mv_sum, right_value)
-#        elif self._consecutive_alarm:
-#            print("end of alarm streak")
-#            self._consecutvie_alarm_end = False
-#            self.analysis.handle_alarm(
-#                    ngram_tuple=None,
-#                    score=None)
+        mv_sum = self._moving_sum_value / self._window_length
+        if mv_sum > self._alarm_threshold:
+            if not self._consecutive_alarm:
+                self.analysis.save_current_window(
+                        ngram_tuple=ngram_tuple,
+                        score=mv_sum,
+                        mismatch_value=right_value,
+                        consecutive_alarm=False)
+                self._consecutive_alarm = True
+            else:
+                self.analysis.save_current_window(
+                        ngram_tuple=ngram_tuple,
+                        score=mv_sum,
+                        mismatch_value=right_value,
+                        consecutive_alarm=True)
+        elif self._consecutive_alarm:
+            self.analysis.save_current_window(
+                    ngram_tuple=None,
+                    score=None,
+                    mismatch_value=None,
+                    consecutive_alarm=False)
+            self._consecutive_alarm = False
+
+
+            #if right_value == 1:
+            #    self.analysis.handle_alarm(
+            #            ngram_tuple=ngram_tuple,
+            #            score=mv_sum)
+        #elif self._consecutive_alarm:
+         #   print("end of alarm streak")
+        #    self._consecutvie_alarm_end = False
+         #   self.analysis.handle_alarm(
+         #           ngram_tuple=None,
+         #           score=None)
         ###
         return self._moving_sum_value / self._window_length
 
