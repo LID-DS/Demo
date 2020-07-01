@@ -167,14 +167,14 @@ class DemoModelStide:
                         ngram_tuple=ngram_tuple,
                         score=mv_sum,
                         mismatch_value=right_value,
-                        consecutive_alarm=False)
+                        consecutive_alarm=self._consecutive_alarm)
                 self._consecutive_alarm = True
             else:
                 self.analysis.save_current_window(
                         ngram_tuple=ngram_tuple,
                         score=mv_sum,
                         mismatch_value=right_value,
-                        consecutive_alarm=True)
+                        consecutive_alarm=self._consecutive_alarm)
         elif self._consecutive_alarm:
             self.analysis.save_current_window(
                     ngram_tuple=None,

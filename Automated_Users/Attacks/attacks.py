@@ -200,7 +200,7 @@ class XSSAttack(Attack):
                 visible=True)
         admin.login()
         admin.driver.get(self.base_url + "/#/administration")
-        time.sleep(5)
+        time.sleep(10)
 
 
 class SensitiveDataExposure(Attack):
