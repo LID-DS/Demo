@@ -48,8 +48,11 @@ echo 'demo ALL=(ALL) NOPASSWD: /usr/bin/python3' | sudo tee -a /etc/sudoers
 mkdir Downloads && cd Downloads
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb 
 sudo apt install ./google-chrome-stable_current_amd64.deb -y
+wget https://chromedriver.storage.googleapis.com/81.0.4044.138/chromedriver_linux64.zip
+unzip chromedriver_linux64.zip
+sudo mv chromedriver /usr/bin/
 cd ..
-sudo apt install chromium-chromedriver -y
+#sudo apt install chromium-chromedriver -y
 sudo apt install dirb
 
 sudo apt update

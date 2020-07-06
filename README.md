@@ -41,7 +41,7 @@ It consists of three parts.
             * Retrain model with specific training size
 
 **How do I install the environment?**
-* run: ./startDemo.sh
+* run: ./installDemo.sh
 
 **How do I run the environment?**
 * run: tmuxp load startDemo.yaml
