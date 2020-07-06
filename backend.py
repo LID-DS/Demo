@@ -253,7 +253,7 @@ class Backend:
         """
         npm_subprocess = subprocess.Popen(
                 ['npm', 'start'],
-                cwd="Juice_Shop/juice-shop/")
+                cwd="Juice_Shop_Source/juice-shop/")
         time.sleep(5)
         return npm_subprocess.pid
 

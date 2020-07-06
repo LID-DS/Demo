@@ -54,13 +54,4 @@ sudo apt install dirb
 
 sudo apt update
 
-sudo apt install tmux -y
-sudo apt install tmuxp -y
 
-# tmux session with prepared config which starts:
-#   docker juice shop
-#   react app
-#   webserver.py for syscall analysis
-
-cd Demo/
-#tmuxp load startDemo.yaml
