@@ -170,23 +170,24 @@ class User:
 
     def get_product_feedback_field(self, product_number):
 
-        product_path = '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-search-result/div/div/div[2]/mat-grid-list/div/mat-grid-tile[{}]/figure/mat-card/div[{}]' 
+        product_path = '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-search-result/div/div/div[2]/mat-grid-list/div/mat-grid-tile[{}]/figure/mat-card/div[1]/div[1]/img' 
         
         # product 7,9,11 have extra banner -> different xpath
-        if product_number in [7,9,11]:
-            extra_info = 2
-        else: 
-            extra_info = 1
+        #if product_number in [7,9,11]:
+            #extra_info = 2
+        #else: 
+            #extra_info = 1
         try: 
-            product_button = self.driver.find_element_by_xpath(product_path.format(product_number + 1, extra_info))
+            product_button = self.driver.find_element_by_xpath(product_path.format(product_number + 1))
             product_button.click()
         except:
             return None
 
         try:
             #select feedback window
-            feedback_path = '//div[contains(@class, "cdk-overlay-pane")]//textarea[contains(@class, "mat-input-element")]'
-            feedback_input = self.driver.find_element_by_xpath(feedback_path)
+            count_products = 13
+            feedback_path = '//*[@id="mat-input-{}"]'
+            feedback_input = self.driver.find_element_by_xpath(feedback_path.format(count_products - product_number))
         except:
             print("Error finding feedback field")
             return None
@@ -267,8 +268,8 @@ class User:
             self.put_products_in_basket([item])
             if (random.randint(0,4) >  2):
                 self.reload()
-            if (random.randint(0,1) > 0):
-                #print("User: " + str(self.user_number) + " " + "Leave Feedback")
+            if (random.randint(0,1) >= 0):
+                print("User: " + str(self.user_number) + " " + "Leave Feedback")
                 self.leave_feedback([item])
 
     def reload(self):
