@@ -182,18 +182,6 @@ class DemoModelStide:
                     mismatch_value=None,
                     consecutive_alarm=False)
             self._consecutive_alarm = False
-
-
-            #if right_value == 1:
-            #    self.analysis.handle_alarm(
-            #            ngram_tuple=ngram_tuple,
-            #            score=mv_sum)
-        #elif self._consecutive_alarm:
-         #   print("end of alarm streak")
-        #    self._consecutvie_alarm_end = False
-         #   self.analysis.handle_alarm(
-         #           ngram_tuple=None,
-         #           score=None)
         ###
         return self._moving_sum_value / self._window_length
 
