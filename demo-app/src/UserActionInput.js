@@ -74,13 +74,13 @@ class UserActionInput extends React.PureComponent {
                         className="button-basic"
                         onClick={this.handleStartTraining}
                     >
-                        Start Training Sequence 
+                        Start Sequence 
                     </button>
                     <button 
                         className="button-basic"
                         onClick={this.handleStopTraining}
                     >
-                        Stop Training Sequence 
+                        Stop Sequence 
                     </button>
                 </div>
                 <div>
@@ -97,7 +97,7 @@ class UserActionInput extends React.PureComponent {
 
 function TrainingInfo(probs) {
     if (probs.userInfo === true) {
-        return (<div>Training Sequence Running</div>)
+        return (<div>Sequence Running</div>)
     }
     else {
         return null 
