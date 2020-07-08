@@ -39,17 +39,24 @@ class User:
         self.is_finished = False
         # relative directory path
         self.dirname = os.path.abspath(os.curdir)
+        # feedback xpath changing when next item clicked starts with 3
+        self.feedback_path_count = 3
 
     def reset(self):
         self.__init__(self.email, self.password, self.security_question, self.user_number)
     
     def register(self):
+
         #Open the website
         self.driver.get('http://localhost:3000/#/register')
+        time.sleep(2)
         try:
             #get rid of pop up window by clicking in top right corner
-            self.driver.find_element_by_xpath('//div[contains(@class,"cdk-overlay-pane")]//button[@aria-label="Close Welcome Banner"]').click()
+            self.driver.find_element_by_xpath('/html/body/div[3]/div[2]/div/mat-dialog-container/app-welcome-banner/div/div[2]/button[2]').click()
         except:
+            print("Error removing welcome banner")
+            #rerun registration process
+            self.register()
             pass
         #find email box
         reg_email_box = self.driver.find_element_by_xpath(
@@ -66,16 +73,28 @@ class User:
         #occasional overlapping without sleep
         time.sleep(1)
         #select security question
-        self.driver.find_element_by_xpath(
+        try:
+            self.driver.find_element_by_xpath(
                 '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-register/div/mat-card/div[2]/div[1]/mat-form-field[1]/div/div[1]/div[3]').click()
-        self.driver.find_element_by_xpath(
+            self.driver.find_element_by_xpath(
                 '//div[contains(@id, "cdk-overlay-2")]//mat-option[@id="mat-option-0"]').click()
+        except:
+            print("Error selecting security question")
+            #rerun registration process
+            self.register()
         #answer security question
         security_answer_box = self.driver.find_element_by_xpath(
                 '//div[contains(@id, "registration-form")]//input[@id="securityAnswerControl"]')
         security_answer_box.send_keys(self.security_question)
-        #click registration button
-        self.driver.find_element_by_id('registerButton').click()
+        try:
+            #click registration button
+            self.driver.find_element_by_id('registerButton').click()
+        except:
+            print("Error clicking register button")
+            #rerun registration process
+            self.register()
+            pass
+        return True
 
 
     def login(self):
@@ -83,14 +102,12 @@ class User:
         #print("User: " + str(self.user_number) + " " + 'Try logging in')
         #Open the website
         self.driver.get('http://localhost:3000/#/login')
-
         try:
             #get rid of pop up window by clicking in top right corner
             self.driver.find_element_by_xpath('//div[contains(@class,"cdk-overlay-pane")]//button[@aria-label="Close Welcome Banner"]').click()
         except:
             pass
             #print("User: " + str(self.user_number) + " " + 'No Welcome Banner')
-
         #Login with given credentials
         #find email box
         email_box = self.driver.find_element_by_name('email')
@@ -185,9 +202,10 @@ class User:
 
         try:
             #select feedback window
-            count_products = 13
-            feedback_path = '//*[@id="mat-input-{}"]'
-            feedback_input = self.driver.find_element_by_xpath(feedback_path.format(count_products - product_number))
+            #feedback_path = '//*[@id="mat-input-{}"]'
+            feedback_path = "//textarea[@aria-label='Text field to review a product']"
+            feedback_input = self.driver.find_element_by_xpath(feedback_path)
+            self.feedback_path_count += 1
         except:
             print("Error finding feedback field")
             return None
@@ -220,7 +238,8 @@ class User:
             if feedback_field == None:
                 #print("User: " + str(self.user_number) + " " + "Error leaving feedback -> skipping feedback")
                 return
-            self.driver.execute_script("arguments[0].scrollIntoView();", feedback_field)
+            #self.driver.execute_script("arguments[0].scrollIntoView();", feedback_field)
+            time.sleep(3)
             #enter feedback
             feedback_field.send_keys('u got that juice')
             #get submit button 
@@ -268,8 +287,8 @@ class User:
             self.put_products_in_basket([item])
             if (random.randint(0,4) >  2):
                 self.reload()
-            if (random.randint(0,1) >= 0):
-                print("User: " + str(self.user_number) + " " + "Leave Feedback")
+            if (random.randint(0,4) == 4):
+                print("User: " + str(self.user_number) + " Leave Feedback for item " + str(item))
                 self.leave_feedback([item])
 
     def reload(self):
@@ -285,7 +304,9 @@ class User:
         --> logout
         """
         # -->
-        self.register()
+        if not self.register():
+            print("error creating user -> skipping")
+            return 
         time.sleep(0.1)
         while(self.is_running):
             if not self.is_running: 
@@ -301,7 +322,7 @@ class User:
             time.sleep(1)
             #-->
             # TODO
-            if random.randint(0,5) > 3:
+            if random.randint(0,10) > 1:
                 self.complain()
             # -->
             self.logout()
@@ -334,7 +355,6 @@ class UserManager:
     
     def __init__(self):
         self.active_users = []
-        self.active_threads = []   
         self.training_running = False 
     
     def checkSite(self):
@@ -369,7 +389,6 @@ class UserManager:
             user_thread.start()
         except Exception:
             print("Error starting user action")
-        #self.active_threads.append(user_thread)
 
     def remove_user(self):
         """
@@ -381,7 +400,7 @@ class UserManager:
             print("No active users")
             return
         user = self.active_users[len(self.active_users) - 1]
-        print("User: {} was removed".format(user.user_number))
+        print("Removing User: {}".format(user.user_number))
         user.suicide()
         self.active_users = self.active_users[:-1]
         return user 
@@ -423,8 +442,6 @@ class UserManager:
 if __name__ == "__main__":
     userManager = UserManager()
     userManager.add_user(True)
-    userManager.add_user(True)
-    time.sleep(3)
+    time.sleep(100)
     userManager.remove_user()
-    time.sleep(3)
-    userManager.remove_user()
+    time.sleep(200)
