@@ -52,4 +52,7 @@ cd ..
 sudo apt install chromium-chromedriver -y
 sudo apt install dirb
 
+sudo apt install tmux
+sudo apt install tmuxp
+
 sudo apt update
