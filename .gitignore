@@ -13,3 +13,4 @@ demo-app/*.json
 *.log
 *.pkl
 /venv/
+Juice_Shop_Source/*
