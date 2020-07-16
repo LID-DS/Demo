@@ -23,7 +23,7 @@ npm install --prefix demo-app/
 #Docker version
 sudo apt install docker.io -y
 #allow docker to run as sudo without entering password
-echo 'demo ALL=(ALL) NOPASSWD: /usr/bin/docker' | sudo tee -a /etc/sudoers
+echo '$USER ALL=(ALL) NOPASSWD: /usr/bin/docker' | sudo tee -a /etc/sudoers
 #build from sources
 mkdir Juice_Shop_Source
 cd Juice_Shop_Source
@@ -38,10 +38,10 @@ pip3 install -r requirements.txt
 #install sysdig
 curl -s https://s3.amazonaws.com/download.draios.com/stable/install-sysdig | sudo bash
 #dont ask for sudo password with sysdig
-echo 'demo ALL=(ALL) NOPASSWD: /usr/bin/sysdig' | sudo tee -a /etc/sudoers
+echo '$USER ALL=(ALL) NOPASSWD: /usr/bin/sysdig' | sudo tee -a /etc/sudoers
 # TODO needed????
 #dont ask for sudo password with python3 programs
-echo 'demo ALL=(ALL) NOPASSWD: /usr/bin/python3' | sudo tee -a /etc/sudoers
+echo '$USER ALL=(ALL) NOPASSWD: /usr/bin/python3' | sudo tee -a /etc/sudoers
 
 #UserActions
 #TODO update chromdriver download
