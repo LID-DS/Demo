@@ -301,9 +301,9 @@ class User:
             checkout_button.click()
             print("clicked")
         except:
-            print("User: " + str(self.user_number) + " has nothing in cart to checkout")
+            print("User " + str(self.user_number) + ": has nothing in cart to checkout")
             return
-        # check if address has to be added with clicking on continue button and see if it works
+        # check if address has to be added -> clicking on continue button and see if it works
         try:
             time.sleep(2)
             address_radio_button = self.driver.find_element_by_id('mat-radio-40')
@@ -311,7 +311,7 @@ class User:
             address_set = True
         except:
             address_set = False
-            print("No address set")
+            print("User " + str(self.user_number) + ": No address set")
         if not address_set:
             time.sleep(2)
             self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-address-select/div/app-address/mat-card/div/button').click()
@@ -335,18 +335,19 @@ class User:
             except:
                 print("submitButton not found")
                 return
-        time.sleep(2)
         try: 
+            # select address
+            self.driver.find_element_by_id('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-address-select/div/app-address/mat-card/mat-table/mat-row[1]/mat-cell[1]/mat-radio-button').click()
             continue_button = self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-address-select/div/app-address/mat-card/button')
             continue_button.click() 
         except:
             print("error continueing")
             return
         # chose delivery method
-        self.driver.find_element_by_id('mat-radio-43').click()
+        self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-delivery-method/mat-card/div[3]/mat-table/mat-row[3]/mat-cell[1]/mat-radio-button').click()
         # check if credit card information was added previously
         try:
-            self.driver.find_element_by_id('mat-radio-44').click()
+            self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-delivery-method/mat-card/div[3]/mat-table/mat-row[3]/mat-cell[1]/mat-radio-button').click()
         except:
             # add credit card information
             self.driver.find_element_by_id('mat-input-10').send_keys('Name')
@@ -354,7 +355,7 @@ class User:
             self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div[2]/mat-expansion-panel/div/div/div/mat-form-field[3]/div/div[1]/div[3]/select/option[1]')
             self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div[2]/mat-expansion-panel/div/div/div/mat-form-field[4]/div/div[1]/div[3]/select/option[1]')
             self.driver.find_element_by_id('submitButton')
-            self.driver.find_element_by_id('mat-radio-44').click()
+            self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-delivery-method/mat-card/div[3]/mat-table/mat-row[3]/mat-cell[1]/mat-radio-button').click()
         # continue
         self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/div[2]/button[1]').click()
         # checkout
