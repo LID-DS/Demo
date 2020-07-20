@@ -23,7 +23,6 @@ class SysdigHandling:
                                < return
                     syscall type
                     arguments of syscall as list
-
         second thread reads syscalls from deque
         start a deque to write systemcalls to
         create data_handling class - where calculations on syscalls are made
