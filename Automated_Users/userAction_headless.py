@@ -118,21 +118,25 @@ class User:
             pass
             #print("User: " + str(self.user_number) + " " + 'No Welcome Banner')
         #Login with given credentials
-        #find email box
-        email_box = self.driver.find_element_by_name('email')
-        #enter email address
-        email_box.send_keys(self.email)
-        #find password box
-        pass_box = self.driver.find_element_by_name('password')
-        #enter password
-        pass_box.send_keys(self.password)
-        #find login button
-        login_button = self.driver.find_element_by_xpath('//div[contains(@id, "login-form")]//button[@id="loginButton"]')
-        #click button
-        login_button.click()
-        time.sleep(1)
-        #logout count for too many failed logouts
-        self.logout_count = 0
+        try:
+            #find email box
+            email_box = self.driver.find_element_by_name('email')
+            #enter email address
+            email_box.send_keys(self.email)
+            #find password box
+            pass_box = self.driver.find_element_by_name('password')
+            #enter password
+            pass_box.send_keys(self.password)
+            #find login button
+            login_button = self.driver.find_element_by_xpath('//div[contains(@id, "login-form")]//button[@id="loginButton"]')
+            #click button
+            login_button.click()
+            time.sleep(1)
+            #logout count for too many failed logouts
+            self.logout_count = 0
+        except NoSuchElementException:
+            print("User {}: Login failed".format(self.user_number))
+            return
         #remove cookie overlay window
         try:
             self.driver.find_element_by_xpath('//div[contains(@aria-describedby, "cookieconsent:desc")]//a[@aria-label="dismiss cookie message"]').click()
