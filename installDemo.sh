@@ -23,11 +23,12 @@ npm install --prefix demo-app/
 #Docker version
 sudo apt install docker.io -y
 #allow docker to run as sudo without entering password
-echo 'demo ALL=(ALL) NOPASSWD: /usr/bin/docker' | sudo tee -a /etc/sudoers
+echo '$USER ALL=(ALL) NOPASSWD: /usr/bin/docker' | sudo tee -a /etc/sudoers
 #build from sources
 mkdir Juice_Shop_Source
 cd Juice_Shop_Source
 git clone https://github.com/bkimminich/juice-shop.git
+git checkout 99f93b44f61fba6d4428518231f36d41cc6cd760 
 cd juice-shop
 npm install -y
 
@@ -38,23 +39,21 @@ pip3 install -r requirements.txt
 #install sysdig
 curl -s https://s3.amazonaws.com/download.draios.com/stable/install-sysdig | sudo bash
 #dont ask for sudo password with sysdig
-echo 'demo ALL=(ALL) NOPASSWD: /usr/bin/sysdig' | sudo tee -a /etc/sudoers
+echo '$USER ALL=(ALL) NOPASSWD: /usr/bin/sysdig' | sudo tee -a /etc/sudoers
 # TODO needed????
 #dont ask for sudo password with python3 programs
-echo 'demo ALL=(ALL) NOPASSWD: /usr/bin/python3' | sudo tee -a /etc/sudoers
+echo '$USER ALL=(ALL) NOPASSWD: /usr/bin/python3' | sudo tee -a /etc/sudoers
 
 #UserActions
 #TODO update chromdriver download
 mkdir Downloads && cd Downloads
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb 
 sudo apt install ./google-chrome-stable_current_amd64.deb -y
-wget https://chromedriver.storage.googleapis.com/81.0.4044.138/chromedriver_linux64.zip
-unzip chromedriver_linux64.zip
-sudo mv chromedriver /usr/bin/
 cd ..
-#sudo apt install chromium-chromedriver -y
+sudo apt install chromium-chromedriver -y
 sudo apt install dirb
 
+sudo apt install tmux
+sudo apt install tmuxp
+
 sudo apt update
-
-

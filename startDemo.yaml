@@ -5,9 +5,7 @@ windows:
   shell_command_before:
     - cd ~/Documents/Demo/
   panes:
-    - shell_command:
-        - sudo docker run --rm -p 3000:3000 bkimminich/juice-shop 
     - shell_command: 
-        - sudo python3 backend.py
+        - python3 backend.py
     - shell_command: 
         - npm start --prefix demo-app/ 
