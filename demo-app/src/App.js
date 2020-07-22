@@ -1,3 +1,4 @@
+//TODO fix button showing if user are active
 import React from 'react';
 import io from 'socket.io-client';
 import Slider from 'react-input-slider';

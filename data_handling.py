@@ -25,7 +25,7 @@ class DataHandling:
         self.start_time = 0
         self.bucket_counter = 0
         self.bucket_update_delay = 1000
-        self.deque_syscall_per_second = collections.deque()
+        self.deque_syscall_per_bucket = collections.deque()
         self.deque_syscall_type_per_second = collections.deque()
         self.syscall_type_dict_bucket = {}
         self.syscall_type_dict = {}
@@ -54,8 +54,8 @@ class DataHandling:
             -> calls_per_bucket removes bucket if scanned
         """
         self.calc_sum()
-        self.calc_syscall_type_distribution()
         self.calc_calls_per_bucket(syscall)
+        self.calc_syscall_type_distribution()
         # hand over system call to IDS
         ids_info = {
             'score': self.ids.consume_system_call(syscall),
@@ -167,10 +167,10 @@ class DataHandling:
         pop oldest bucket
         """
         syscall_counter = 0
-        for syscall_bucket in self.deque_syscall_per_second:
+        for syscall_bucket in self.deque_syscall_per_bucket:
             syscall_counter += syscall_bucket[0]
-        if self.deque_syscall_per_second:
-            self.deque_syscall_per_second.popleft()
+        if self.deque_syscall_per_bucket:
+            self.deque_syscall_per_bucket.popleft()
         return syscall_counter
 
     def get_top_ngrams(self):
@@ -251,15 +251,15 @@ class DataHandling:
             else:
                 self.syscall_type_dict_bucket[syscall_type] = 1
 
-        # add newest bucket to deque and
+        # if bucket is full it will be stored in deque
         # pop oldest if more than MAX_BUCKETS entries
         else:
             deque_entry = [self.bucket_counter, self.start_time]
-            self.deque_syscall_per_second.append(deque_entry)
+            self.deque_syscall_per_bucket.append(deque_entry)
             self.deque_syscall_type_per_second.append(
                     self.syscall_type_dict_bucket)
-            if len(self.deque_syscall_per_second) > MAX_BUCKETS:
-                self.deque_syscall_per_second.popleft()
+            if len(self.deque_syscall_per_bucket) > MAX_BUCKETS:
+                self.deque_syscall_per_bucket.popleft()
             self.bucket_counter = 0
             self.syscall_type_dict_bucket = {}
             self.start_time = int(rawtime_of_syscall)
