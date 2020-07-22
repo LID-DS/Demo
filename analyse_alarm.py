@@ -3,7 +3,6 @@ import time
 import collections
 import data_handling
 
-
 class Analysis:
     """
     keep track of current syscall window and handle syscall which
@@ -18,6 +17,32 @@ class Analysis:
         self.ids = ids
         self.consecutive_alarm_list = []
         self.file_count = 0
+        self.alarm = False
+        self.alarm_count = 0
+
+    def save_raw_syscall(self, syscall, syscall_num):
+        rawtime = str(syscall[1])
+        latency = str(syscall[2])
+        threadID = str(syscall[4])
+        direction = str(syscall[5])
+        syscall_type = str(syscall[6])
+        evt_string = ""
+        if len(syscall[7]) > 0:
+            for evt in syscall[7]:
+                evt_string = evt_string + str(evt)
+                print(evt_string)
+        
+        syscall =   rawtime + " | " +       \
+                    latency + " | " +       \
+                    threadID + " | " +      \
+                    direction + " | " +     \
+                    syscall_type + " | " +  \
+                    evt_string + " | " +    \
+                    str(syscall_num)
+
+        file_name = "alarm_info/raw_syscalls/raw_list_Alarm_No_" + str(self.alarm_count) 
+        with open(file_name, 'a') as raw_list:
+            raw_list.write(syscall + "\n")
 
     def track_mv_window(self, ngram_tuple):
         """
@@ -28,48 +53,48 @@ class Analysis:
         if len(self.deque_window) >= self.window_length:
             self.deque_window.popleft()
 
-# def save_current_window(self, ngram_tuple, score, mismatch_value, consecutive_alarm):
-#        """
-#        save current window of ngrams to new file with timestamp
-#        and score as name
-#        """
-#        new_filename = "alarm_info/" + \
-#                str(date.today()) + "_" + \
-#                time.strftime("%I:%M:%S") + "_" + \
-#                str(score).replace('.', '') + \
-#                ".txt"
-#        with open(new_filename, "a") as f:
-#            for ngram_tuple in self.deque_window:
-#                f.write(
-#                    self.ids._ngram_tuple_to_str(ngram_tuple) + 
-#                    " " + str(mismatch_value) + 
-#                    "\n") 
+    def save_tracked_window(self):
+        """
+        save window to file
+        """
+        for entry in self.deque_window:
+            window_name = "window_" + time.strftime("%I:%M:%S") + \
+                            "Alarm_No_" + str(self.alarm_count)
+            file_path = "alarm_info/tracked_window/" + window_name
+            with open(file_path, 'a') as window_file:
+                window_file.write(''.join(str(entry) + "\n"))
 
     def save_current_window(self, ngram_tuple, score, mismatch_value, consecutive_alarm):
         """
-        save current window of ngrams to new file with timestamp
+        if it is a consecutive alarm save to queue 
+        else save current window of ngrams to new file with timestamp
         and score as name
         """
+        # if its the first ngram which exceeds the alarm threshold
+        # create queue and save tracked moving window 
         if not consecutive_alarm and not ngram_tuple is None:
-            self.deque_window = collections.deque() 
-            self.deque_window.append([ngram_tuple, score, mismatch_value])
+            self.save_tracked_window()
+            self.deque_alarm = collections.deque() 
+            self.deque_alarm.append([ngram_tuple, score, mismatch_value])
         elif consecutive_alarm and not ngram_tuple is None:
             # add last syscall of ngram
             if mismatch_value == 1:
-                self.deque_window.append([(ngram_tuple[len(ngram_tuple)-1]), score])
+                self.deque_alarm.append([(ngram_tuple[len(ngram_tuple)-1]), score])
         if ngram_tuple is None:
             new_filename = "alarm_info/" + \
                     str(date.today()) + "_" + \
                     time.strftime("%I:%M:%S") + "_" + \
                     str(self.file_count) + \
+                    "Alarm_No_" + str(self.alarm_count) + \
                     ".txt"
             self.file_count += 1
             with open(new_filename, "a") as f:
-                for entry in self.deque_window:
+                for entry in self.deque_alarm:
                     f.write(
                         str(entry[0]) +
                         " " + str(entry[1]) + 
                         "\n") 
+            self.alarm_count += 1
 
     def handle_alarm(self, ngram_tuple, score):
         """
