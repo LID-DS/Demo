@@ -28,7 +28,7 @@ echo '$USER ALL=(ALL) NOPASSWD: /usr/bin/docker' | sudo tee -a /etc/sudoers
 mkdir Juice_Shop_Source
 cd Juice_Shop_Source
 git clone https://github.com/bkimminich/juice-shop.git
-git checkout 99f93b44f61fba6d4428518231f36d41cc6cd760 
+git fetch origin 99f93b44f61fba6d4428518231f36d41cc6cd760 
 cd juice-shop
 npm install -y
 
