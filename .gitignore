@@ -14,3 +14,4 @@ demo-app/*.json
 *.pkl
 /venv/
 Juice_Shop_Source/*
+alarm_info/*
