@@ -126,10 +126,13 @@ class User:
         pass_box = self.driver.find_element_by_name('password')
         #enter password
         pass_box.send_keys(self.password)
-        #find login button
-        login_button = self.driver.find_element_by_xpath('//div[contains(@id, "login-form")]//button[@id="loginButton"]')
-        #click button
-        login_button.click()
+        try:
+            #find login button
+            login_button = self.driver.find_element_by_xpath('//div[contains(@id, "login-form")]//button[@id="loginButton"]')
+            #click button
+            login_button.click()
+        except NoSuchElementException:
+            return
         time.sleep(1)
         #logout count for too many failed logouts
         self.logout_count = 0
@@ -224,7 +227,7 @@ class User:
 
         for selection in selected_products:
             #if last row middle product is chosen
-            #wait for popup to close (...put into basket) or else it is obscured
+            #wait for popup to close or else it is obscured
             if selection == 10:
                 time.sleep(8)
             else: time.sleep(1)
@@ -234,7 +237,7 @@ class User:
                 self.driver.execute_script("arguments[0].scrollIntoView();", basket_button)
                 basket_button.click()
             except:
-                print("User {}: Error putting item into basket -> skipping item".format(self.user_number))
+                print("User {}: Error putting item {} into basket -> skipping item".format(self.user_number, selection))
                 self.logout()
                 time.sleep(1)
                 self.login()
