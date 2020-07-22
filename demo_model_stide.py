@@ -161,7 +161,10 @@ class DemoModelStide:
             self._moving_sum_value - left_value + right_value
         ###
         mv_sum = self._moving_sum_value / self._window_length
-        if mv_sum > self._alarm_threshold:
+        if mv_sum < self._alarm_threshold:
+            self.analysis.track_mv_window(ngram_tuple)
+        if mv_sum >= self._alarm_threshold:
+            self.analysis.alarm = True 
             if not self._consecutive_alarm:
                 self.analysis.save_current_window(
                         ngram_tuple=ngram_tuple,
@@ -176,6 +179,7 @@ class DemoModelStide:
                         mismatch_value=right_value,
                         consecutive_alarm=self._consecutive_alarm)
         elif self._consecutive_alarm:
+            self.analysis.alarm = False
             self.analysis.save_current_window(
                     ngram_tuple=None,
                     score=None,
@@ -197,6 +201,8 @@ class DemoModelStide:
         # < for exit events
         # for stide we just use the opening system call events ">"
         if syscall[Index.EventDirection] == ">":
+            if self.analysis.alarm:
+                self.analysis.save_raw_syscall(syscall, self._get_syscall_as_int(syscall[Index.SystemCall]))
             # get the system call number
             syscall_number = \
                     self._get_syscall_as_int(syscall[Index.SystemCall])
