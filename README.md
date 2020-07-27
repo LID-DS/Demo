@@ -23,7 +23,7 @@ It consists of three parts.
 
         1. Plot showing system calls in last second
         2. Plot showing current probability of an intrusion 
-        3. PiePlot showing distribution of seen of all system calls
+        3. PiePlot showing distribution of all seen system calls
         4. PiePlot showing distribution of seen ngrams during training
 
     2. Available Actions
