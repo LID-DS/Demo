@@ -91,7 +91,6 @@ class User:
             print("Error selecting security question")
             #rerun registration process
             self.register()
-        #answer security question
         security_answer_box = self.driver.find_element_by_xpath(
                 '//div[contains(@id, "registration-form")]//input[@id="securityAnswerControl"]')
         security_answer_box.send_keys(self.security_question)
@@ -167,7 +166,8 @@ class User:
 
     def select_products(self, selected_products, add_to_basket, leave_feedback):
 
-        product_path = '//div[contains(@class, "ng-star-inserted")]//mat-grid-tile[@style="left: {}; width: calc(33.3333% - 20px); margin-top: {}; padding-top: calc(33.3333% - 20px);"]//button[@aria-label="Add to Basket"]'
+        #product_path = '//div[contains(@class, "ng-star-inserted")]//mat-grid-tile[@style="left: {}; width: calc(33.3333% - 20px); margin-top: {}; padding-top: calc(33.3333% - 20px);"]//button[@aria-label="Add to Basket"]'
+        product_path = '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-search-result/div/div/div[2]/mat-grid-list/div/mat-grid-tile[{}]/figure/mat-card/div[2]/button'
         for selection in selected_products:
             #if last row middle product is chosen
             #wait for popup to close (...put into basket) or else it is obscured
@@ -175,7 +175,7 @@ class User:
                 time.sleep(8)
             else: time.sleep(1)
             #select product
-            basket_button = self.driver.find_element_by_xpath(product_path.format(products[selection][0],products[selection][1]))
+            #basket_button = self.driver.find_element_by_xpath(product_path.format(products[selection][0]))#,products[selection][1]))
             #scroll to element so it is clickable
             self.driver.execute_script("arguments[0].scrollIntoView();", product_button)
             if leave_feedback:
@@ -191,7 +191,7 @@ class User:
 
         product_paths = "/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-search-result/div/div/div[2]/mat-grid-list/div/mat-grid-tile[{}]/figure/mat-card/div[{}]/button"
         # product 7,9,11 have extra banner, so different xpath 
-        if product_number in [7,9,11]:
+        if product_number in [8,9,11]:
             extra_info = 3
         else:
             extra_info = 2
@@ -200,15 +200,14 @@ class User:
 
     def get_product_feedback_field(self, product_number):
 
-        product_path = '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-search-result/div/div/div[2]/mat-grid-list/div/mat-grid-tile[{}]/figure/mat-card/div[1]/div[1]/img' 
-        
+        product_path = '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-search-result/div/div/div[2]/mat-grid-list/div/mat-grid-tile[{}]/figure/mat-card/div[{}]' 
         # product 7,9,11 have extra banner -> different xpath
-        #if product_number in [7,9,11]:
-            #extra_info = 2
-        #else: 
-            #extra_info = 1
+        if product_number in [8,9,11]:
+            extra_info = 2
+        else: 
+            extra_info = 1
         try: 
-            product_button = self.driver.find_element_by_xpath(product_path.format(product_number + 1))
+            product_button = self.driver.find_element_by_xpath(product_path.format(product_number + 1, ))
             product_button.click()
         except:
             return None
@@ -289,8 +288,8 @@ class User:
         for i in range(0,how_many_items_in_basket + 1):
             random_items.append(random.randint(0,11)) 
         for item in random_items:
+            # dont continue if user should not run
             if not self.is_running: 
-                self.is_finished = True
                 return 
             #print("User: " + str(self.user_number) + " " + "Put item into basket")
             self.put_products_in_basket([item])
@@ -363,7 +362,7 @@ class User:
             # confirm delivery method
             self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-delivery-method/mat-card/div[4]/button[2]').click()
         except NoSuchElementException:
-            print("User " + str(self.user_number) + ": Error adding address")
+            print("User " + str(self.user_number) + ": Error chosing delivery method")
             return
         try:
             # check if credit card information was added previously
@@ -407,7 +406,7 @@ class User:
     def reload(self):
         self.driver.refresh()
             
-    def action(self):
+    def action(self, user_manager):
         """
         register and 
         loop
@@ -425,6 +424,8 @@ class User:
             if not self.is_running: 
                 self.is_finished = True
                 print("User {}: was removed".format(self.user_number))
+                user_manager.active_users = user_manager.active_users[:-1]
+                user_manager.removing_users.remove(self.user_number)
                 self.driver.quit()
                 return 
             # -->
@@ -451,6 +452,8 @@ class User:
                     if not self.is_running:
                         self.is_finished = True
                         print("User {}: was removed".format(self.user_number))
+                        user_manager.active_users = user_manager.active_users[:-1]
+                        user_manager.removing_users.remove(self.user_number)
                         self.driver.quit()
                         return 
                     time.sleep(1)
@@ -459,10 +462,16 @@ class User:
                 if not self.is_running:
                     self.is_finished = True    
                     print("User {}: was removed".format(self.user_number))
+                    user_manager.active_users = user_manager.active_users[:-1]
+                    user_manager.removing_list.remove(self.user_number)
                     self.driver.quit()
                     return
                 time.sleep(5)
                 self.driver = webdriver.Chrome(options=self.chrome_options)
+        self.is_finished = True
+        print("User {}: was removed".format(self.user_number))
+        user_manager.active_users = user_manager.active_users[:-1]
+        user_manager.removing_users.remove(self.user_number)
         self.driver.quit()
         #wait for last actions, then set true so we know thread has finished
     
@@ -474,10 +483,19 @@ class User:
 
         
 class UserManager:
-    
+    """
+    Controlling class of Users
+    checking for website availability
+    add running users and choose email, password and other needed information
+    keep track of running users in active_users
+    trigger removing of user -> user.suicide() sets is_running flag of user to false
+    keep track of users whos flag was set but jet have to be removed in removing_users
+    start sequence of users registering, logging in, starting actions and logging out
+    """
     def __init__(self):
         self.active_users = []
         self.training_running = False 
+        self.removing_users = []
     
     def checkSite(self):
         """
@@ -507,7 +525,7 @@ class UserManager:
         self.active_users.append(new_user)
         print("User {}: was added".format(new_user.user_number))
         try:    
-            user_thread = threading.Thread(target=new_user.action, args=([]))
+            user_thread = threading.Thread(target=new_user.action, args=([self]))
             user_thread.start()
         except Exception:
             print("Error starting user action")
@@ -521,20 +539,19 @@ class UserManager:
         if(len(self.active_users) < 1):
             print("No active users")
             return
-        user = self.active_users[len(self.active_users) - 1]
+        user = self.active_users[len(self.active_users) - 1 - len(self.removing_users)]
+        self.removing_users.append(user.user_number)
         print("Finish actions for user {}".format(user.user_number))
         user.suicide()
-        self.active_users = self.active_users[:-1]
         return user 
 
     def remove_all_user(self):
+        """
+        set is_running flag to false of all users with using suicide function
+        """
         for i in range(0,len(self.active_users)):
             self.active_users[i].suicide()
         self.active_users = []
-
-    def show_actions(self):
-        return 0
-        #run user which is not headless
 
     def start_training_sequence(self):
         """
@@ -547,7 +564,7 @@ class UserManager:
         while(self.training_running):
             # add users, but never more than MAX_USERS
             diff_to_MAX_USERS = MAX_USERS - len(self.active_users)
-            for i in range(0,random.randint(1,diff_to_MAX_USERS)):
+            for i in range(0,random.randint(0,diff_to_MAX_USERS)):
                 self.add_user()
             if not self.training_running:
                 break
@@ -555,20 +572,24 @@ class UserManager:
                 time.sleep(1)
                 if not self.training_running:
                     self.remove_all_user()
+                    self.removing_users = []
                     return
             # remove random number of users 
             random_count = random.randint(1,len(self.active_users))  
             for j in range(0,random_count):
                 self.remove_user()
             if not self.training_running:
+                self.removing_users = []
                 break
             for i in range(60):
                 time.sleep(1)
                 if not self.training_running:
                     self.remove_all_user()
+                    self.removing_users = []
                     return
         self.remove_all_user()
-        
+        self.removing_users = []
+
 if __name__ == "__main__":
     userManager = UserManager()
     userManager.add_user(True)
