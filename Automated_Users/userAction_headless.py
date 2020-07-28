@@ -360,7 +360,7 @@ class User:
             # choose delivery method
             self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-delivery-method/mat-card/div[3]/mat-table/mat-row[3]/mat-cell[1]/mat-radio-button').click()
             # confirm delivery method
-            self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-delivery-method/mat-card/div[4]/button[2]').click()
+            self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-delivery-method/mat-card/div[4]/button[2]/span').click()
         except NoSuchElementException:
             print("User " + str(self.user_number) + ": Error chosing delivery method")
             return
@@ -560,12 +560,14 @@ class UserManager:
             add a random number[1:MAX_USERS] of users
             delete random number of users
         """
+        print("Training sequence has started")
         self.training_running = True
         while(self.training_running):
             # add users, but never more than MAX_USERS
             diff_to_MAX_USERS = MAX_USERS - len(self.active_users)
-
-            for i in range(0,random.randint(0,diff_to_MAX_USERS)):
+            users_to_add = random.randint(0,diff_to_MAX_USERS)
+            print("Adding {} users.".format(users_to_add))
+            for i in range(0,users_to_add):
                 self.add_user()
             if not self.training_running:
                 break
@@ -576,17 +578,18 @@ class UserManager:
                     self.removing_users = []
                     return
             # remove random number of users 
-            random_count = random.randint(1,len(self.active_users))  
+            random_count = random.randint(0,len(self.active_users))  
             print("Removing {} users".format(random_count))
             for j in range(0,random_count):
                 self.remove_user()
             if not self.training_running:
+                self.remove_all_user()
                 self.removing_users = []
-                break
+                return
             for i in range(60):
                 time.sleep(1)
-                if i%5 == 0:
-                    print("Waiting {} seconds till new users are added".format(60 - i))
+                if i%10 == 0:
+                    print("Waiting {} seconds untill new users are added.".format(60 - i))
                 if not self.training_running:
                     self.remove_all_user()
                     self.removing_users = []
