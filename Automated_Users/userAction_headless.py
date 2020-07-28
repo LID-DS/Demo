@@ -463,7 +463,7 @@ class User:
                     self.is_finished = True    
                     print("User {}: was removed".format(self.user_number))
                     user_manager.active_users = user_manager.active_users[:-1]
-                    user_manager.removing_list.remove(self.user_number)
+                    user_manager.removing_users.remove(self.user_number)
                     self.driver.quit()
                     return
                 time.sleep(5)
@@ -564,6 +564,7 @@ class UserManager:
         while(self.training_running):
             # add users, but never more than MAX_USERS
             diff_to_MAX_USERS = MAX_USERS - len(self.active_users)
+
             for i in range(0,random.randint(0,diff_to_MAX_USERS)):
                 self.add_user()
             if not self.training_running:
@@ -576,6 +577,7 @@ class UserManager:
                     return
             # remove random number of users 
             random_count = random.randint(1,len(self.active_users))  
+            print("Removing {} users".format(random_count))
             for j in range(0,random_count):
                 self.remove_user()
             if not self.training_running:
@@ -583,6 +585,8 @@ class UserManager:
                 break
             for i in range(60):
                 time.sleep(1)
+                if i%5 == 0:
+                    print("Waiting {} seconds till new users are added".format(60 - i))
                 if not self.training_running:
                     self.remove_all_user()
                     self.removing_users = []
