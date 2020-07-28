@@ -30,7 +30,6 @@ class Analysis:
         if len(syscall[7]) > 0:
             for evt in syscall[7]:
                 evt_string = evt_string + str(evt)
-                print(evt_string)
         
         syscall =   rawtime + " | " +       \
                     latency + " | " +       \
