@@ -16,7 +16,6 @@ class Analysis:
         self.deque_window = collections.deque()
         self.ids = ids
         self.consecutive_alarm_list = []
-        self.file_count = 0
         self.alarm = False
         self.alarm_count = 0
 
@@ -83,10 +82,8 @@ class Analysis:
             new_filename = "alarm_info/" + \
                     str(date.today()) + "_" + \
                     time.strftime("%I:%M:%S") + "_" + \
-                    str(self.file_count) + \
                     "Alarm_No_" + str(self.alarm_count) + \
                     ".txt"
-            self.file_count += 1
             with open(new_filename, "a") as f:
                 for entry in self.deque_alarm:
                     f.write(
@@ -110,9 +107,7 @@ class Analysis:
             new_filename = "alarm_info/" + \
                 str(date.today()) + "_" + \
                 time.strftime("%I:%M:%S") + "_" + \
-                str(self.file_count) + \
                 ".txt"
-            self.file_count += 1
             with open(new_filename, "a") as f:
                 for ngram_tuple in self.consecutive_alarm_list:
                     f.write(

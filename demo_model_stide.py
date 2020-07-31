@@ -200,9 +200,11 @@ class DemoModelStide:
         # > for enter events
         # < for exit events
         # for stide we just use the opening system call events ">"
+        ###
+        if self.analysis.alarm:
+            self.analysis.save_raw_syscall(syscall, self._get_syscall_as_int(syscall[Index.SystemCall]))
+        ###
         if syscall[Index.EventDirection] == ">":
-            if self.analysis.alarm:
-                self.analysis.save_raw_syscall(syscall, self._get_syscall_as_int(syscall[Index.SystemCall]))
             # get the system call number
             syscall_number = \
                     self._get_syscall_as_int(syscall[Index.SystemCall])
