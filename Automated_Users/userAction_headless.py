@@ -562,10 +562,15 @@ class UserManager:
         """
         print("Training sequence has started")
         self.training_running = True
+        first_run = True
         while(self.training_running):
             # add users, but never more than MAX_USERS
             diff_to_MAX_USERS = MAX_USERS - len(self.active_users)
-            users_to_add = random.randint(0,diff_to_MAX_USERS)
+            if first_run:
+                users_to_add = random.randint(1,diff_to_MAX_USERS)
+                first_run = False
+            else:
+                users_to_add = random.randint(0,diff_to_MAX_USERS)
             print("Adding {} users.".format(users_to_add))
             for i in range(0,users_to_add):
                 self.add_user()
