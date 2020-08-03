@@ -418,6 +418,7 @@ class User:
         # -->
         if not self.register():
             print("error creating user -> skipping")
+            user_manager.active_users.remove(self)
             return 
         time.sleep(0.1)
         while(self.is_running):
@@ -425,7 +426,7 @@ class User:
                 self.is_finished = True
                 print("User {}: was removed".format(self.user_number))
                 user_manager.active_users = user_manager.active_users[:-1]
-                user_manager.removing_users.remove(self.user_number)
+                user_manager.removing_users.remove(self)
                 self.driver.quit()
                 return 
             # -->
@@ -453,7 +454,7 @@ class User:
                         self.is_finished = True
                         print("User {}: was removed".format(self.user_number))
                         user_manager.active_users = user_manager.active_users[:-1]
-                        user_manager.removing_users.remove(self.user_number)
+                        user_manager.removing_users.remove(self)
                         self.driver.quit()
                         return 
                     time.sleep(1)
@@ -463,7 +464,7 @@ class User:
                     self.is_finished = True    
                     print("User {}: was removed".format(self.user_number))
                     user_manager.active_users = user_manager.active_users[:-1]
-                    user_manager.removing_users.remove(self.user_number)
+                    user_manager.removing_users.remove(self)
                     self.driver.quit()
                     return
                 time.sleep(5)
@@ -471,7 +472,7 @@ class User:
         self.is_finished = True
         print("User {}: was removed".format(self.user_number))
         user_manager.active_users = user_manager.active_users[:-1]
-        user_manager.removing_users.remove(self.user_number)
+        user_manager.removing_users.remove(self)
         self.driver.quit()
         #wait for last actions, then set true so we know thread has finished
     
@@ -539,17 +540,20 @@ class UserManager:
         if(len(self.active_users) < 1):
             print("No active users")
             return
-        user = self.active_users[len(self.active_users) - 1 - len(self.removing_users)]
-        self.removing_users.append(user.user_number)
-        print("Finish actions for user {}".format(user.user_number))
-        user.suicide()
-        return user 
+        print("Remove usernumber {}".format(len(self.active_users) - 1 - len(self.removing_users)))
+        user_to_remove = self.active_users[len(self.active_users) - 1 - len(self.removing_users)]
+        self.removing_users.append(user_to_remove)
+        print("Finish actions for user {}".format(user_to_remove.user_number))
+        user_to_remove.suicide()
+        return user_to_remove
 
     def remove_all_user(self):
         """
         set is_running flag to false of all users with using suicide function
         """
+        print("Remove usernumber {}".format(len(self.active_users) - 1 - len(self.removing_users)))
         for i in range(0,len(self.active_users)):
+            self.removing_users.append(self.active_users[i])
             self.active_users[i].suicide()
         self.active_users = []
 
@@ -580,7 +584,6 @@ class UserManager:
                 time.sleep(1)
                 if not self.training_running:
                     self.remove_all_user()
-                    self.removing_users = []
                     return
             # remove random number of users 
             random_count = random.randint(0,len(self.active_users))  
@@ -589,7 +592,6 @@ class UserManager:
                 self.remove_user()
             if not self.training_running:
                 self.remove_all_user()
-                self.removing_users = []
                 return
             for i in range(60):
                 time.sleep(1)
@@ -597,10 +599,11 @@ class UserManager:
                     print("Waiting {} seconds untill new users are added.".format(60 - i))
                 if not self.training_running:
                     self.remove_all_user()
-                    self.removing_users = []
                     return
         self.remove_all_user()
-        self.removing_users = []
+
+    def stop_training_sequence(self):
+        self.training_running = False
 
 if __name__ == "__main__":
     userManager = UserManager()
