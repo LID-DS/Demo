@@ -76,8 +76,8 @@ class Analysis:
             self.deque_alarm.append([ngram_tuple, score, mismatch_value])
         elif consecutive_alarm and not ngram_tuple is None:
             # add last syscall of ngram
-            if mismatch_value == 1:
-                self.deque_alarm.append([(ngram_tuple[len(ngram_tuple)-1]), score])
+            #if mismatch_value == 1:
+            self.deque_alarm.append([(ngram_tuple[len(ngram_tuple)-1]), score, mismatch_value])
         if ngram_tuple is None:
             new_filename = "alarm_info/" + \
                     str(date.today()) + "_" + \
@@ -89,6 +89,7 @@ class Analysis:
                     f.write(
                         str(entry[0]) +
                         " " + str(entry[1]) + 
+                        " " + str(entry[2]) + 
                         "\n") 
             self.alarm_count += 1
 
