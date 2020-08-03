@@ -85,7 +85,7 @@ class UserActionInput extends React.PureComponent {
                 </div>
                 <div>
                     <TrainingInfo 
-                        userInfo={this.state.training_running}/>
+                        sequenceInfo={this.state.training_running}/>
                 </div>
                 <div> 
                         <Info userInfo={this.state}/>
@@ -96,7 +96,7 @@ class UserActionInput extends React.PureComponent {
 };
 
 function TrainingInfo(probs) {
-    if (probs.userInfo === true) {
+    if (probs.sequenceInfo === true) {
         return (<div>Sequence Running</div>)
     }
     else {
