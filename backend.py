@@ -121,16 +121,13 @@ class Backend:
             if str(json) == 'add':
                 self.userManager.add_user()
             elif str(json) == 'remove':
-                stopped_user = self.userManager.remove_user()
-                # TODO isused???
-                # while(not stopped_user.is_finished):
-                # time.sleep(0.1)
+                self.userManager.remove_user()
             elif str(json) == 'add_head':
                 self.userManager.add_user(visible=True)
             elif str(json) == 'start_training':
                 self.userManager.start_training_sequence()
             elif str(json) == 'stop_training':
-                self.userManager.training_running = False
+                self.userManager.stop_training_sequence()
 
         @self.socketio.on('start attack')
         def handle_message(json, methods=['GET', 'POST']):
@@ -216,9 +213,16 @@ class Backend:
                 except Exception:
                     print("ids info failed")
                 try:
+                    #if (len(self.userManager.active_users)  + len(self.userManager.removing_users)) > 0:
+                    #    training_running = True
+                    if self.userManager.training_running:
+                        training_running = True
+                    else:
+                        training_running = False
                     stats['userAction'] = {
-                        'userCount': len(self.userManager.active_users),
-                        'training_running': self.userManager.training_running
+                        'userCount': len(self.userManager.active_users) + 
+                                        len(self.userManager.removing_users),
+                        'training_running': training_running
                     }
                 except Exception:
                     print("userCount info failed")
