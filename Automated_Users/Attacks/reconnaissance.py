@@ -1,4 +1,5 @@
 import subprocess
+import os
 import re
 
 
@@ -9,17 +10,7 @@ class Reconnaissance:
         Initialize dirb subprocess in new thread
         use standard dictionary of dirb
         """
-        self.enum_process = subprocess.Popen(
-                ['dirb', 'http://localhost:3000/',
-                '/usr/share/dirb/wordlists/common.txt'],
-                stdout=subprocess.PIPE)
 
     def run_enum(self):
-        directories = []
-        with self.enum_process as dirb:
-            for line in dirb.stdout:
-                print(re.findall(r"\+\s.*\s",str(line)))
-
-        #split = " "
-        #result_string = split.join(directories)
-        #print(re.findall(".\w\+\s.*", result_string))
+        command="dirb http://localhost:3000/"
+        os.system("gnome-terminal -e 'bash -c \""+command+";bash\"'")
