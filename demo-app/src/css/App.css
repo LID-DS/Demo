@@ -6,7 +6,11 @@
   "--item-bg-color: #889188;"
   --border-color: #a2a9a2;
 }
-
+@font-face {
+  font-family: 'San Francisco';
+  font-weight: 400;
+  src: url("https://applesocial.s3.amazonaws.com/assets/styles/fonts/sanfrancisco/sanfranciscodisplay-regular-webfont.woff");
+}
 .App {
   background-color: var(--main-bg-color);
   text-align: center;

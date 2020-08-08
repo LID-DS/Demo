@@ -14,6 +14,10 @@ button {
 .button-basic:hover {
     background-color: #470a0a;
 }
+.button-basic:disabled {
+    background-color: var(--item-bg-color-light);
+}
+
 .user-input {
     margin-top: 20px;
 }
