@@ -106,7 +106,9 @@ class SysdigHandling:
         """
         with self.start_sysdig_and_read_data(pid) as sysdig_out:
             for line in sysdig_out.stdout:
-                self.deque_syscall.append(self.syscall_parser(line))
+                parsed_syscall = self.syscall_parser(line)
+                if self.filter_syscall(parsed_syscall):
+                    self.deque_syscall.append(parsed_syscall)
 
     def read_syscall(self):
         """
@@ -121,6 +123,15 @@ class SysdigHandling:
                 self.data_handling.update_statistic(syscall)
             else:
                 time.sleep(0.1)
+
+    def filter_syscall(self, parsed_syscall):
+        """
+        return false is syscall is filtered out
+        """
+        return True
+        #if parsed_syscall[6] == "futex":
+            #return False 
+        #return True
 
     def stop_process(self):
         """
