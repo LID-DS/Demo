@@ -24,6 +24,7 @@ class Attack(ABC):
         self.chrome_options = Options()
         self.chrome_options.add_argument("--no-sandbox")
         self.chrome_options.add_argument("--window-size=1480,996")
+        self.chrome_options.add_argument("--incognito")
         super().__init__()
 
     @abstractmethod
