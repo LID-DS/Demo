@@ -129,19 +129,24 @@ class User:
             #find login button
             login_button = self.driver.find_element_by_xpath('//div[contains(@id, "login-form")]//button[@id="loginButton"]')
             #click button
-            login_button.click()
+            try:
+                login_button.click()
+            except NoSuchElementException:
+                print("User {}: login_button not found".format(self.user_number))
+                return False
             time.sleep(1)
             #logout count for too many failed logouts
             self.logout_count = 0
         except NoSuchElementException:
             print("User {}: Login failed".format(self.user_number))
-            return
+            return False
         #remove cookie overlay window
         try:
             self.driver.find_element_by_xpath('//div[contains(@aria-describedby, "cookieconsent:desc")]//a[@aria-label="dismiss cookie message"]').click()
         except:
             #print("User: " + str(self.user_number) + " " + 'No cookie banner')
             pass
+        return True
 
 
     def logout(self):
@@ -207,7 +212,7 @@ class User:
         else: 
             extra_info = 1
         try: 
-            product_button = self.driver.find_element_by_xpath(product_path.format(product_number + 1, ))
+            product_button = self.driver.find_element_by_xpath(product_path.format(product_number + 1, extra_info))
             product_button.click()
         except:
             return None
@@ -248,7 +253,7 @@ class User:
             #get feedback field
             feedback_field = self.get_product_feedback_field(selection)
             if feedback_field == None:
-                #print("User: " + str(self.user_number) + " " + "Error leaving feedback -> skipping feedback")
+                print("User " + str(self.user_number) + ": " + "Error leaving feedback -> skipping feedback")
                 return
             #self.driver.execute_script("arguments[0].scrollIntoView();", feedback_field)
             time.sleep(3)
@@ -296,7 +301,7 @@ class User:
             if (random.randint(0,4) >  2):
                 self.reload()
             if (random.randint(0,4) == 4):
-                print("User {}: Leave feedback for item {}".format(self.user_number, item))
+                print("User {}: Leaving feedback for item {}".format(self.user_number, item))
                 self.leave_feedback([item])
 
     def checkout(self):
@@ -357,6 +362,7 @@ class User:
                 print("User " + str(self.user_number) + ": Error adding address")
                 return
         try:
+            time.sleep(2)
             # choose delivery method
             self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-delivery-method/mat-card/div[3]/mat-table/mat-row[3]/mat-cell[1]/mat-radio-button').click()
             # confirm delivery method
@@ -368,21 +374,25 @@ class User:
             # check if credit card information was added previously
             self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div[1]/mat-table/mat-row/mat-cell[1]/mat-radio-button')
         except NoSuchElementException:
-            print("User " + str(self.user_number) + ": Add new card information")
-            time.sleep(1)
-            # add credit card information
-            self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div/mat-expansion-panel/mat-expansion-panel-header').click()
-            time.sleep(1)
-            self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div/mat-expansion-panel/div/div/div/mat-form-field[1]/div/div[1]/div[3]/input').send_keys('Name')
-            time.sleep(1)
-            self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div/mat-expansion-panel/div/div/div/mat-form-field[2]/div/div[1]/div[3]/input').send_keys('1234567891011121')
-            time.sleep(1)
-            month_option = self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div/mat-expansion-panel/div/div/div/mat-form-field[3]/div/div[1]/div[3]/select/option').click()
-            time.sleep(1)
-            self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div/mat-expansion-panel/div/div/div/mat-form-field[4]/div/div[1]/div[3]/select/option[1]').click()
-            time.sleep(1)
-            self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div/mat-expansion-panel/div/div/button').click()
-            time.sleep(1)
+            try: 
+                print("User " + str(self.user_number) + ": Add new card information")
+                time.sleep(1)
+                # add credit card information
+                self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div/mat-expansion-panel/mat-expansion-panel-header').click()
+                time.sleep(1)
+                self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div/mat-expansion-panel/div/div/div/mat-form-field[1]/div/div[1]/div[3]/input').send_keys('Name')
+                time.sleep(1)
+                self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div/mat-expansion-panel/div/div/div/mat-form-field[2]/div/div[1]/div[3]/input').send_keys('1234567891011121')
+                time.sleep(1)
+                month_option = self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div/mat-expansion-panel/div/div/div/mat-form-field[3]/div/div[1]/div[3]/select/option').click()
+                time.sleep(1)
+                self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div/mat-expansion-panel/div/div/div/mat-form-field[4]/div/div[1]/div[3]/select/option[1]').click()
+                time.sleep(1)
+                self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div/mat-expansion-panel/div/div/button').click()
+                time.sleep(1)
+            except NoSuchElementException:
+                print("User " + str(self.user_number) + ": Error choosing credit card information")
+                return 
             try:
                 time.sleep(1)
                 #choose added credit card
@@ -402,7 +412,6 @@ class User:
             print("User " + str(self.user_number) + ": error finishing checkout")
         return 1
 
-
     def reload(self):
         self.driver.refresh()
             
@@ -418,20 +427,20 @@ class User:
         # -->
         if not self.register():
             print("error creating user -> skipping")
-            user_manager.active_users.remove(self)
+            user_manager.remove(self)
             return 
         time.sleep(0.1)
         while(self.is_running):
-            if not self.is_running: 
-                self.is_finished = True
-                print("User {}: was removed".format(self.user_number))
-                user_manager.active_users = user_manager.active_users[:-1]
-                user_manager.removing_users.remove(self)
-                self.driver.quit()
-                return 
             # -->
-            self.login()
+            try:
+                if not self.login():
+                    self.suicide()
+            except:
+                self.suicide()
             time.sleep(1.5)
+            if not self.is_running: 
+                self.clean_up_and_quit(user_manager)
+                return 
             # -->
             # includes leaving feedback
             self.go_shopping(max_products=10)
@@ -451,36 +460,38 @@ class User:
             if (random.randint(0,10) > 4):
                 for i in range(0,10):
                     if not self.is_running:
-                        self.is_finished = True
-                        print("User {}: was removed".format(self.user_number))
-                        user_manager.active_users = user_manager.active_users[:-1]
-                        user_manager.removing_users.remove(self)
-                        self.driver.quit()
+                        self.clean_up_and_quit(user_manager)
                         return 
                     time.sleep(1)
             if (random.randint(0,3) > 1):
                 self.driver.quit()
                 if not self.is_running:
-                    self.is_finished = True    
-                    print("User {}: was removed".format(self.user_number))
-                    user_manager.active_users = user_manager.active_users[:-1]
-                    user_manager.removing_users.remove(self)
-                    self.driver.quit()
+                    self.clean_up_and_quit(user_manager)
                     return
                 time.sleep(5)
                 self.driver = webdriver.Chrome(options=self.chrome_options)
-        self.is_finished = True
-        print("User {}: was removed".format(self.user_number))
-        user_manager.active_users = user_manager.active_users[:-1]
-        user_manager.removing_users.remove(self)
-        self.driver.quit()
-        #wait for last actions, then set true so we know thread has finished
+        if not self.is_finished:
+            self.clean_up_and_quit(user_manager)
     
     def suicide(self):
         """
-        stop user
+        stop user actions
         """
+        print("User {} has commited suicide".format(self.user_number))
         self.is_running = False
+        return self
+
+    def clean_up_and_quit(self, user_manager):
+        """
+        if user is not supposed to run any more (self.is_running == False)
+        set to is_finished and remove user off of remove_users list -> user_manager information
+        """
+        self.is_finished = True
+        print("User {}: was removed".format(self.user_number))
+        user_manager.removing_users.remove(self)
+        self.driver.quit()
+        print("Users in active List: {}".format(len(user_manager.active_users)))
+        print("Users in removing List: {}".format(len(user_manager.removing_users)))
 
         
 class UserManager:
@@ -531,31 +542,37 @@ class UserManager:
         except Exception:
             print("Error starting user action")
 
-    def remove_user(self):
+    def remove_user(self, user = None):
         """
         set is_running Flag to false to stop userActions and end the thread
         remove user from active user list
+        add user to removing list until last action is over
         """
         #get last user of list 
         if(len(self.active_users) < 1):
             print("No active users")
             return
-        print("Remove usernumber {}".format(len(self.active_users) - 1 - len(self.removing_users)))
-        user_to_remove = self.active_users[len(self.active_users) - 1 - len(self.removing_users)]
+        if user:
+            print("Remove specific usernumber {}".format(user.user_number))# - len(self.removing_users)))
+            user_to_remove = user
+        else:
+            print("Remove usernumber {}".format(len(self.active_users) - 1))# - len(self.removing_users)))
+            user_to_remove = self.active_users[len(self.active_users) - 1]# - len(self.removing_users)]
         self.removing_users.append(user_to_remove)
-        print("Finish actions for user {}".format(user_to_remove.user_number))
-        user_to_remove.suicide()
+        self.active_users.remove(user_to_remove)
+        test = user_to_remove.suicide()
+        print("Users in active List: {}".format(len(self.active_users)))
+        print("Users in removing List: {}".format(len(self.removing_users)))
         return user_to_remove
 
     def remove_all_user(self):
         """
         set is_running flag to false of all users with using suicide function
         """
-        print("Remove usernumber {}".format(len(self.active_users) - 1 - len(self.removing_users)))
+        #print("Remove usernumber {}".format(len(self.active_users) - 1 - len(self.removing_users)))
+        print("Removing all users")
         for i in range(0,len(self.active_users)):
-            self.removing_users.append(self.active_users[i])
-            self.active_users[i].suicide()
-        self.active_users = []
+            self.remove_user()
 
     def start_training_sequence(self):
         """
@@ -568,9 +585,12 @@ class UserManager:
         self.training_running = True
         first_run = True
         while(self.training_running):
+            print("Users in active List: {}".format(len(self.active_users)))
+            print("Users in removing List: {}".format(len(self.removing_users)))
             # add users, but never more than MAX_USERS
+            # if first run or no running users add at least one user
             diff_to_MAX_USERS = MAX_USERS - len(self.active_users)
-            if first_run:
+            if first_run or len(self.active_users) == 0:
                 users_to_add = random.randint(1,diff_to_MAX_USERS)
                 first_run = False
             else:
@@ -579,28 +599,34 @@ class UserManager:
             for i in range(0,users_to_add):
                 self.add_user()
             if not self.training_running:
-                break
+                self.remove_all_user()
+                return None
             for i in range(120):
                 time.sleep(1)
                 if not self.training_running:
                     self.remove_all_user()
-                    return
+                    return None
             # remove random number of users 
             random_count = random.randint(0,len(self.active_users))  
             print("Removing {} users".format(random_count))
+            print("Users in active List: {}".format(len(self.active_users)))
+            print("Users in removing List: {}".format(len(self.removing_users)))
             for j in range(0,random_count):
                 self.remove_user()
             if not self.training_running:
                 self.remove_all_user()
-                return
+                return None
+            print("Users in active List: {}".format(len(self.active_users)))
+            print("Users in removing List: {}".format(len(self.removing_users)))
             for i in range(60):
                 time.sleep(1)
                 if i%10 == 0:
                     print("Waiting {} seconds untill new users are added.".format(60 - i))
                 if not self.training_running:
                     self.remove_all_user()
-                    return
+                    return None
         self.remove_all_user()
+        return None
 
     def stop_training_sequence(self):
         self.training_running = False
