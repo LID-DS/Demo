@@ -8,7 +8,7 @@ from flask import Flask
 from flask_socketio import SocketIO, emit
 
 from data_handling import DataHandling
-from read_write_syscalls import SysdigHandling
+from sysdig_handling import SysdigHandling
 from demo_model_stide import DemoModelStide
 from Automated_Users.userAction_headless import UserManager
 from Automated_Users.Attacks.attack_manager import AttackManager
@@ -22,18 +22,18 @@ class Backend:
         """
         setup data_handling to compute syscall statistics
         and evaluate syscalls with IDS
-        provides data_handlings of syscall an analysation of ids
+        provides data_handling of syscall an analysis of ids
         """
         self.data_handling = DataHandling()
         """
-        if not run in docker start webshop 
+        if not run in docker start webshop
         and save PID of started npm processes
         """
         if not IN_DOCKER:
             npm_pid = self.start_webshop()
             webshop_pid = self.get_child_pid(npm_pid)
             print(webshop_pid)
-        else: 
+        else:
             webshop_pid = None
         """
         setup sysdig handling to record system calls for specified pid
@@ -47,7 +47,7 @@ class Backend:
         self.app = None
         self.initialize_socket()
         """
-        start repetetivly collecting data of data_handling in new thread
+        start repetetivly collect data of data_handling in new thread
         """
         update_thread = threading.Thread(
                 target=self.data_update,
@@ -62,7 +62,7 @@ class Backend:
         """
         self.attackManager = AttackManager()
         """
-        run socket
+        start socket
         """
         self.socketio.run(self.app)
 
@@ -166,8 +166,8 @@ class Backend:
 
     def data_update(self):
         """
-        collect data of syscall_data_handlings and ids
-        send React collected data with delay of delay seconds
+        collect data of syscall_data_handling and ids
+        send collected data with delay of delay = 1 seconds to react frontend
         """
         delay = 1
         # TODO time steps more sophisticated
@@ -213,15 +213,13 @@ class Backend:
                 except Exception:
                     print("ids info failed")
                 try:
-                    #if (len(self.userManager.active_users)  + len(self.userManager.removing_users)) > 0:
-                    #    training_running = True
                     if self.userManager.training_running:
                         training_running = True
                     else:
                         training_running = False
                     stats['userAction'] = {
-                        'userCount': len(self.userManager.active_users) + 
-                                        len(self.userManager.removing_users),
+                        'userCount': len(self.userManager.active_users) +
+                                     len(self.userManager.removing_users),
                         'training_running': training_running
                     }
                 except Exception:
