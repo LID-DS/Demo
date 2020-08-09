@@ -427,7 +427,7 @@ class User:
         # -->
         if not self.register():
             print("error creating user -> skipping")
-            user_manager.remove(self)
+            user_manager.remove_user(self)
             return 
         time.sleep(0.1)
         while(self.is_running):
