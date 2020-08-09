@@ -14,9 +14,9 @@ class DataHandling:
         """
         Initialization of DataHandling
             In charge of:
-                calculation of statistics of systemcalls
+                calculate statistics of systemcalls
                     sum
-                    calls per bucket (set to second -> bucket delay
+                    calls per bucket (set to second -> bucket delay)
                     syscall distribution
                 collection of ids information (score, state...)
         """
@@ -40,7 +40,7 @@ class DataHandling:
 
     def update_statistic(self, syscall):
         """
-        receive syscall from syscallhandling)
+        receive syscall from sysdig_handling
         calc new:
             sum of syscalls
             syscalls in last <bucket_size> (e.g 1 second)
@@ -108,7 +108,7 @@ class DataHandling:
     def get_syscall_type_distribution_second(self):
         """
         return syscall_type distribution for last second if existent
-        (could be ask before syscall information received -> return None)
+        (could be asked before syscall information received -> return None)
         :return syscall_type_dict_last_second
         """
         if not (self.syscall_type_dict_last_second is None):
@@ -180,9 +180,7 @@ class DataHandling:
         # get current normal ngrams of ids
         ngram_dict = self.ids._normal_ngrams
 
-        # TODO why next line not working?
         # TODO converting list to dict and than dict to list, really?
-        # del ngram_dict['training_size']
 
         # sort dict so highest is in first position
         top_ngrams = dict(
