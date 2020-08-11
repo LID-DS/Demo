@@ -12,5 +12,5 @@ class Reconnaissance:
         """
 
     def run_enum(self):
-        command="dirb http://localhost:3000/"
+        command="sudo dirb http://localhost:3000/"
         os.system("gnome-terminal -e 'bash -c \""+command+";bash\"'")
