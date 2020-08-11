@@ -30,6 +30,7 @@ class User:
         # needed for running as root
         self.chrome_options.add_argument("--no-sandbox")
         self.driver = webdriver.Chrome(options=self.chrome_options)
+        self.driver.delete_all_cookies()
         self.email = email
         self.password = password
         self.security_question = security_question   
@@ -464,7 +465,6 @@ class User:
                         return 
                     time.sleep(1)
             if (random.randint(0,3) > 1):
-                self.driver.quit()
                 if not self.is_running:
                     self.clean_up_and_quit(user_manager)
                     return
