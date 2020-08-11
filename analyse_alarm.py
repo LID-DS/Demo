@@ -1,4 +1,5 @@
 from datetime import date
+import os
 import time
 import collections
 import data_handling
@@ -38,8 +39,14 @@ class Analysis:
                     evt_string + " | " +    \
                     str(syscall_num)
 
-        file_name = "alarm_info/raw_syscalls/raw_list_Alarm_No_" + str(self.alarm_count) 
-        with open(file_name, 'a') as raw_list:
+        filename = "alarm_info/raw_syscalls/raw_list_Alarm_No_" + str(self.alarm_count) 
+        if not os.path.exists(os.path.dirname(filename)):
+            try:
+                os.makedirs(os.path.dirname(filename))
+            except OSError as exc: # Guard against race condition
+                if exc.errno != errno.EEXIST:
+                    raise
+        with open(filename, 'a') as raw_list:
             raw_list.write(syscall + "\n")
 
     def track_mv_window(self, ngram_tuple):
@@ -58,8 +65,14 @@ class Analysis:
         for entry in self.deque_window:
             window_name = "window_" + time.strftime("%I:%M:%S") + \
                             "Alarm_No_" + str(self.alarm_count)
-            file_path = "alarm_info/tracked_window/" + window_name
-            with open(file_path, 'a') as window_file:
+            filename = "alarm_info/tracked_window/" + window_name
+            if not os.path.exists(os.path.dirname(filename)):
+                try:
+                    os.makedirs(os.path.dirname(filename))
+                except OSError as exc: # Guard against race condition
+                    if exc.errno != errno.EEXIST:
+                        raise
+            with open(filename, 'a') as window_file:
                 window_file.write(''.join(str(entry) + "\n"))
 
     def save_current_window(self, ngram_tuple, score, mismatch_value, consecutive_alarm):
