@@ -87,7 +87,7 @@ class DemoModelStide:
             # dict to convert system calls from int to string ( 1 -> "close")
             self._int_to_syscall = trained_model._int_to_syscall
         ###
-        self.analysis = Analysis(self._window_length, self)
+        self.analysis = Analysis(self._window_length)
         ###
 
     def _get_syscall_as_int(self, syscall_string):
@@ -232,6 +232,14 @@ class DemoModelStide:
                     # do the detection thing
                     result = self._detect(ngram_tuple)
         return result
+
+    def pipe_alarm_files(self):
+        """
+        analysis only accessible from IDS
+        return filenames so it can be accessed in backend 
+        and sent to frontend
+        """
+        return self.analysis.alarm_filenames
 
     def _ngram_tuple_to_str(self, ngram_tuple):
         """
