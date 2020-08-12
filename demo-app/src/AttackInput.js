@@ -104,7 +104,7 @@ class UserActionInput extends React.PureComponent {
                             Advanced Xss
                         </button>
                     </div>
-                    <div classname="button-container">
+                    <div className="button-container">
                         <button 
                             className="button-basic"
                             onClick={

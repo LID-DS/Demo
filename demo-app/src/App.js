@@ -1,4 +1,4 @@
-//TODO fix button showing if user are active
+//TODO fix button showing if user are activ
 import React from 'react';
 import io from 'socket.io-client';
 import Slider from 'react-input-slider';
@@ -276,7 +276,7 @@ class App extends React.PureComponent{
             //Add incident to  table if alarm state of ids plot is reached
             // -> depends on set threshold in plot
             if (this.state.alarm === 1){
-                this.incidentTable.current.add_incident(data['time'], data['ids_info']['score'])
+                this.incidentTable.current.add_incident(data['time'], data['ids_info']['score'], data['ids_info']['filename_list'])
             }
         }.bind(this));
 
@@ -372,9 +372,11 @@ class App extends React.PureComponent{
                         />
                     </div>
                     <div className="item">
+                        <div>
                         <IncidentTable 
                             className="incident-table" 
                             ref={this.incidentTable} />
+                        </div>
                     </div>
                     <div className="item-plot">
                         <div className="title">
