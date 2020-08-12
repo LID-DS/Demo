@@ -1,4 +1,5 @@
 from datetime import date
+from shutil import copyfile
 import os
 import time
 import collections
@@ -6,19 +7,20 @@ import data_handling
 
 class Analysis:
     """
-    keep track of current syscall window and handle syscall which
+    keep track of current window of syscall and handle syscall which
     triggered an alarm
     """
 
-    def __init__(self, window_length, ids):
+    def __init__(self, window_length):
         """
+        Initialize window_length and deque which keeps track of window
         """
         self.window_length = window_length
         self.deque_window = collections.deque()
-        self.ids = ids
         self.consecutive_alarm_list = []
         self.alarm = False
         self.alarm_count = 0
+        self.alarm_filenames = []
 
     def save_raw_syscall(self, syscall, syscall_num):
         rawtime = str(syscall[1])
@@ -61,11 +63,12 @@ class Analysis:
     def save_tracked_window(self):
         """
         save window to file
+        copy file to frontend data folder 
         """
+        window_name = "window_" + time.strftime("%I:%M:%S") + \
+                        "_Alarm_No_" + str(self.alarm_count)
+        filename = "alarm_info/tracked_window/" + window_name
         for entry in self.deque_window:
-            window_name = "window_" + time.strftime("%I:%M:%S") + \
-                            "Alarm_No_" + str(self.alarm_count)
-            filename = "alarm_info/tracked_window/" + window_name
             if not os.path.exists(os.path.dirname(filename)):
                 try:
                     os.makedirs(os.path.dirname(filename))
@@ -74,6 +77,15 @@ class Analysis:
                         raise
             with open(filename, 'a') as window_file:
                 window_file.write(''.join(str(entry) + "\n"))
+        frontend_filename = "demo-app/src/data/" + window_name
+        if not os.path.exists(os.path.dirname(frontend_filename)):
+            try:
+                os.makedirs(os.path.dirname(frontend_filename))
+            except OSError as exc: # Guard against race condition
+                if exc.errno != errno.EEXIST:
+                    raise
+        copyfile(filename, frontend_filename)
+        self.alarm_filenames.append(frontend_filename)
 
     def save_current_window(self, ngram_tuple, score, mismatch_value, consecutive_alarm):
         """
@@ -89,7 +101,6 @@ class Analysis:
             self.deque_alarm.append([ngram_tuple, score, mismatch_value])
         elif consecutive_alarm and not ngram_tuple is None:
             # add last syscall of ngram
-            #if mismatch_value == 1:
             self.deque_alarm.append([(ngram_tuple[len(ngram_tuple)-1]), score, mismatch_value])
         if ngram_tuple is None:
             new_filename = "alarm_info/" + \
@@ -125,7 +136,6 @@ class Analysis:
             with open(new_filename, "a") as f:
                 for ngram_tuple in self.consecutive_alarm_list:
                     f.write(
-                        str(ngram_tuple[0]) + str(ngram_tuple[1]) +#self.ids._ngram_tuple_to_str(ngram_tuple) +
-                        "\n")
+                        str(ngram_tuple[0]) + str(ngram_tuple[1]) + "\n")
 
 
