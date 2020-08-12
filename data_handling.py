@@ -105,6 +105,14 @@ class DataHandling:
             'current_ngrams': ids_info['current_ngrams']
         }
 
+    def get_alarm_filenames(self):
+        """
+        Send filenames of files which give further information to specific alarm
+        filenames created in Analysis
+        """
+        return self.ids.pipe_alarm_files()
+
+
     def get_syscall_type_distribution_second(self):
         """
         return syscall_type distribution for last second if existent
