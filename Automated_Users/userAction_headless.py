@@ -477,7 +477,7 @@ class User:
         """
         stop user actions
         """
-        print("User {} has commited suicide".format(self.user_number))
+        print("Removing User {}".format(self.user_number))
         self.is_running = False
         return self
 

