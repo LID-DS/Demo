@@ -42,6 +42,7 @@ It consists of three parts.
 
 **How do I install the environment?**
 * run: ./installDemo.sh
+* reopen terminal to apply changes to sudoers file
 
 **How do I run the environment?**
 * run: tmuxp load startDemo.yaml
