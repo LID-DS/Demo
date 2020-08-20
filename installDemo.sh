@@ -58,5 +58,5 @@ sudo apt install tmuxp
 
 sudo apt update
 
-sudo mkdir alarm_info/tracked_window
-sudo mkdir alarm_info/raw_syscall
+mkdir alarm_info/tracked_window
+mkdir alarm_info/raw_syscall
