@@ -7,40 +7,38 @@ import './css/UserActionInput.css'
 //var myTxt = require("window_12:01:14Alarm_No_0");
 
 export default class ControlledPopup extends React.Component {
+
   constructor(props) {
     super(props);
     this.state = { 
         open: false,
-        current_alarm_file: null
+        current_alarm_file: ""
     };
     this.openModal = this.openModal.bind(this);
     this.closeModal = this.closeModal.bind(this);
   }
+
   openModal() {
-    if (this.props.filename_list.length > 0){
-        this.setState({ 
-            open: true,
-            current_alarm_file: this.props.filename_list[this.props.filename_list.length - 1]
-        });
-        console.log(this.props.filename_list[this.props.filename_list.length - 1])
-    }
-    else {
-        this.setState({ 
-            open: true,
-            current_alarm_file: null 
-        });
-    }
+    var filename = this.props.filename
+    console.log(filename)
+    this.setState({ 
+        open: true,
+        current_alarm_file: filename
+    });
   }
+
   closeModal() {
-    this.setState({ open: false });
+      this.setState({ open: false });
+      this.props.close_popup()
+  }
+
+  componentDidMount(){
+      this.openModal()
   }
 
   render() {
     return (
       <div className="modal">
-        <button className="button-basic" onClick={this.openModal}>
-            Show tracked window of alarm
-        </button>
         <Popup className="Popup"
           open={this.state.open}
           closeOnDocumentClick
@@ -52,7 +50,7 @@ export default class ControlledPopup extends React.Component {
             </a>
             <div>
                 <TextFileReader
-                    txt={""}
+                    txt={this.state.current_alarm_file}
                 />
             </div>
           </div>

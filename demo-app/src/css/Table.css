@@ -1,20 +1,28 @@
-.ReactVirtualized__Table {
-  display: inline-block;
-  "border: 3px solid rgba(0, 0, 0, 0.5);"
-  margin-top: 20px;
-  margin-bottom: 20px;
-  margin-left: 20px;
-  margin-right: 20px;
-  font-size: 20px; 
+.title {
+  text-align: center;
+  font-family: arial, sans-serif;
 }
 
-.ReactVirtualized__Table__headerColumn {
-  display: flex;
-  flex-direction: row;
-  justify-content: left;
-  margin-top:  2px;
+.incident {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
 }
 
-.ReactVirtualized__Table__headerTruncatedText {
-  flex: auto;
+.incident td, .incident th {
+  font-size: calc(1px + 1.5vmin);
+  padding: 8px;
+  margin-left: auto;
+  margin-right: auto;
 }
+
+.incident tr:first-child:hover {background-color: var(--item-bg-color);}
+.incident tr:hover {background-color: #470a0a;}
+
+.incident th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: center;
+}
+

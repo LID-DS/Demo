@@ -6,7 +6,8 @@ import './css/App.css';
 
 import IDSPlot from './IDSPlot';
 import TrainingInfo from './TrainingInfo';
-import IncidentTable from './Table';
+//import IncidentTable from './Table';
+import IncidentTable from './Table_alt'
 import UserInput from './UserInput'
 import UserActionInput from './UserActionInput'
 import TrafficLight from './TrafficLight';

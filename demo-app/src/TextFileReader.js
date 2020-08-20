@@ -22,6 +22,7 @@ class TextFileReader extends React.Component {
 
 	componentDidMount() {
 		this.readTextFile(this.props.txt);
+        console.log(this.props.txt)
 	}
 
 	readTextFile = file => {
