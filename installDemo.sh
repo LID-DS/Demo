@@ -51,10 +51,10 @@ wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo apt install ./google-chrome-stable_current_amd64.deb -y
 cd ..
 sudo apt install chromium-chromedriver -y
-sudo apt install dirb
+sudo apt install dirb -y
 
-sudo apt install tmux
-sudo apt install tmuxp
+sudo apt install tmux -y
+sudo apt install tmuxp -y
 
 sudo apt update
 
