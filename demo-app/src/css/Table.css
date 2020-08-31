@@ -1,6 +1,5 @@
 .title {
   text-align: center;
-  font-family: arial, sans-serif;
 }
 
 .incident {
@@ -11,7 +10,6 @@
 }
 
 .incident td, .incident th {
-  font-size: calc(1px + 1.5vmin);
   padding: 8px;
   margin-left: auto;
   margin-right: auto;
