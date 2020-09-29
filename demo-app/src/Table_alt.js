@@ -68,15 +68,19 @@ export default class Incident_Table extends React.PureComponent {
 
    render() {
       return (
-          <div>
         <div>
-            <h1 className='title'>Incidents</h1>
-            <table className='incident'>
-                <tbody>
-                    <tr>{this.renderTableHeader()}</tr> 
-                    {this.renderTableData()}
-                </tbody>
-            </table>
+            <div className='table-container'>
+                <h1 className='title'>Incidents</h1>
+                <table className='incident'>
+                    <thead>
+                        <tr>
+                          {this.renderTableHeader()}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {this.renderTableData()}
+                    </tbody>
+                </table>
         </div>
         <div>
           <ShowPopup popup={this.state.open_popup} file_path={this.state.filename_list[this.state.selected_incident]} close={this.closeIncidentPopup}/>

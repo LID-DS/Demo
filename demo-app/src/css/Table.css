@@ -1,26 +1,50 @@
-.title {
-  text-align: center;
+.table-container{
+  height: 24em; 
+  width: 100%;
 }
-
 .incident {
-  text-align: center;
+  display: flex;
+  flex-flow: column;
   margin-left: auto;
   margin-right: auto;
   width: 100%;
+  height: 100%;
+}
+.incident thead {
+  flex: 0 0 auto;
+  width: calc(100% - 0.9em)
+}
+.incident tbody {
+  flex: 1 1 auto;
+  display: block;
+  height: 200px;
+  overflow-y: scroll;
+}
+.incident tbody tr {
+    width: 100%;
+}
+.incident thead, tbody tr {
+    display: block;
+    table-layout: fixed;
 }
 
+/* Decorations */
+.table-container {
+    padding: 0.3em;
+}
 .incident td, .incident th {
-  padding: 8px;
-  margin-left: auto;
-  margin-right: auto;
+    padding: 0.3em;
 }
-
-.incident tr:first-child:hover {background-color: var(--item-bg-color);}
-.incident tr:hover {background-color: #470a0a;}
-
+.incident tr:first-child:hover {
+  background-color: var(--item-bg-color);
+}
+.incident tr:hover {
+  background-color: #470a0a;
+}
 .incident th {
   padding-top: 12px;
   padding-bottom: 12px;
   text-align: center;
 }
+
 
