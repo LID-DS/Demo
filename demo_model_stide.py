@@ -59,6 +59,7 @@ class DemoModelStide:
             # dict for all normal ngrams (the "normal" database)
             # self._normal_ngrams[ngram_tuple] = count
             self._normal_ngrams = {}
+            self._last_alarm_content = None
             self._normal_ngrams["training_size"] = 0
             # dict for model states
             # self._model_states = ModelStatus.Training
@@ -233,13 +234,11 @@ class DemoModelStide:
                     result = self._detect(ngram_tuple)
         return result
 
-    def pipe_alarm_files(self):
+    def get_last_alarm_content(self):
         """
-        analysis only accessible from IDS
-        return filenames so it can be accessed in backend 
-        and sent to frontend
+        return content of last alarm report file
         """
-        return self.analysis.alarm_filenames
+        return self.analysis.get_last_alarm_content()
 
     def _ngram_tuple_to_str(self, ngram_tuple):
         """

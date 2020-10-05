@@ -20,7 +20,8 @@ class Analysis:
         self.consecutive_alarm_list = []
         self.alarm = False
         self.alarm_count = 0
-        self.alarm_filenames = []
+        self.last_alarm_content = ""
+        self.last_alarm_queue = collections.deque()
 
     def save_raw_syscall(self, syscall, syscall_num):
         rawtime = str(syscall[1])
@@ -68,24 +69,18 @@ class Analysis:
         window_name = "window_" + time.strftime("%I:%M:%S") + \
                         "_Alarm_No_" + str(self.alarm_count)
         filename = "alarm_info/tracked_window/" + window_name
-        for entry in self.deque_window:
-            if not os.path.exists(os.path.dirname(filename)):
-                try:
-                    os.makedirs(os.path.dirname(filename))
-                except OSError as exc: # Guard against race condition
-                    if exc.errno != errno.EEXIST:
-                        raise
-            with open(filename, 'a') as window_file:
-                window_file.write(''.join(str(entry) + "\n"))
-        frontend_filename = "demo-app/src/data/" + window_name
-        if not os.path.exists(os.path.dirname(frontend_filename)):
+        if not os.path.exists(os.path.dirname(filename)):
             try:
-                os.makedirs(os.path.dirname(frontend_filename))
+                os.makedirs(os.path.dirname(filename))
             except OSError as exc: # Guard against race condition
                 if exc.errno != errno.EEXIST:
                     raise
-        copyfile(filename, frontend_filename)
-        self.alarm_filenames.append(frontend_filename)
+        for entry in self.deque_window:
+            with open(filename, 'a') as window_file:
+                window_file.write(''.join(str(entry) + "\n"))
+            self.last_alarm_content = self.last_alarm_content + ''.join(str(entry) + "\n")
+        self.last_alarm_queue.append(self.last_alarm_content)
+        self.last_alarm_content = ""
 
     def save_current_window(self, ngram_tuple, score, mismatch_value, consecutive_alarm):
         """
@@ -136,6 +131,12 @@ class Analysis:
             with open(new_filename, "a") as f:
                 for ngram_tuple in self.consecutive_alarm_list:
                     f.write(
-                        str(ngram_tuple[0]) + str(ngram_tuple[1]) + "\n")
+                        str(ngram_tuple[0]) + str(ngram_tuple[1])) + "\n"
+
+    def get_last_alarm_content(self):
+        if self.last_alarm_queue:
+            return self.last_alarm_queue.pop()
+        else:
+            return ""
 
 

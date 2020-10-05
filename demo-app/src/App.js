@@ -1,4 +1,3 @@
-//TODO fix button showing if user are activ
 import React from 'react';
 import io from 'socket.io-client';
 import Slider from 'react-input-slider';
@@ -76,6 +75,7 @@ class App extends React.PureComponent{
         this.intToSysTable = React.createRef();
         this.ngramPlot = React.createRef();
         this.attackInput = React.createRef();
+
     };
    
     //revceive info from TrainingInfo 
@@ -118,7 +118,6 @@ class App extends React.PureComponent{
                 "others": sum_others
             }
             top.push(others) 
-            //console.log(data['syscall_type_dict']['sorted_syscalls'])
             this.syscallDistPlot.current.handleValues(top)
         }
         catch (e) {
@@ -277,7 +276,7 @@ class App extends React.PureComponent{
             //Add incident to  table if alarm state of ids plot is reached
             // -> depends on set threshold in plot
             if (this.state.alarm === 1){
-                this.incidentTable.current.add_incident(data['time'], data['ids_info']['score'], data['ids_info']['filename_list'])
+                this.incidentTable.current.add_incident(data['time'], data['ids_info']['score'], data['ids_info']['alarm_content'])
             }
         }.bind(this));
 

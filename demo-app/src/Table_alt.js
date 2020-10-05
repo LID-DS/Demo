@@ -10,21 +10,22 @@ export default class Incident_Table extends React.PureComponent {
             incident_list:[{
                 id: null,
                 time:null,
-                score:null
+                score:null,
+                content:null
             }],
-            filename_list: [],
+            file_list: [],
             open_popup:false,
             selected_incident:0
         }
     }
 
-    add_incident = (time, score, filename_list) => {
-        this.setState({
-            filename_list: filename_list
-        })
+    add_incident = (time, score, content) => {
         var current_list = this.state.incident_list
         var new_id = current_list[this.state.incident_list.length - 1]["id"] + 1
-        current_list.push({id: new_id, time: time, score: score})
+        current_list.push({id: new_id, time: time, score: score, content: content})
+        this.setState({
+            file_list: current_list
+        })
         this.setState((prevState, props) => {
             return {
                 incident_list: [...prevState.incident_list]
@@ -35,7 +36,7 @@ export default class Incident_Table extends React.PureComponent {
     setIncidentForPopup = (id) => {
         this.setState({
             open_popup:true,
-            selected_incident:id
+            selected_incident:id 
         })
     }
 
@@ -83,7 +84,7 @@ export default class Incident_Table extends React.PureComponent {
                 </table>
         </div>
         <div>
-          <ShowPopup popup={this.state.open_popup} file_path={this.state.filename_list[this.state.selected_incident]} close={this.closeIncidentPopup}/>
+          <ShowPopup popup={this.state.open_popup} file={this.state.file_list[this.state.selected_incident]} close={this.closeIncidentPopup}/>
         </div>
           </div>
       )
@@ -94,7 +95,7 @@ function ShowPopup(props){
     if (props.popup) {
         return (
             <div>
-                <Popup filename={props.file_path} close_popup={props.close}/>
+                <Popup content={props.file} close_popup={props.close}/>
             </div>
         )
     } 

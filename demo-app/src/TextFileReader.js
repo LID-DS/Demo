@@ -27,7 +27,9 @@ class TextFileReader extends React.Component {
 
 	readTextFile = file => {
 		var rawFile = new XMLHttpRequest();
+        console.log(file)
 		rawFile.open("GET", file, false);
+        console.log(rawFile)
 		rawFile.onreadystatechange = () => {
 			if (rawFile.readyState === 4) {
 				if (rawFile.status === 200 || rawFile.status === 0) {

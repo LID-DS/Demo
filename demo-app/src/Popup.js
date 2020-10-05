@@ -4,7 +4,6 @@ import TextFileReader from './TextFileReader'
 import './css/Popup.css'
 import './css/UserActionInput.css'
 
-//var myTxt = require("window_12:01:14Alarm_No_0");
 
 export default class ControlledPopup extends React.Component {
 
@@ -19,21 +18,21 @@ export default class ControlledPopup extends React.Component {
   }
 
   openModal() {
-    var filename = this.props.filename
-    console.log(filename)
     this.setState({ 
         open: true,
-        current_alarm_file: filename
     });
   }
 
   closeModal() {
-      this.setState({ open: false });
-      this.props.close_popup()
+    this.setState({ open: false });
+    this.props.close_popup()
   }
 
   componentDidMount(){
-      this.openModal()
+    this.setState({
+        current_alarm_file: this.props.content["content"],
+    })
+    this.openModal()
   }
 
   render() {
@@ -49,9 +48,7 @@ export default class ControlledPopup extends React.Component {
               &times;
             </a>
             <div>
-                <TextFileReader
-                    txt={this.state.current_alarm_file}
-                />
+                {this.state.current_alarm_file}
             </div>
           </div>
         </Popup>

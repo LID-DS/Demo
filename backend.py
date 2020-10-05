@@ -209,7 +209,7 @@ class Backend:
                             self.data_handling.ids_info['current_ngrams'],
                         'top_ngrams': self.data_handling.get_top_ngrams(),
                         'int_to_sys': self.data_handling.get_int_to_sys(),
-                        'filename_list': self.data_handling.get_alarm_filenames()
+                        'alarm_content': self.data_handling.get_alarm_content()
                     }
                 except Exception:
                     print("ids info failed")
