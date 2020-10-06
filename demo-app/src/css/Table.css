@@ -11,29 +11,28 @@
   height: 100%;
 }
 .incident thead {
-  flex: 0 0 auto;
-  width: calc(100% - 0.9em)
+  margin-left: auto;
+  margin-right: auto;
 }
 .incident tbody {
   flex: 1 1 auto;
   display: block;
   height: 200px;
   overflow-y: scroll;
+  margin-left: auto;
+  margin-right: auto;
 }
 .incident tbody tr {
-    width: 100%;
+  width: 100%;
 }
 .incident thead, tbody tr {
-    display: block;
-    table-layout: fixed;
+  display: block;
+  table-layout: fixed;
 }
 
 /* Decorations */
-.table-container {
-    padding: 0.3em;
-}
 .incident td, .incident th {
-    padding: 0.3em;
+  padding: 0.4em;
 }
 .incident tr:first-child:hover {
   background-color: var(--item-bg-color);
@@ -44,7 +43,6 @@
 .incident th {
   padding-top: 12px;
   padding-bottom: 12px;
-  text-align: center;
 }
 
 

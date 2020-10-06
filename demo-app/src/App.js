@@ -276,7 +276,9 @@ class App extends React.PureComponent{
             //Add incident to  table if alarm state of ids plot is reached
             // -> depends on set threshold in plot
             if (this.state.alarm === 1){
-                this.incidentTable.current.add_incident(data['time'], data['ids_info']['score'], data['ids_info']['alarm_content'])
+                if (data['ids_info']['alarm_content'].length > 0) {
+                    this.incidentTable.current.add_incident(data['time'], data['ids_info']['score'], data['ids_info']['alarm_content'])
+                }
             }
         }.bind(this));
 

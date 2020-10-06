@@ -97,7 +97,9 @@ class Analysis:
         elif consecutive_alarm and not ngram_tuple is None:
             # add last syscall of ngram
             self.deque_alarm.append([(ngram_tuple[len(ngram_tuple)-1]), score, mismatch_value])
-        if ngram_tuple is None:
+        elif ngram_tuple is None:
+            print("saving queue with length {} in file".format(len(self.deque_alarm)))
+            print(str(self.alarm_count))
             new_filename = "alarm_info/" + \
                     str(date.today()) + "_" + \
                     time.strftime("%I:%M:%S") + "_" + \
@@ -135,7 +137,9 @@ class Analysis:
 
     def get_last_alarm_content(self):
         if self.last_alarm_queue:
-            return self.last_alarm_queue.pop()
+            tmp = self.last_alarm_queue.popleft()
+            print(len(tmp))
+            return tmp
         else:
             return ""
 

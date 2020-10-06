@@ -46,6 +46,7 @@ class DemoModelStide:
         ###
         self._alarm_threshold = 0.05
         self._consecutive_alarm = False
+        self.iteration_counter = 0
         ###
         self._ngram_length = ngram_length
         self._window_length = window_length
@@ -138,6 +139,9 @@ class DemoModelStide:
         """
         checks the given tuple against the normal db and calculates
         the anomaly score
+        if moving sum is higher than alarm threshold send values to analysis
+        New alarm -> new file in analysis
+        consecutive alarm -> add values to file
         :param ngram_tuple:
         :return: the moving average mismatch value (float)
         """
@@ -163,10 +167,13 @@ class DemoModelStide:
         ###
         mv_sum = self._moving_sum_value / self._window_length
         if mv_sum < self._alarm_threshold:
+            # keep track of current moving window for later analysis
             self.analysis.track_mv_window(ngram_tuple)
         if mv_sum >= self._alarm_threshold:
             self.analysis.alarm = True 
             if not self._consecutive_alarm:
+                self.iteration_counter = 0
+                print("new alarm")
                 self.analysis.save_current_window(
                         ngram_tuple=ngram_tuple,
                         score=mv_sum,
@@ -174,12 +181,17 @@ class DemoModelStide:
                         consecutive_alarm=self._consecutive_alarm)
                 self._consecutive_alarm = True
             else:
+                self.iteration_counter += 1
+                if self.iteration_counter == 100:
+                    print("consecutive alarm")
+                    self.iteration_counter = 0
                 self.analysis.save_current_window(
                         ngram_tuple=ngram_tuple,
                         score=mv_sum,
                         mismatch_value=right_value,
                         consecutive_alarm=self._consecutive_alarm)
         elif self._consecutive_alarm:
+            print("ending alarm")
             self.analysis.alarm = False
             self.analysis.save_current_window(
                     ngram_tuple=None,

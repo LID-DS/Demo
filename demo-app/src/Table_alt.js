@@ -75,7 +75,9 @@ export default class Incident_Table extends React.PureComponent {
                 <table className='incident'>
                     <thead>
                         <tr>
-                          {this.renderTableHeader()}
+                            <th>ID</th>
+                            <th>TIME</th>
+                            <th>SCORE</th>
                         </tr>
                     </thead>
                     <tbody>
