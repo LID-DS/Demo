@@ -36,4 +36,8 @@
   border: 1px solid #cfcece;
 }
 
+.modal .alarm_content {
+  white-space: pre-wrap;
+}
+
 

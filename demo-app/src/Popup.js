@@ -34,6 +34,18 @@ export default class ControlledPopup extends React.Component {
     this.openModal()
   }
 
+  renderTableData() {
+      var ngrams = this.state.current_alarm_file.split('\n')
+      return ngrams.map((ngrams) => {
+         const { id, ngram } = ngrams //destructuring
+         return (
+            <tr key={id}>
+               <td>{ngram}</td>
+            </tr>
+         )
+      })
+  }
+
   render() {
     return (
       <div className="modal">
@@ -47,7 +59,9 @@ export default class ControlledPopup extends React.Component {
               &times;
             </a>
             <div>
-                {this.state.current_alarm_file}
+                {this.state.current_alarm_file.split("\n").map((i, key) => {
+                    return <div key={key}>{i}</div>
+                })}
             </div>
           </div>
         </Popup>
