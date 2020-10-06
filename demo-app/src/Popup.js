@@ -1,6 +1,5 @@
 import React from "react";
 import Popup from "reactjs-popup";
-import TextFileReader from './TextFileReader'
 import './css/Popup.css'
 import './css/UserActionInput.css'
 
