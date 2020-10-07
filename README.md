@@ -40,10 +40,21 @@ It consists of three parts.
         2. Model Modifications
             * Retrain model with specific training size
 
+**Prerequisites**
+* Preferably clean installation of Ubuntu 18.04LTS
+* Clone repo and switch to dev-branch
+
 **How do I install the environment?**
-* run: ./installDemo.sh
-* reopen terminal to apply changes to sudoers file
+* Run: ./installDemo.sh
+* (observe installation and accept or decline sharing of user statistics for angular (twice))
 
 **How do I run the environment?**
-* run: tmuxp load startDemo.yaml
-
+* Run: tmuxp load startDemo.yaml
+* Alternativly: 
+    * Terminal 1: 
+        * cd demo-app
+        * npm start
+    * Terminal 2:
+        * python3 backend.py
+* Monitoring: http://localhost:3001/
+* Web-App: http://localhost:3000/
