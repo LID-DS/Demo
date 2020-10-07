@@ -52,6 +52,7 @@ class SQLInjection(Attack):
         driver.quit()
 
     def clear_cache(self):
+        self.chrome_options.add_argument("--headless")
         driver = webdriver.Chrome(options=self.chrome_options)
         sql_query_prepare = '/rest/products/search?q='
         search_query = [] 
@@ -64,10 +65,13 @@ class SQLInjection(Attack):
         search_query.append("orange")  
         search_query.append("raspberry")  
         search_query.append("something")
-        for query in search_query:
-            print(self.base_url + sql_query_prepare + query)
-            driver.get(self.base_url + sql_query_prepare + query)
-            time.sleep(1.5)
+        for i in range(0,9):
+            for query in search_query:
+                print(self.base_url + sql_query_prepare + query)
+                driver.get(self.base_url + sql_query_prepare + query)
+                time.sleep(1.5)
+        self.chrome_options.add_argument("--headless")
+        print("done cleaning cache")
 
     def run_tryhard(self):
         driver = webdriver.Chrome(options=self.chrome_options)
