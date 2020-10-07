@@ -49,4 +49,10 @@ It consists of three parts.
 * (observe installation and accept or decline sharing of user statistics for angular (twice))
 
 **How do I run the environment?**
-* run: tmuxp load startDemo.yaml
+* Run: tmuxp load startDemo.yaml
+* Alternativly: 
+    * Terminal 1: 
+        * cd demo-app
+        * npm start
+    * Terminal 2:
+        * python3 backend.py
