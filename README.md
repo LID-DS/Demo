@@ -56,3 +56,5 @@ It consists of three parts.
         * npm start
     * Terminal 2:
         * python3 backend.py
+* Monitoring: http://localhost:3001/
+* Web-App: http://localhost:3000/
