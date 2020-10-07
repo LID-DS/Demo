@@ -40,7 +40,7 @@ It consists of three parts.
         2. Model Modifications
             * Retrain model with specific training size
 
-**Prerequisites
+**Prerequisites**
 * Preferably clean installation of Ubuntu 18.04LTS
 * Clone repo and switch to dev-branch
 
