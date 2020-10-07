@@ -14,6 +14,7 @@ class Analysis:
     def __init__(self, window_length):
         """
         Initialize window_length and deque which keeps track of window
+        :params: window_length of moving window of system calls
         """
         self.window_length = window_length
         self.deque_window = collections.deque()
@@ -24,6 +25,11 @@ class Analysis:
         self.last_alarm_queue = collections.deque()
 
     def save_raw_syscall(self, syscall, syscall_num):
+        """
+        extract needed information of raw system call for later analysis
+        :params: syscall raw system call information
+        :params: syscall_num ids converts syscall names to int
+        """
         rawtime = str(syscall[1])
         latency = str(syscall[2])
         threadID = str(syscall[4])
@@ -63,8 +69,9 @@ class Analysis:
 
     def save_tracked_window(self):
         """
-        save window to file
-        copy file to frontend data folder 
+        save tracked window to file
+        save tracked window in queue
+        ->preparation for frontend reports
         """
         window_name = "window_" + time.strftime("%I:%M:%S") + \
                         "_Alarm_No_" + str(self.alarm_count)
