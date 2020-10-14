@@ -6,6 +6,6 @@ windows:
     - cd ~/Documents/Demo/
   panes:
     - shell_command: 
-        - python3 backend.py
+        - python3 Backend/backend.py
     - shell_command: 
         - npm start --prefix demo-app/ 
