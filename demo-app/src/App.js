@@ -29,6 +29,10 @@ class App extends React.PureComponent{
         this.state = {
             websocket:0,
             data:[],
+            active_ids: { 
+                stide: false,
+                mlp: false
+            },
             syscall_plot:{
                 plot_type: "syscall",
                 calls_per_second : {
@@ -239,6 +243,22 @@ class App extends React.PureComponent{
             this.state.websocket.emit('training update', this.inputElement.value)
         }
     }
+
+    IDSChooser = (active_ids) => {
+        // [stide, mlp]
+        this.setState({
+            active_ids: {
+                stide: active_ids[0],
+                mlp: active_ids[1]
+            }
+        })
+        this.state.websocket.emit(
+            'choosing ids', {
+                "stide":active_ids[0], 
+                "mlp": active_ids[1]
+            }
+        )
+    }
     
     automaticUserActions = (userAction) => {
         this.state.websocket.emit('user action', userAction)
@@ -262,17 +282,21 @@ class App extends React.PureComponent{
             //update plot data 
             this.preparePlotData(data)
             //update training info 
-            this.trainingInfo.current.update_training_info(data['ids_info'])
+            this.trainingInfo.current.update_training_info(
+                data['ids_info'])
             //update syscall distribution
             this.updateSyscallDistribution(data)
             // update ngram table 
-            this.ngramTable.current.update_list(data['ids_info']['top_ngrams'])
+            this.ngramTable.current.update_list(
+                data['ids_info']['top_ngrams'])
             // update ngram piechart
             this.updateNgramPlot(data)
             //update table of converted syscalls to int (of ids) 
-            this.intToSysTable.current.update_list(data['ids_info']['int_to_sys'])
+            this.intToSysTable.current.update_list(
+                data['ids_info']['int_to_sys'])
             // update useraction Info
-            this.userAction.current.updateCount(data['userAction'])
+            this.userAction.current.updateCount(
+                data['userAction'])
             //Add incident to  table if alarm state of ids plot is reached
             // -> depends on set threshold in plot
             if (this.state.alarm === 1){
@@ -342,7 +366,9 @@ class App extends React.PureComponent{
                         />
                     </div>
                     <div className="item">
-                        <TrainingInfo ref={this.trainingInfo} />
+                        <TrainingInfo 
+                            onChildClick={this.IDSChooser}
+                            ref={this.trainingInfo} />
                     </div>
                     <div className="item">
                         <div className="info">

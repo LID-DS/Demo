@@ -1,5 +1,6 @@
 import React from 'react';
 import './css/UserActionInput.css';
+
 class UserActionInput extends React.PureComponent {
     constructor(props) {
         super(props)

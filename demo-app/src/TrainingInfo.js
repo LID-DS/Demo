@@ -15,8 +15,13 @@ export default class Training_info extends React.PureComponent {
                 current_ngrams: 1,
                 progress: 0
             },
+            stide_active: false,
+            mlp_active: false,
             training_size_input: 100000
         }
+        this.handleMlpChange = this.handleMlpChange.bind(this);
+        this.handleStideChange = this.handleStideChange.bind(this);
+        this.saveChosenIDS = this.saveChosenIDS.bind(this);
     }
     
     update_training_info = (ids_info) => {
@@ -39,11 +44,44 @@ export default class Training_info extends React.PureComponent {
         })
     }
 
+    handleStideChange = () => {
+        this.setState({
+            stide_active: !this.state.stide_active,
+        })
+        // why inverted????
+    }
+
+    handleMlpChange = () => {
+        this.setState({
+            mlp_active: !this.state.mlp_active,
+        })
+        // why inverted????
+    }
+
+    saveChosenIDS = () => {
+        console.log([this.state.stide_active, this.state.mlp_active] )
+        this.props.onChildClick([this.state.stide_active, this.state.mlp_active] )
+        console.log([this.state.stide_active, this.state.mlp_active] )
+    }
+
     render(){
         return(
             <div className="detecting">
                 <Info ids_info={this.state.ids_info}/>
                 <em>Current training size: {this.state.ids_info.training_size}</em>
+                <form>
+                    <label className="ids_chooser">
+                        Stide Algorithm
+                        <input type="checkbox" onChange={this.handleStideChange}/>
+                        <span className="checkmark"></span>
+                    </label>
+                    <label className="ids_chooser">
+                        MLP Algorithm
+                        <input type="checkbox" onChange={this.handleMlpChange}/>
+                        <span className="checkmark"></span>
+                    </label>
+                </form>
+                <button onClick={this.saveChosenIDS}> Confirm </button>
             </div>
         )
     }

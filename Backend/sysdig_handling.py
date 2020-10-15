@@ -38,7 +38,7 @@ class SysdigHandling:
         self.read_thread = threading.Thread(
                 target=self.read_syscall, args=([]))
         self.read_thread.start()
-        # Initiate data_handling
+        # Data is sent to this data_handling instance 
         self.data_handling = data_handling
 
     @contextmanager

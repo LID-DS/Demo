@@ -1,6 +1,8 @@
 import collections
 import operator
+from IDSWrapper import IDSWrapper
 from demo_model_stide import DemoModelStide
+from sysdig_handling import SysdigHandling
 
 MAX_BUCKETS = 1
 INITIAL_TRAINING_SIZE = 10000000
@@ -10,17 +12,26 @@ ALARM_THRESHOLD = 0.05
 
 class DataHandling:
 
-    def __init__(self):
+    def __init__(self, pid):
         """
         Initialization of DataHandling
             In charge of:
+                initiate sysdig
+                    sysdig sends syscalls to data_handling
                 calculate statistics of systemcalls
                     sum
                     calls per bucket (set to second -> bucket delay)
                     syscall distribution
                 collection of ids information (score, state...)
+        :params: pid of node process to monitor
         """
-        self.ids = DemoModelStide(ngram_length=7,training_size=INITIAL_TRAINING_SIZE)
+        #self.ids = DemoModelStide(ngram_length=7,training_size=INITIAL_TRAINING_SIZE)
+        self.sysdig_handling = SysdigHandling(
+                data_handling=self,
+                pid=pid)
+        self.ids_wrapper = IDSWrapper(
+                stide=True, 
+                mlp=False)
         self.syscall_sum = 0
         self.start_time = 0
         self.bucket_counter = 0
@@ -30,13 +41,13 @@ class DataHandling:
         self.syscall_type_dict_bucket = {}
         self.syscall_type_dict = {}
         self.syscall_type_dict_last_second = {}
-        self.ids_info = {
-            'score': 0,
-            'score_list': [],
-            'state': self.ids._model_state.value,
-            'training_size': self.ids._training_size,
-            'current_ngrams': 0,
-        }
+        #self.ids_info = {
+        #    'score': 0,
+        #    'score_list': [],
+        #    'state': self.ids._model_state.value,
+        #    'training_size': self.ids._training_size,
+        #    'current_ngrams': 0,
+        #}
 
     def update_statistic(self, syscall):
         """
@@ -57,14 +68,59 @@ class DataHandling:
         self.calc_calls_per_bucket(syscall)
         self.calc_syscall_type_distribution()
         # hand over system call to IDS
-        ids_info = {
-            'score': self.ids.consume_system_call(syscall),
-            'state': self.ids._model_state.value,
-            'training_size': self.ids._training_size,
-            'current_ngrams': self.ids._normal_ngrams["training_size"]
-        }
-        self.handle_ids_info(ids_info)
+        #ids_info = {
+        #    'score': self.ids.consume_system_call(syscall),
+        #    'state': self.ids._model_state.value,
+        #    'training_size': self.ids._training_size,
+        #    'current_ngrams': self.ids._normal_ngrams["training_size"]
+        #}
+        self.ids_info = self.ids_wrapper.send_to_ids(syscall)["stide"]
+        #self.handle_ids_info(syscall)
 
+    def handle_ids_info(self, syscall):
+        """
+        Add ids scores until next statistic update
+        than score list is reset
+        """
+        #print("NEW WAY")
+        #print(self.ids_info)
+        #if not ids_info['score'] is None:
+            #self.ids_info['score_list'].append(ids_info['score'])
+        #self.ids_info = {
+            #'score': ids_info['score'],
+            #'score_list': self.ids_info['score_list'],
+            #'state': ids_info['state'],
+            #'training_size': ids_info['training_size'],
+            #'current_ngrams': ids_info['current_ngrams']
+        #}
+        #print("OLD WAY")
+        #print(self.ids_info)
+
+    def get_alarm_content(self):
+        """
+        Send filenames of files which give further information to specific alarm
+        filenames created in Analysis
+        """
+        return self.ids_wrapper.stide.get_last_alarm_content()
+
+    def get_ids_score(self):
+        """
+        get highest ids score of current list of scores
+        than reset score list
+        if list empty return 0
+        """
+        return self.ids_wrapper.get_ids_score()
+        # if list is not empty return highest score
+        #if self.ids_info['score_list']:
+            ## sort list and return highest score
+            #sorted_ids_scores = sorted(
+                    #self.ids_info['score_list'],
+                    #reverse=True)
+            #self.ids_info['score_list'] = list()
+            #self.ids_wrapper.global_ids_info["stide"]["score_list"] = list()
+            #highest_score = sorted_ids_scores[0]
+            #return highest_score
+        #return 0
 
     def calc_syscall_type_distribution(self):
         """
@@ -89,29 +145,6 @@ class DataHandling:
             self.syscall_type_dict_last_second = (
                 self.deque_syscall_type_per_second.pop()
             )
-
-    def handle_ids_info(self, ids_info):
-        """
-        Add ids scores until next statistic update
-        than score list is reset
-        """
-        if not ids_info['score'] is None:
-            self.ids_info['score_list'].append(ids_info['score'])
-        self.ids_info = {
-            'score': ids_info['score'],
-            'score_list': self.ids_info['score_list'],
-            'state': ids_info['state'],
-            'training_size': ids_info['training_size'],
-            'current_ngrams': ids_info['current_ngrams']
-        }
-
-    def get_alarm_content(self):
-        """
-        Send filenames of files which give further information to specific alarm
-        filenames created in Analysis
-        """
-        return self.ids.get_last_alarm_content()
-
 
     def get_syscall_type_distribution_second(self):
         """
@@ -148,23 +181,6 @@ class DataHandling:
         }
         return sorted_dict
 
-    def get_ids_score(self):
-        """
-        get highest ids score of current list of scores
-        than reset score list
-        if list empty return 0
-        """
-        # if list is not empty return highest score
-        if self.ids_info['score_list']:
-            # sort list and return highest score
-            sorted_ids_scores = sorted(
-                    self.ids_info['score_list'],
-                    reverse=True)
-            self.ids_info['score_list'] = list()
-            highest_score = sorted_ids_scores[0]
-            return highest_score
-        return 0
-
     def get_sum(self):
         return self.syscall_sum
 
@@ -186,7 +202,7 @@ class DataHandling:
         return MAX_TOP_NGRAMS most seen ngrams of ids
         """
         # get current normal ngrams of ids
-        ngram_dict = self.ids._normal_ngrams
+        ngram_dict = self.ids_wrapper.stide._normal_ngrams
 
         # TODO converting list to dict and than dict to list, really?
 
@@ -201,7 +217,7 @@ class DataHandling:
         # remove first entry which stores only training_size
         del top_ngrams['training_size']
 
-        if len(self.ids._normal_ngrams) > MAX_TOP_NGRAMS + 1:
+        if len(ngram_dict) > MAX_TOP_NGRAMS + 1:
             rest_ngrams = sorted(
                     ngram_dict.items(),
                     key=operator.itemgetter(1),
@@ -214,7 +230,7 @@ class DataHandling:
         for key, value in top_ngrams.items():
             temp = [key, value]
             top_list.append(temp)
-        if len(self.ids._normal_ngrams) > MAX_TOP_NGRAMS + 1:
+        if len(self.ids_wrapper.stide._normal_ngrams) > MAX_TOP_NGRAMS + 1:
             top_list.append(['others', sum_of_other_ngrams])
 
         return top_list
@@ -225,7 +241,7 @@ class DataHandling:
         and the actual syscall string
         """
         int_to_syscall_list = []
-        for key, value in self.ids._int_to_syscall.items():
+        for key, value in self.ids_wrapper.stide._int_to_syscall.items():
             temp = [key, value]
             int_to_syscall_list.append(temp)
         return int_to_syscall_list

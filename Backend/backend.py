@@ -8,8 +8,6 @@ from flask import Flask
 from flask_socketio import SocketIO, emit
 
 from data_handling import DataHandling
-from sysdig_handling import SysdigHandling
-from demo_model_stide import DemoModelStide
 from Automated_Users.userAction_headless import UserManager
 from Automated_Users.Attacks.attack_manager import AttackManager
 
@@ -19,12 +17,6 @@ IN_DOCKER = False
 class Backend:
 
     def __init__(self):
-        """
-        setup data_handling to compute syscall statistics
-        and evaluate syscalls with IDS
-        provides data_handling of syscall an analysis of ids
-        """
-        self.data_handling = DataHandling()
         """
         if not run in docker start webshop
         and save PID of started npm processes
@@ -36,11 +28,12 @@ class Backend:
         else:
             webshop_pid = None
         """
-        setup sysdig handling to record system calls for specified pid
+        setup data_handling to 
+            setup of sysdig handling to record system calls for specified pid
+            compute syscall statistics
+            evaluate syscalls with IDS
         """
-        self.sysdig_handling = SysdigHandling(
-                data_handling=self.data_handling,
-                pid=webshop_pid)
+        self.data_handling = DataHandling(pid=webshop_pid)
         """
         initialize socket
         """
@@ -85,9 +78,13 @@ class Backend:
         self.app.config['SECRET_KEY'] = 'secret!'
         self.socketio = SocketIO(self.app, cors_allowed_origins='*')
 
+        @self.socketio.on('choosing ids')
+        def handle_message(json, methods=['GET','POST']):
+            self.data_handling.ids_wrapper.set_active_ids(json)
+
         @self.socketio.on('training update')
         def handle_message(json, methods=['GET', 'POST']):
-            self.retrain_ids(int(str(json)))
+            self.data_handling.ids_wrapper.init_stide(training_size=int(str(json)))
 
         @self.socketio.on('load model')
         def handle_message(json, methods=['GET', 'POST']):
@@ -98,8 +95,8 @@ class Backend:
             reinitialize data_handling and with new ids
             reinitialize sysdig_handling with new data_handling instance
             """
-            trained_model = self.data_handling.ids._load_model()
-            self.retrain_ids(trained_model=trained_model)
+            #TODO multiple models returned if multiple active
+            self.data_handling.ids_wrapper.load_active_models()
 
         @self.socketio.on('save model')
         def handle_message(json, methods=['GET', 'POST']):
@@ -107,7 +104,7 @@ class Backend:
             if 'save model' was received from frontend,
             save ids model
             """
-            self.data_handling.ids._save_model()
+            self.data_handling.ids_wrapper.save_active_model()
 
         @self.socketio.on('user action')
         def handle_message(json, methods=['GET', 'POST']):
@@ -202,11 +199,11 @@ class Backend:
                 try:
                     stats['ids_info'] = {
                         'score': self.data_handling.get_ids_score(),
-                        'state': self.data_handling.ids._model_state.value,
+                        'state': self.data_handling.ids_wrapper.stide._model_state.value,
                         'training_size':
-                            self.data_handling.ids_info['training_size'],
+                            self.data_handling.ids_wrapper.global_ids_info["stide"]['training_size'],
                         'current_ngrams':
-                            self.data_handling.ids_info['current_ngrams'],
+                            self.data_handling.ids_wrapper.global_ids_info["stide"]['current_ngrams'],
                         'top_ngrams': self.data_handling.get_top_ngrams(),
                         'int_to_sys': self.data_handling.get_int_to_sys(),
                         'alarm_content': self.data_handling.get_alarm_content()
@@ -243,10 +240,10 @@ class Backend:
         :params trained_model
         """
         if trained_model is None:
-            self.data_handling.ids = DemoModelStide(
+            self.data_handling.ids_wrapper.init_stide(
                     training_size=training_size)
         else:
-            self.data_handling.ids = DemoModelStide(
+            self.data_handling.ids_wrapper.init_stide(
                     trained_model=trained_model)
 
     def start_webshop(self):

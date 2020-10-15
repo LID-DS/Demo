@@ -12,7 +12,7 @@ button {
     text-align: center;
 }
 .button-basic:hover {
-    background-color: #470a0a;
+    background-color: var(--hover-button-color);
 }
 .button-basic:disabled {
     background-color: var(--item-bg-color-light);
