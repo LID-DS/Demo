@@ -283,9 +283,24 @@ class DemoModelStide:
             syscall_to_int and
             int_to_syscall to convert integers to syscall strings and back.
         """
-        with open('Models/save_ngrams.p', 'wb') as ngram_location:
-            pickle.dump(self._normal_ngrams, ngram_location)
-        with open('Models/save_sys_to_int.p', 'wb') as sys_int_location:
-            pickle.dump(self._syscall_to_int, sys_int_location)
-        with open('Models/save_int_to_sys.p', 'wb') as int_sys_location:
-            pickle.dump(self._int_to_syscall, int_sys_location)
+        if self._model_state == ModelState.Detection:
+            ngram_path = "Models/Stide/save_ngrams.p" 
+            sys_to_int_path = "Models/Stide/save_sys_to_int.p" 
+            int_to_sys_path = "Models/Stide/save_int_to_sys.p" 
+            paths = [ngram_path, sys_to_int_path, int_to_sys_path]
+           
+            for path in paths:
+                if not os.path.exists(os.path.dirname(path)):
+                    try:
+                        os.makedirs(os.path.dirname(path))
+                    except OSError as exc: # Guard against race condition
+                        if exc.errno != errno.EEXIST:
+                            raise
+            with open(ngram_path, 'wb') as ngram_location:
+                pickle.dump(self._normal_ngrams, ngram_location)
+            with open(sys_to_int_path, 'wb') as sys_int_location:
+                pickle.dump(self._syscall_to_int, sys_int_location)
+            with open(int_to_sys_path, 'wb') as int_sys_location:
+                pickle.dump(self._int_to_syscall, int_sys_location)
+        else:
+            print("Not able to save Stide model while training is ongoing")
