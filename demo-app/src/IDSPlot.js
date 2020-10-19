@@ -22,68 +22,8 @@ export default class IDSPlot extends React.PureComponent{
 
 function PlotRenderer(data) {
     data = data.data.plot_info
-    if(data.plot_type === "syscall"){
-        return(
-		<Plot
-            className="syscall-plot"
-		    data={[
-			{
-			    x: data.calls_per_second.x,
-			    y: data.calls_per_second.y,
-			    mode: 'markers',
-			    type: 'scatter',
-                marker: {
-                    color: colors[2] 
-                }
-			}
-		    ]}
-		    layout = {
-			{
-			    title : {
-                    text: "Systemcalls in container",
-                    font: {
-                        size: 24,
-                        color: '#f9f5d7'
-                    }
-                },
-			    xaxis : {
-                    title : {
-                        text: "Seconds",
-                        font: {
-                            size: 18,
-                            color: '#f9f5d7'
-                        }
-                    }
-			    },
-			    yaxis : {
-                    title : {
-                        text: "Amount of Systemcalls",
-                        font: {
-                            size: 18,
-                            color: '#f9f5d7'
-                        }
-                    },
-                    zerolinecolor: highlight_color, 
-                    gridcolor: highlight_color, 
-                    showgrid: true,
-                    tickcolor: highlight_color 
-			    },
-			    datarevision : data.index,
-			    paper_bgcolor: 'rgba(0,0,0,0)',
-			    plot_bgcolor: 'rgba(0,0,0,0)',
-                legend: {
-                    font: {
-                        size: 12,
-                        color: highlight_color 
-                    }
-                }
-
-			}
-		    }
-		/>
-        )
-    }
-    else if (data.plot_type === "ids"){
+    if (data instanceof Array){
+        data = data[0]
         return(
 		<Plot
             className="ids-plot"
@@ -146,5 +86,66 @@ function PlotRenderer(data) {
 		/>
         )
     }
+    else if(data.type === "syscall plot" ){
+        return(
+		<Plot
+            className="syscall-plot"
+		    data={[
+			{
+			    x: data.calls_per_second.x,
+			    y: data.calls_per_second.y,
+			    mode: 'markers',
+			    type: 'scatter',
+                marker: {
+                    color: colors[2] 
+                }
+			}
+		    ]}
+		    layout = {
+			{
+			    title : {
+                    text: "Systemcalls in container",
+                    font: {
+                        size: 24,
+                        color: '#f9f5d7'
+                    }
+                },
+			    xaxis : {
+                    title : {
+                        text: "Seconds",
+                        font: {
+                            size: 18,
+                            color: '#f9f5d7'
+                        }
+                    }
+			    },
+			    yaxis : {
+                    title : {
+                        text: "Amount of Systemcalls",
+                        font: {
+                            size: 18,
+                            color: '#f9f5d7'
+                        }
+                    },
+                    zerolinecolor: highlight_color, 
+                    gridcolor: highlight_color, 
+                    showgrid: true,
+                    tickcolor: highlight_color 
+			    },
+			    datarevision : data.index,
+			    paper_bgcolor: 'rgba(0,0,0,0)',
+			    plot_bgcolor: 'rgba(0,0,0,0)',
+                legend: {
+                    font: {
+                        size: 12,
+                        color: highlight_color 
+                    }
+                }
+
+			}
+		    }
+		/>
+        )
+    } 
 }
 

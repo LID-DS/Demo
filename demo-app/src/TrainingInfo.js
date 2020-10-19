@@ -15,7 +15,7 @@ export default class Training_info extends React.PureComponent {
                 current_ngrams: 1,
                 progress: 0
             },
-            stide_active: false,
+            stide_active: true,
             mlp_active: false,
             training_size_input: 100000
         }
@@ -72,12 +72,12 @@ export default class Training_info extends React.PureComponent {
                 <form>
                     <label className="ids_chooser">
                         Stide Algorithm
-                        <input type="checkbox" onChange={this.handleStideChange}/>
+                        <input type="checkbox" defaultChecked={this.state.stide_active} onChange={this.handleStideChange}/>
                         <span className="checkmark"></span>
                     </label>
                     <label className="ids_chooser">
                         MLP Algorithm
-                        <input type="checkbox" onChange={this.handleMlpChange}/>
+                        <input type="checkbox" defaultChecked={this.state.mlp_active} onChange={this.handleMlpChange}/>
                         <span className="checkmark"></span>
                     </label>
                 </form>

@@ -33,8 +33,8 @@ class App extends React.PureComponent{
                 stide: false,
                 mlp: false
             },
-            syscall_plot:{
-                plot_type: "syscall",
+            syscall_plot: {
+                type: "syscall plot",
                 calls_per_second : {
                     y: [],
                     x: [],
@@ -42,8 +42,9 @@ class App extends React.PureComponent{
                 },
                 index: 0
             },
-            ids_plot: {
-                plot_type: "ids",
+            ids_plot: [{
+                type: "ids plot",
+                ids_type: "stide",
                 ids_score: {
                     x: [], 
                     y: [],
@@ -52,7 +53,7 @@ class App extends React.PureComponent{
                 },
                 index: 0,
                 slider_threshold: IDS_THRESHOLD
-            },
+            }],
             original_data:{
                 x: [],
                 y: [],
@@ -165,9 +166,9 @@ class App extends React.PureComponent{
         y.push(data['calls_per_second'])
         x.push(this.state.index)
         // only show static window of PLOT_WINDOW_CUTOUT seconds
-        var cutout_ids = this.state.ids_plot.ids_score.cutout_ids
-        var cutout_y = this.state.syscall_plot.calls_per_second.cutout_y
-        var cutout_x = this.state.syscall_plot.calls_per_second.cutout_x
+        var cutout_ids = 0//this.state.ids_plot.ids_score.cutout_ids 
+        var cutout_y = 0//this.state.syscall_plot.calls_per_second.cutout_y
+        var cutout_x = 0//this.state.syscall_plot.calls_per_second.cutout_x
         // select only last entries of original data for cutout window
         cutout_ids = ids_score.slice(Math.max(ids_score.length - PLOT_WINDOW_CUTOUT, 1))
         cutout_x = x.slice(Math.max(x.length - PLOT_WINDOW_CUTOUT, 1))
@@ -209,7 +210,7 @@ class App extends React.PureComponent{
 
         this.setState({
             syscall_plot: {
-                plot_type: "syscall",
+                type: "syscall plot",
                 calls_per_second : {
                     x: cutout_x,
                     y: cutout_y,
@@ -217,8 +218,8 @@ class App extends React.PureComponent{
                 },
                 index: this.state.index + 1
             },
-            ids_plot: {
-                plot_type: "ids",
+            ids_plot: [{
+                ids_type: "stide",
                 ids_score: {
                     x: cutout_x,
                     y: cutout_ids,
@@ -227,7 +228,7 @@ class App extends React.PureComponent{
                 },
                 index: this.state.index + 1,
                 slider_threshold: this.state.slider.threshold 
-            },
+            }],
             original_data:{
                 x: x,
                 y: y,
