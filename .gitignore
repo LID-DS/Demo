@@ -15,3 +15,5 @@ demo-app/*.json
 /venv/
 Juice_Shop_Source/*
 Backend/alarm_info/*
+Backend/alarm_info/tracked_window/*
+Backend/alarm_info/raw_syscalls/*
