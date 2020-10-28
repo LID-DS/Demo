@@ -166,6 +166,34 @@ class Backend:
         collect data of syscall_data_handling and ids
         send collected data with delay of delay = 1 seconds to react frontend
         """
+        #Structure:
+        stats = {
+            'time': 0,
+            'syscall_info': {
+                'sum_all': 0,
+                'sum_second': 0,
+                'distribution_all': {},
+                'distribution_second': {}
+            },
+            'ids_info': {
+                'stide': {
+                    'active': bool,
+                    'score': 0,
+                    'state': 0,
+                    'training_size': 0,
+                    'current_ngrams': [],
+                    'top_ngrams': [],
+                    'int_to_sys': {}
+                }
+            },
+            'userAction': {
+                'userCount': 0,
+                'sequence_running': False
+            },
+            'analysis': {
+                'alarm_content': ""
+            }
+        }
         delay = 1
         # TODO time steps more sophisticated
         time_since_start = 0
@@ -173,52 +201,57 @@ class Backend:
         while True:
             try:
                 try:
-                    stats['sum'] = str(self.data_handling.get_sum())
-                except Exception:
-                    print("sum failed")
-                try:
-                    stats['calls_per_second'] = \
-                        self.data_handling.get_calls_per_second()
-                except Exception:
-                    print("calls per second failed")
-                try:
                     # time_first_call
                     stats['time'] = time_since_start
                 except Exception:
                     print("get time failed")
                 try:
-                    stats['syscall_type_dict_second'] = \
-                        self.data_handling.get_syscall_type_distribution_second()
-                except Exception:
-                    print("syscall dict failed")
-                try:
-                    stats['syscall_type_dict'] = \
-                        self.data_handling.get_syscall_type_distribution()
-                except Exception:
-                    print("syscall dict  whole failed")
-                try:
-                    stats['ids_info'] = {
-                        'score': self.data_handling.get_ids_score(),
-                        'state': self.data_handling.ids_wrapper.stide._model_state.value,
-                        'training_size':
-                            self.data_handling.ids_wrapper.global_ids_info["stide"]['training_size'],
-                        'current_ngrams':
-                            self.data_handling.ids_wrapper.global_ids_info["stide"]['current_ngrams'],
-                        'top_ngrams': self.data_handling.get_top_ngrams(),
-                        'int_to_sys': self.data_handling.get_int_to_sys(),
-                        'alarm_content': self.data_handling.get_alarm_content()
+                    stats['syscall_info'] = {
+                        'sum': str(self.data_handling.get_sum()),
+                        'sum_second': self.data_handling.get_calls_per_second(),
+                        'distribution_all': self.data_handling.get_syscall_type_distribution(),
+                        'distribution_second': self.data_handling.get_syscall_type_distribution_second()
                     }
                 except Exception:
-                    print("ids info failed")
+                    print("Systemcall info failed!")
                 try:
-                    if self.userManager.training_running:
-                        training_running = True
+                    if self.data_handling.ids_wrapper.active_ids["stide"] is not None:
+                        stats['ids_info'] = {
+                            'stide': {
+                                'active': True,
+                                'score': self.data_handling.ids_wrapper.get_ids_score_last_second(),
+                                'state': self.data_handling.ids_info['stide']['state'],
+                                'training_size': self.data_handling.ids_info['stide']['training_size'],
+                                'current_ngrams': 
+                                    self.data_handling.ids_info['stide']['current_ngrams'],
+                                'top_ngrams': 
+                                    self.data_handling.get_top_ngrams(),
+                                'int_to_sys': 
+                                    self.data_handling.get_int_to_sys()
+                            }
+                        }
                     else:
-                        training_running = False
+                        stats['ids_info']['stide'] = {
+                            'active': False
+                        }
+                except Exception:
+                    print("IDS info failed!")
+                try:
+                    stats['analysis']: {
+                        'alarm_content': 
+                            self.data_handling.get_alarm_content()
+                    }
+                except Exception:
+                    print("Analysis info failed!")
+                try:
+                    if self.userManager.sequence_running:
+                        sequence_running = True
+                    else:
+                        sequence_running = False
                     stats['userAction'] = {
                         'userCount': len(self.userManager.active_users) +
                                      len(self.userManager.removing_users),
-                        'training_running': training_running
+                        'training_running': sequence_running
                     }
                 except Exception:
                     print("userCount info failed")

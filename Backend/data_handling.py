@@ -74,7 +74,7 @@ class DataHandling:
         #    'training_size': self.ids._training_size,
         #    'current_ngrams': self.ids._normal_ngrams["training_size"]
         #}
-        self.ids_info = self.ids_wrapper.send_to_ids(syscall)["stide"]
+        self.ids_info = self.ids_wrapper.send_to_ids(syscall)
         #self.handle_ids_info(syscall)
 
     def handle_ids_info(self, syscall):

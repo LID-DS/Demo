@@ -1,4 +1,8 @@
 from demo_model_stide import DemoModelStide
+#from mlp import MLP
+from syscalls_to_vec_mlp import SyscallsToVec
+
+
 class IDSWrapper:
 
     def __init__(self, stide: bool, mlp:bool):
@@ -7,7 +11,7 @@ class IDSWrapper:
         multiple IDSs possible
         Instances of different IDS are passed as list
         """
-
+        self.key = ""
         self.active_ids = {
                 "stide": None,
                 "mlp" : None} 
@@ -28,6 +32,7 @@ class IDSWrapper:
         """
         Initialisation of stide algorithm
         """
+        self.key = "stide"
         # use default values
         if training_size is None and trained_model is None:
             self.stide = DemoModelStide(ngram_length=7, window_length=3, training_size=10000000) 
@@ -39,26 +44,33 @@ class IDSWrapper:
             self.stide = DemoModelStide(trained_model=trained_model)
         self.active_ids["stide"] = self.stide
         self.global_ids_info["stide"] = {
-                'score' : 0,
-                'score_list' : [], 
-                'state' : self.stide._model_state.value,
-                'training_size' : self.stide._training_size,
-                'current_ngrams' : 0 
-                }
+            'score': 0,
+            'state': self.stide._model_state.value,
+            'training_size': self.stide._training_size,
+            'current_ngrams': 0 
+        }
+        self.score_list = []
+        print("Stide initialized")
 
     def init_mlp(self):
         """
         Initialisation of mlp algorithm
         """
-        self.mlp = None
+        self.key = "mlp"
+        syscall_map = SyscallsToVec()
+        self.mlp = "smth"#MLP(syscall_map)
         self.active_ids["mlp"] = self.mlp
+        self.global_ids_info["mlp"] = {
+                'score': 0,
+                'state': 0
+                }
+        self.score_list = []
+        print("MLP initialized")
 
     def set_active_ids(self, active_ids):
         """
         receive active ids information of frontend
         """
-        print(active_ids["stide"])
-        print(active_ids["mlp"])
         # do nothing if active_ids["stide"] is true and stide was active
         if active_ids["stide"] and self.active_ids["stide"]:
             pass
@@ -74,44 +86,51 @@ class IDSWrapper:
             pass
         # activate mlp if param is true and mlp was not active
         elif active_ids["mlp"] and not self.active_ids["mlp"]:
-            self.active_ids["stide"] = self.init_stide()
+            self.active_ids["mlp"] = self.init_mlp()
         # if param is false stop sending syscalls to mlp
         elif not active_ids["mlp"]:
             self.active_ids["mlp"] = None
+        print(self.active_ids)
 
 
     def send_to_ids(self, syscall):
         """
         Return collected information of all active ids
         """
-        if not self.active_ids["stide"] is None:
+        if self.active_ids["stide"] is not None:
             ids_score = self.stide.consume_system_call(syscall)
-            if not ids_score is None: 
-                self.global_ids_info["stide"]["score_list"].append(ids_score)
+            if ids_score is not None: 
+                self.score_list.append(ids_score)
             ids_info = { 
-                    'score' : ids_score,
-                    'score_list' : self.global_ids_info["stide"]["score_list"],
+                    #'score' : self.get_ids_score_last_second(),
                     'state' : self.stide._model_state.value,
                     'training_size' : self.stide._training_size,
                     'current_ngrams' : self.stide._normal_ngrams["training_size"],
                     }
             self.global_ids_info["stide"] = ids_info
-        if "mlp" in self.active_ids.keys():
-            self.global_ids_info["mlp"] = None
+            #print(ids_info['score'])
+        if self.active_ids["mlp"] is not None:
+            ids_score = 0.5
+            if ids_score is not None:
+                self.score_list.append(ids_score)
+            ids_info = {
+                    #'score' : self.get_ids_score_last_second(),
+                    'state' : 1,
+                    }
+            self.global_ids_info["mlp"] = ids_info
         return self.global_ids_info
 
-    def get_ids_score(self):
+    def get_ids_score_last_second(self):
         """
         return score of all active ids
         """
         # if list is not empty return highest score
-        score_list = self.global_ids_info["stide"]['score_list']
-        if score_list:
+        if self.score_list:
             # sort list and return highest score
             sorted_ids_scores = sorted(
-                    score_list,
+                    self.score_list,
                     reverse=True)
-            self.global_ids_info["stide"]['score_list'] = list()
+            self.score_list = list()
             highest_score = sorted_ids_scores[0]
             return highest_score
         return 0

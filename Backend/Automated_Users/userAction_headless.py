@@ -506,7 +506,7 @@ class UserManager:
     """
     def __init__(self):
         self.active_users = []
-        self.training_running = False 
+        self.sequence_running = False 
         self.removing_users = []
     
     def checkSite(self):
@@ -582,9 +582,9 @@ class UserManager:
             delete random number of users
         """
         print("Training sequence has started")
-        self.training_running = True
+        self.sequence_running = True
         first_run = True
-        while(self.training_running):
+        while(self.sequence_running):
             print("Users in active List: {}".format(len(self.active_users)))
             print("Users in removing List: {}".format(len(self.removing_users)))
             # add users, but never more than MAX_USERS
@@ -598,12 +598,12 @@ class UserManager:
             print("Adding {} users.".format(users_to_add))
             for i in range(0,users_to_add):
                 self.add_user()
-            if not self.training_running:
+            if not self.sequence_running:
                 self.remove_all_user()
                 return None
             for i in range(120):
                 time.sleep(1)
-                if not self.training_running:
+                if not self.sequence_running:
                     self.remove_all_user()
                     return None
             # remove random number of users 
@@ -613,7 +613,7 @@ class UserManager:
             print("Users in removing List: {}".format(len(self.removing_users)))
             for j in range(0,random_count):
                 self.remove_user()
-            if not self.training_running:
+            if not self.sequence_running:
                 self.remove_all_user()
                 return None
             print("Users in active List: {}".format(len(self.active_users)))
@@ -622,14 +622,14 @@ class UserManager:
                 time.sleep(1)
                 if i%10 == 0:
                     print("Waiting {} seconds untill new users are added.".format(60 - i))
-                if not self.training_running:
+                if not self.sequence_running:
                     self.remove_all_user()
                     return None
         self.remove_all_user()
         return None
 
     def stop_training_sequence(self):
-        self.training_running = False
+        self.sequence_running = False
 
 if __name__ == "__main__":
     userManager = UserManager()
