@@ -237,7 +237,7 @@ class Backend:
                 except Exception:
                     print("IDS info failed!")
                 try:
-                    stats['analysis']: {
+                    stats['analysis'] = {
                         'alarm_content': 
                             self.data_handling.get_alarm_content()
                     }

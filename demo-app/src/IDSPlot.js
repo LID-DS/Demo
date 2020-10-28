@@ -85,7 +85,7 @@ function PlotRenderer(data) {
         )
     }
     else {
-        return (<div>teste</div>)
+        return (<div>Loading...</div>)
     }
 }
 

@@ -266,6 +266,7 @@ class App extends React.PureComponent{
             this.setState({
                 data : data
             });
+            console.log(data)
             //check for alarm
             //update plot data 
             this.prepareSysPlot(data['time'], data['syscall_info'])
@@ -309,11 +310,12 @@ class App extends React.PureComponent{
                 else {
                     var key = "mlp"
                 }
-               if (data['ids_info'][key]['alarm_content'].length > 0) {
+                console.log(data['analysis'])
+                if (data['analysis']['alarm_content'].length > 0) {
                     this.incidentTable.current.add_incident(
                         data['time'], 
                         data['ids_info'][key]['score'], 
-                        data['ids_info'][key]['alarm_content'])
+                        data['analysis']['alarm_content'])
                 }
             }
         }.bind(this));
