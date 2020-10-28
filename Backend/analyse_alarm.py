@@ -145,7 +145,7 @@ class Analysis:
     def get_last_alarm_content(self):
         if self.last_alarm_queue:
             tmp = self.last_alarm_queue.popleft()
-            print(len(tmp))
+            print(f"length of alarm content {len(tmp)}")
             return tmp
         else:
             return ""

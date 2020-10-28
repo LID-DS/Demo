@@ -76,7 +76,7 @@ class IDSWrapper:
             pass
         # activate stide if param is true and stide was not active
         elif active_ids["stide"] and not self.active_ids["stide"]:
-            self.active_ids["stide"] = self.init_stide()
+            self.init_stide()
         # if param is false stop sending syscalls to stide
         elif not active_ids["stide"]:
             self.active_ids["stide"] = None
@@ -86,7 +86,7 @@ class IDSWrapper:
             pass
         # activate mlp if param is true and mlp was not active
         elif active_ids["mlp"] and not self.active_ids["mlp"]:
-            self.active_ids["mlp"] = self.init_mlp()
+            self.init_mlp()
         # if param is false stop sending syscalls to mlp
         elif not active_ids["mlp"]:
             self.active_ids["mlp"] = None
