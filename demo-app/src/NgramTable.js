@@ -22,7 +22,7 @@ export default class Ngram_Table extends React.PureComponent {
 
     update_list = (raw_ngram_list) => {
         var current_list = []
-        try{
+        try {
             //if second argument is string, 
             //show ngram integers converted to strings(1,2,...)
             //and print appropriate labels
@@ -42,23 +42,23 @@ export default class Ngram_Table extends React.PureComponent {
                     column_1_width : 400
                 })
             }
+            //Add entries to list which is rendered
+            var i
+            for (i=0; i<raw_ngram_list.length; i++){
+                current_list.push({
+                        ngram: raw_ngram_list[i][0], 
+                        count: raw_ngram_list[i][1]
+                }) 
+            }
+            this.setState((prevState, props) => {
+                return {
+                    ngram_list: current_list
+                }
+            })
         }
         catch(err) {
             console.log("Wait for first ngrams") 
         }
-        //Add entries to list which is rendered
-        var i
-        for (i=0; i<raw_ngram_list.length; i++){
-            current_list.push({
-                    ngram: raw_ngram_list[i][0], 
-                    count: raw_ngram_list[i][1]
-            }) 
-        }
-        this.setState((prevState, props) => {
-            return {
-                ngram_list: current_list
-            }
-        })
     }
 
     render() {

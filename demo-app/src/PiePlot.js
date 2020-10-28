@@ -36,7 +36,7 @@ class PiePlot extends React.PureComponent{
 
         if(this.props.info === "ngram" && this.state.labels.length === 11){
             this.setState({
-                converted_labels : this.convertLabels(this.state.labels, this.props.conversionTable['int_to_sys']),
+                converted_labels : this.convertLabels(this.state.labels, this.props.conversionTable['stide']['int_to_sys']),
             })
         }
     }

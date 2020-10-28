@@ -8,6 +8,7 @@ export default class Training_info extends React.PureComponent {
     constructor(props){
         super(props)
         this.state = {
+            type: "",
             ids_info: {
                 state_string: "",
                 state: 0,
@@ -24,24 +25,35 @@ export default class Training_info extends React.PureComponent {
         this.saveChosenIDS = this.saveChosenIDS.bind(this);
     }
     
-    update_training_info = (ids_info) => {
+    update_training_info = (type, state, current_ngrams, training_size) => {
         
-    // Invoked from IDSPlot
-        var ids_state = "Training ongoing"
-        if (ids_info['state'] !== 0){
-            ids_state = "Detecting"
+        if (type === 'stide'){
+            this.setState({
+                type: "Stide"
+            }) 
+            //ids_info = ids_info['stide']
+            // Invoked from IDSPlot
+            var ids_state = "Training ongoing"
+            if (state !== 0){
+                ids_state = "Detecting"
+            }
+            var progress = current_ngrams/training_size*100       
+            this.setState({
+                ids_info: {
+                    state_string : ids_state,
+                    state : state,
+                    training_size : training_size,
+                    current_ngrams : current_ngrams,
+                    progress: progress,
+                }
+            })
+        }
+        else {
+           this.setState({
+               type: "MLP"
+           }) 
         }
 
-        var progress = ids_info['current_ngrams']/ids_info['training_size']*100       
-        this.setState({
-            ids_info: {
-                state_string : ids_state,
-                state : ids_info['state'],
-                training_size : ids_info['training_size'],
-                current_ngrams : ids_info['current_ngrams'],
-                progress: progress,
-            }
-        })
     }
 
     handleStideChange = () => {
@@ -67,17 +79,24 @@ export default class Training_info extends React.PureComponent {
     render(){
         return(
             <div className="detecting">
+                <div>{this.state.type}</div>
                 <Info ids_info={this.state.ids_info}/>
                 <em>Current training size: {this.state.ids_info.training_size}</em>
                 <form>
                     <label className="ids_chooser">
                         Stide Algorithm
-                        <input type="checkbox" defaultChecked={this.state.stide_active} onChange={this.handleStideChange}/>
+                        <input type="checkbox" 
+                            defaultChecked={this.state.stide_active} 
+                            onChange={this.handleStideChange}
+                        />
                         <span className="checkmark"></span>
                     </label>
                     <label className="ids_chooser">
                         MLP Algorithm
-                        <input type="checkbox" defaultChecked={this.state.mlp_active} onChange={this.handleMlpChange}/>
+                        <input type="checkbox" 
+                            defaultChecked={this.state.mlp_active} 
+                            onChange={this.handleMlpChange}
+                        />
                         <span className="checkmark"></span>
                     </label>
                 </form>

@@ -3,9 +3,9 @@ import io from 'socket.io-client';
 import Slider from 'react-input-slider';
 import './css/App.css';
 
+import SyscallPlot from './SyscallPlot';
 import IDSPlot from './IDSPlot';
 import TrainingInfo from './TrainingInfo';
-//import IncidentTable from './Table';
 import IncidentTable from './Table_alt'
 import UserInput from './UserInput'
 import UserActionInput from './UserActionInput'
@@ -27,10 +27,11 @@ class App extends React.PureComponent{
     constructor(props){
         super(props)
         this.state = {
+            index: 0,
             websocket:0,
             data:[],
             active_ids: { 
-                stide: false,
+                stide: true,
                 mlp: false
             },
             syscall_plot: {
@@ -40,20 +41,17 @@ class App extends React.PureComponent{
                     x: [],
                     name: ''
                 },
-                index: 0
             },
-            ids_plot: [{
-                type: "ids plot",
-                ids_type: "stide",
+            ids_plot: {
+                type: "stide",
                 ids_score: {
                     x: [], 
                     y: [],
                     name: '',
                     alarm: 0
                 },
-                index: 0,
                 slider_threshold: IDS_THRESHOLD
-            }],
+            },
             original_data:{
                 x: [],
                 y: [],
@@ -63,7 +61,6 @@ class App extends React.PureComponent{
                 threshold: IDS_THRESHOLD
             },
             alarm: 0,
-            index: 0,
             syscall_type_dist: {
                 complete: {} ,
                 top: {},
@@ -105,18 +102,18 @@ class App extends React.PureComponent{
         this.state.websocket.emit(form, specify)
     }
     
-    updateSyscallDistribution = (data) => {
+    updateSyscallDistribution = (sorted_syscalls) => {
         // create list top of dictionaries 
         // each entry is name of systemcall and count of occurences
         let top = [];
         var i;
         try {
             for (i = 0; i < 5; i++){
-                top.push(data['syscall_type_dict']['sorted_syscalls'][i]);
+                top.push(sorted_syscalls[i]);
             }
             var sum_others = 0
-            for (i = 5; i < data['syscall_type_dict']['sorted_syscalls'].length; i++){
-                let tmp = Object.values(data['syscall_type_dict']['sorted_syscalls'][i])
+            for (i = 5; i < sorted_syscalls.length; i++){
+                let tmp = Object.values(sorted_syscalls[i])
                 sum_others += tmp[0]
             }
             let others = {
@@ -130,18 +127,20 @@ class App extends React.PureComponent{
         }
     }
 
-    updateNgramPlot = (data) => {
+    updateNgramPlot = (ngram_data) => {
         // create dict of ngrams for piechart 
         //console.log(data['ids_info']['top_ngrams'][0]) 
-        var ngram_data = data['ids_info']['top_ngrams']
+        //var ngram_data = data['ids_info']['stide']['top_ngrams']
         var i
-        for(i=0; i<ngram_data.length; i++) {
-            //ngram_data[i][0] = ngram_data[i][0].toString()
-            var tmp1 = ngram_data[i][0].toString()
-            var tmp2 = ngram_data[i][1]
-            ngram_data[i] = {[tmp1]: tmp2}
+        if (typeof ngram_data === 'object'){
+            for(i=0; i<ngram_data.length; i++) {
+                //ngram_data[i][0] = ngram_data[i][0].toString()
+                var tmp1 = ngram_data[i][0].toString()
+                var tmp2 = ngram_data[i][1]
+                ngram_data[i] = {[tmp1]: tmp2}
+            }
+            this.ngramPlot.current.handleValues(ngram_data)
         }
-        this.ngramPlot.current.handleValues(ngram_data)
     }
 
     /*
@@ -149,65 +148,22 @@ class App extends React.PureComponent{
         calc moving window for syscall and ids plot
         show correct trafficlight
     */
-    preparePlotData = (data) => {
-        //console.log([data['calls_per_second'], data['time_of_first_call_minute']])
-        let y = this.state.original_data.y
+    prepareSysPlot = (time, syscall_data) => {
+        // handle system call information
+        // get old time information
         let x = this.state.original_data.x
-        let ids_score = this.state.original_data.ids_score
-        // insert sent data into data object of plot
-         // and further information into ids_info
-
-        if (data['ids_info']['score'] != null) {
-            ids_score.push(data['ids_info']['score'])
-        }
-        else{
-            ids_score.push(0)
-        }   
-        y.push(data['calls_per_second'])
-        x.push(this.state.index)
+        //get old count of syscalls 
+        let y = this.state.original_data.y
+        //add newest entry
+        x.push(time)
+        y.push(syscall_data['sum_second'])
+        //prepare cutout to plot correct window
         // only show static window of PLOT_WINDOW_CUTOUT seconds
-        var cutout_ids = 0//this.state.ids_plot.ids_score.cutout_ids 
-        var cutout_y = 0//this.state.syscall_plot.calls_per_second.cutout_y
-        var cutout_x = 0//this.state.syscall_plot.calls_per_second.cutout_x
         // select only last entries of original data for cutout window
-        cutout_ids = ids_score.slice(Math.max(ids_score.length - PLOT_WINDOW_CUTOUT, 1))
+        var cutout_x = 0
+        var cutout_y = 0
         cutout_x = x.slice(Math.max(x.length - PLOT_WINDOW_CUTOUT, 1))
         cutout_y = y.slice(Math.max(y.length - PLOT_WINDOW_CUTOUT, 1))
-
-        // fill in zeros in y -> Entries with no record (because nothing was recorded) set to 0
-        // fill in negative numbers so first value of y starts at x = 0
-        if (cutout_x.length < PLOT_WINDOW_CUTOUT){
-            var new_cutout_x = new Array(PLOT_WINDOW_CUTOUT - cutout_x.length).fill(0)
-            for(var i = PLOT_WINDOW_CUTOUT - cutout_x.length; i > 0; i--){
-            new_cutout_x[i-1] = -(i-1)
-            }
-            var new_cutout_y = new Array(PLOT_WINDOW_CUTOUT - cutout_y.length).fill(0)
-            var new_cutout_ids = new Array(PLOT_WINDOW_CUTOUT - cutout_ids.length).fill(0)
-            cutout_ids = new_cutout_ids.concat(cutout_ids)
-            cutout_x = new_cutout_x.concat(cutout_x)
-            cutout_y = new_cutout_y.concat(cutout_y)
-        }
-        var lights = []
-        var current_score = data['ids_info']['score']
-
-        //if still in training set light to yellow
-        if(data['ids_info']['state'] === 0){
-            lights = [false,true,false]
-            this.setState({alarm: 0})
-        }
-        //when alarm triggered
-        // update traffic light
-        // set alarm state so App.js can access it
-        else if(current_score > this.state.slider.threshold){
-            lights = [true,false,false]
-            this.setState({alarm: 1})
-        }
-        else {
-            lights = [false,false,true]
-            this.setState({alarm: 0})
-        }
-        this.trafficLight.current.updateLight(lights)
-
         this.setState({
             syscall_plot: {
                 type: "syscall plot",
@@ -215,27 +171,35 @@ class App extends React.PureComponent{
                     x: cutout_x,
                     y: cutout_y,
                     name: 'Time series data'
-                },
-                index: this.state.index + 1
+                }
             },
-            ids_plot: [{
-                ids_type: "stide",
-                ids_score: {
-                    x: cutout_x,
-                    y: cutout_ids,
-                    name: 'IDS score data',
-                    alarm: this.state.alarm
-                },
-                index: this.state.index + 1,
-                slider_threshold: this.state.slider.threshold 
-            }],
-            original_data:{
+            original_data: {
                 x: x,
                 y: y,
-                ids_score: ids_score
+                ids_score: this.state.original_data.ids_score
+            }
+        })
+    }
+
+    prepareIDSPlot = (time, ids_info) => {
+        let ids_score = this.state.original_data.ids_score
+        let x = this.state.original_data.x
+        ids_score.push(ids_info['score'])
+        var cutout_x = x.slice(Math.max(x.length - PLOT_WINDOW_CUTOUT, 1))
+        var cutout_ids = ids_score.slice(Math.max(ids_score.length - PLOT_WINDOW_CUTOUT, 1))
+        cutout_ids = ids_score.slice(Math.max(ids_score.length - PLOT_WINDOW_CUTOUT, 1))
+        this.setState({
+            ids_plot: {
+                type: "stide",
+                ids_score : {
+                    y: cutout_ids,
+                    x: cutout_x,
+                    name: 'IDS score data',
+                    alarm: this.state.alarm
+                }
             },
-            index: this.state.index + 1,
-        });
+            index: this.state.index + 1
+        })
     }
     
     handleRetrain = event => {
@@ -253,6 +217,7 @@ class App extends React.PureComponent{
                 mlp: active_ids[1]
             }
         })
+        console.log(active_ids)
         this.state.websocket.emit(
             'choosing ids', {
                 "stide":active_ids[0], 
@@ -263,6 +228,27 @@ class App extends React.PureComponent{
     
     automaticUserActions = (userAction) => {
         this.state.websocket.emit('user action', userAction)
+    }
+
+    updateTrafficLight = (state, score) => {
+        var lights = []
+        //if still in training set light to yellow
+        if (state == 0){
+            lights = [false, true, false]
+            this.setState({alarm: 0})
+        }
+        // when alarm triggered
+        //  update traffic light
+        //  set alarm state
+        else if (score > this.state.slider.threshold){
+            lights = [true, false, false]
+            this.setState({alarm: 1})
+        }
+        else {
+            lights = [false, false, true]
+            this.setState({alarm: 0})
+        }
+        this.trafficLight.current.updateLight(lights)
     }
 
     componentDidMount(){
@@ -280,29 +266,54 @@ class App extends React.PureComponent{
             this.setState({
                 data : data
             });
+            //check for alarm
             //update plot data 
-            this.preparePlotData(data)
-            //update training info 
-            this.trainingInfo.current.update_training_info(
-                data['ids_info'])
+            this.prepareSysPlot(data['time'], data['syscall_info'])
+            if(this.state.active_ids['stide']){
+                this.updateTrafficLight(
+                    data['ids_info']['stide']['state'],
+                    data['ids_info']['stide']['score']
+                )
+                this.prepareIDSPlot(
+                    data['time'], 
+                    data['ids_info']['stide'])
+                // update ngram table if stide is active
+                this.ngramTable.current.update_list(
+                    data['ids_info']['stide']['top_ngrams'])
+                //update training info 
+                this.trainingInfo.current.update_training_info(
+                    "stide",
+                    data['ids_info']['stide']['state'],
+                    data['ids_info']['stide']['current_ngrams'],
+                    data['ids_info']['stide']['training_size']
+                )
+            }
             //update syscall distribution
-            this.updateSyscallDistribution(data)
-            // update ngram table 
-            this.ngramTable.current.update_list(
-                data['ids_info']['top_ngrams'])
+            this.updateSyscallDistribution(
+                data['syscall_info']['distribution_all']['sorted_syscalls'])
             // update ngram piechart
-            this.updateNgramPlot(data)
+            this.updateNgramPlot(
+                data['ids_info']['stide']['top_ngrams'])
             //update table of converted syscalls to int (of ids) 
             this.intToSysTable.current.update_list(
-                data['ids_info']['int_to_sys'])
+                data['ids_info']['stide']['int_to_sys'])
             // update useraction Info
             this.userAction.current.updateCount(
                 data['userAction'])
             //Add incident to  table if alarm state of ids plot is reached
             // -> depends on set threshold in plot
             if (this.state.alarm === 1){
-                if (data['ids_info']['alarm_content'].length > 0) {
-                    this.incidentTable.current.add_incident(data['time'], data['ids_info']['score'], data['ids_info']['alarm_content'])
+                if (this.state.active_ids['stide']){
+                    var key = "stide"
+                }
+                else {
+                    var key = "mlp"
+                }
+               if (data['ids_info'][key]['alarm_content'].length > 0) {
+                    this.incidentTable.current.add_incident(
+                        data['time'], 
+                        data['ids_info'][key]['score'], 
+                        data['ids_info'][key]['alarm_content'])
                 }
             }
         }.bind(this));
@@ -322,8 +333,8 @@ class App extends React.PureComponent{
               </header>
                 <div className="dashboard">
                     <div className="item-plot">
-                        <IDSPlot className="syscall-plot" 
-                            plot_info={this.state.syscall_plot}  
+                        <SyscallPlot className="syscall-plot"
+                            plot_info={this.state.syscall_plot}
                         />
                     </div>
                     <div className="item">
@@ -356,8 +367,12 @@ class App extends React.PureComponent{
                         </div>
                     </div>
                     <div className="item-plot">
-                        <IDSPlot className="ids-plot" 
-                            plot_info={this.state.ids_plot}  
+                        <IDSPlot className="ids-plot"
+                            time={this.state.ids_plot.ids_score.x}
+                            score={this.state.ids_plot.ids_score.y}
+                            alarm={this.state.alarm}
+                            threshold={this.state.slider.threshold}
+                            index={this.state.index}
                         />
                     </div>
                     <div className="item">
