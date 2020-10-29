@@ -2,7 +2,6 @@ from demo_model_stide import DemoModelStide
 #from mlp import MLP
 from syscalls_to_vec_mlp import SyscallsToVec
 
-
 class IDSWrapper:
 
     def __init__(self, stide: bool, mlp:bool):
@@ -28,6 +27,18 @@ class IDSWrapper:
             #self.init_mlp(trained_model=trained_model)
             print("load pretrained mlp model")
 
+    def retrain_active_ids(self, training_size=None, trained_model=None):
+        if self.active_ids['stide'] is not None:
+            if trained_model is None:
+                self.init_stide(training_size)
+            else:
+                self.init_stide(trained_model)
+        if self.active_ids['mlp'] is not None:
+            if trained_model is None:
+                self.init_mlp()
+            else:
+                self.init_mlp(trained_model)
+
     def init_stide(self, training_size=None, trained_model=None):
         """
         Initialisation of stide algorithm
@@ -52,7 +63,7 @@ class IDSWrapper:
         self.score_list = []
         print("Stide initialized")
 
-    def init_mlp(self):
+    def init_mlp(self, trained_model=None):
         """
         Initialisation of mlp algorithm
         """
@@ -110,7 +121,7 @@ class IDSWrapper:
             self.global_ids_info["stide"] = ids_info
             #print(ids_info['score'])
         if self.active_ids["mlp"] is not None:
-            ids_score = 0.5
+            ids_score = 0.03
             if ids_score is not None:
                 self.score_list.append(ids_score)
             ids_info = {

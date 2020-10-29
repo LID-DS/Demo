@@ -31,7 +31,7 @@ class App extends React.PureComponent{
             websocket:0,
             data:[],
             active_ids: { 
-                stide: true,
+                stide: false,
                 mlp: false
             },
             syscall_plot: {
@@ -145,8 +145,8 @@ class App extends React.PureComponent{
 
     /*
         prepare plot data
-        calc moving window for syscall and ids plot
-        show correct trafficlight
+        calc moving window for syscall 
+        fill with leading zeros if needed
     */
     prepareSysPlot = (time, syscall_data) => {
         // handle system call information
@@ -164,6 +164,8 @@ class App extends React.PureComponent{
         var cutout_y = 0
         cutout_x = x.slice(Math.max(x.length - PLOT_WINDOW_CUTOUT, 1))
         cutout_y = y.slice(Math.max(y.length - PLOT_WINDOW_CUTOUT, 1))
+        cutout_x = this.adjustTimeArray(cutout_x)
+        cutout_y = this.fillWithLeadingZeros(cutout_y)
         this.setState({
             syscall_plot: {
                 type: "syscall plot",
@@ -181,16 +183,23 @@ class App extends React.PureComponent{
         })
     }
 
-    prepareIDSPlot = (time, ids_info) => {
+    /*
+        prepare plot data
+        calc moving window for syscall 
+        fill with leading zeros if needed
+    */
+    prepareIDSPlot = (time, ids_info, type) => {
         let ids_score = this.state.original_data.ids_score
         let x = this.state.original_data.x
         ids_score.push(ids_info['score'])
         var cutout_x = x.slice(Math.max(x.length - PLOT_WINDOW_CUTOUT, 1))
         var cutout_ids = ids_score.slice(Math.max(ids_score.length - PLOT_WINDOW_CUTOUT, 1))
         cutout_ids = ids_score.slice(Math.max(ids_score.length - PLOT_WINDOW_CUTOUT, 1))
+        cutout_ids = this.fillWithLeadingZeros(cutout_ids)
+        cutout_x = this.adjustTimeArray(cutout_x)
         this.setState({
             ids_plot: {
-                type: "stide",
+                type: type,
                 ids_score : {
                     y: cutout_ids,
                     x: cutout_x,
@@ -200,6 +209,30 @@ class App extends React.PureComponent{
             },
             index: this.state.index + 1
         })
+    }
+
+    fillWithLeadingZeros = (data) => {
+        let zeros = new Array(PLOT_WINDOW_CUTOUT - data.length).fill(0)
+        return zeros.concat(data)
+    }
+
+    //adjust time array, so it starts at x=0 if no data was collected before
+    adjustTimeArray = (data) => {
+        let reverse_count = new Array(PLOT_WINDOW_CUTOUT - data.length).fill(0)
+        if(data.length !== 0){
+            let counter = 1
+            for (var i = PLOT_WINDOW_CUTOUT - data.length; i > 0; i-- ){
+                reverse_count[i-1] = data[0] - counter 
+                counter = counter + 1
+            }
+            return reverse_count.concat(data)
+        }
+        else {
+            for (var i = PLOT_WINDOW_CUTOUT - data.length; i > 0; i-- ){
+                reverse_count[i-1] = -(i-1)
+            }
+            return reverse_count
+        }
     }
     
     handleRetrain = event => {
@@ -263,8 +296,13 @@ class App extends React.PureComponent{
 
         //if recieved message stats update plot
         socket.on('stats', function(data) {
+            //set active ids
             this.setState({
-                data : data
+                data : data,
+                active_ids: {
+                    'stide': data['ids_info']['stide']['active'],
+                    'mlp': data['ids_info']['mlp']['active']
+                }
             });
             console.log(data)
             //check for alarm
@@ -277,7 +315,9 @@ class App extends React.PureComponent{
                 )
                 this.prepareIDSPlot(
                     data['time'], 
-                    data['ids_info']['stide'])
+                    data['ids_info']['stide'],
+                    "stide"
+                )
                 // update ngram table if stide is active
                 this.ngramTable.current.update_list(
                     data['ids_info']['stide']['top_ngrams'])
@@ -288,16 +328,23 @@ class App extends React.PureComponent{
                     data['ids_info']['stide']['current_ngrams'],
                     data['ids_info']['stide']['training_size']
                 )
+                // update ngram piechart
+                this.updateNgramPlot(
+                    data['ids_info']['stide']['top_ngrams'])
+                //update table of converted syscalls to int (of ids) 
+                this.intToSysTable.current.update_list(
+                    data['ids_info']['stide']['int_to_sys'])
+            }
+            if(this.state.active_ids['mlp']){
+                this.prepareIDSPlot(
+                    data['time'],
+                    data['ids_info']['mlp'],
+                    "mlp"
+                ) 
             }
             //update syscall distribution
             this.updateSyscallDistribution(
                 data['syscall_info']['distribution_all']['sorted_syscalls'])
-            // update ngram piechart
-            this.updateNgramPlot(
-                data['ids_info']['stide']['top_ngrams'])
-            //update table of converted syscalls to int (of ids) 
-            this.intToSysTable.current.update_list(
-                data['ids_info']['stide']['int_to_sys'])
             // update useraction Info
             this.userAction.current.updateCount(
                 data['userAction'])

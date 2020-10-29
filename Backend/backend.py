@@ -184,6 +184,11 @@ class Backend:
                     'current_ngrams': [],
                     'top_ngrams': [],
                     'int_to_sys': {}
+                },
+                'mlp': {
+                    'active': bool,
+                    'score': 0,
+                    'state': 0
                 }
             },
             'userAction': {
@@ -215,7 +220,8 @@ class Backend:
                 except Exception:
                     print("Systemcall info failed!")
                 try:
-                    if self.data_handling.ids_wrapper.active_ids["stide"] is not None:
+                    stide = self.data_handling.ids_wrapper.active_ids["stide"]
+                    if stide is not None:
                         stats['ids_info'] = {
                             'stide': {
                                 'active': True,
@@ -230,7 +236,20 @@ class Backend:
                                     self.data_handling.get_int_to_sys()
                             }
                         }
-                    else:
+                    mlp = self.data_handling.ids_wrapper.active_ids['mlp']
+                    if mlp is not None:
+                        stats['ids_info'] = {
+                            'mlp': {
+                                'active': True,
+                                'score': self.data_handling.ids_wrapper.get_ids_score_last_second(),
+                                'state': self.data_handling.ids_info['mlp']['state'],
+                            }
+                        }
+                    if mlp is None:
+                        stats['ids_info']['mlp'] = {
+                            'active': False
+                        }
+                    if stide is None:
                         stats['ids_info']['stide'] = {
                             'active': False
                         }
