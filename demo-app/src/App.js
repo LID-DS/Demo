@@ -47,15 +47,18 @@ class App extends React.PureComponent{
                 ids_score: {
                     x: [], 
                     y: [],
+                    y_2: [],
                     name: '',
                     alarm: 0
                 },
-                slider_threshold: IDS_THRESHOLD
+                slider_threshold: IDS_THRESHOLD,
+                multiple_active: false
             },
             original_data:{
                 x: [],
                 y: [],
-                ids_score: [] 
+                ids_score: [],
+                ids_score_2: []
             },
             slider: {
                 threshold: IDS_THRESHOLD
@@ -178,7 +181,8 @@ class App extends React.PureComponent{
             original_data: {
                 x: x,
                 y: y,
-                ids_score: this.state.original_data.ids_score
+                ids_score: this.state.original_data.ids_score,
+                ids_score_2: this.state.original_data.ids_score_2
             }
         })
     }
@@ -188,27 +192,56 @@ class App extends React.PureComponent{
         calc moving window for syscall 
         fill with leading zeros if needed
     */
-    prepareIDSPlot = (time, ids_info, type) => {
-        let ids_score = this.state.original_data.ids_score
+    prepareIDSPlot = (time, ids_info) => {
+        let multiple = true 
         let x = this.state.original_data.x
-        ids_score.push(ids_info['score'])
+        var cutout_ids = []
         var cutout_x = x.slice(Math.max(x.length - PLOT_WINDOW_CUTOUT, 1))
-        var cutout_ids = ids_score.slice(Math.max(ids_score.length - PLOT_WINDOW_CUTOUT, 1))
-        cutout_ids = ids_score.slice(Math.max(ids_score.length - PLOT_WINDOW_CUTOUT, 1))
-        cutout_ids = this.fillWithLeadingZeros(cutout_ids)
         cutout_x = this.adjustTimeArray(cutout_x)
-        this.setState({
-            ids_plot: {
-                type: type,
-                ids_score : {
-                    y: cutout_ids,
-                    x: cutout_x,
-                    name: 'IDS score data',
-                    alarm: this.state.alarm
-                }
-            },
-            index: this.state.index + 1
-        })
+        if(ids_info['stide']['active']){
+            let ids_score = this.state.original_data.ids_score
+            ids_score.push(ids_info['stide']['score'])
+            cutout_ids = ids_score.slice(Math.max(ids_score.length - PLOT_WINDOW_CUTOUT, 1))
+            cutout_ids = this.fillWithLeadingZeros(cutout_ids)
+            multiple = !multiple
+            this.setState({
+                ids_plot: {
+                    type: 'stide',
+                    ids_score : {
+                        y: cutout_ids,
+                        x: cutout_x,
+                        name: 'IDS score data',
+                        alarm: this.state.alarm
+                    },
+                    multiple_active: multiple
+                },
+                index: this.state.index + 1
+            })
+        }
+        if(ids_info['mlp']['active']){
+            let ids_score = this.state.original_data.ids_score_2
+            ids_score.push(ids_info['mlp']['score'])
+            cutout_ids = ids_score.slice(
+                Math.max(
+                    ids_score.length - PLOT_WINDOW_CUTOUT, 1
+                )
+            )
+            cutout_ids = this.fillWithLeadingZeros(cutout_ids)
+            multiple = !multiple
+            this.setState({
+                ids_plot: {
+                    type: 'mlp',
+                    ids_score : {
+                        x: cutout_x,
+                        y_2: cutout_ids,
+                        name: 'IDS score data',
+                        alarm: this.state.alarm
+                    },
+                    multiple_active: multiple
+                },
+                index: this.state.index + 1
+            })
+        }
     }
 
     fillWithLeadingZeros = (data) => {
@@ -219,16 +252,17 @@ class App extends React.PureComponent{
     //adjust time array, so it starts at x=0 if no data was collected before
     adjustTimeArray = (data) => {
         let reverse_count = new Array(PLOT_WINDOW_CUTOUT - data.length).fill(0)
+        var i
         if(data.length !== 0){
             let counter = 1
-            for (var i = PLOT_WINDOW_CUTOUT - data.length; i > 0; i-- ){
+            for (i = PLOT_WINDOW_CUTOUT - data.length; i > 0; i-- ){
                 reverse_count[i-1] = data[0] - counter 
                 counter = counter + 1
             }
             return reverse_count.concat(data)
         }
         else {
-            for (var i = PLOT_WINDOW_CUTOUT - data.length; i > 0; i-- ){
+            for (i = PLOT_WINDOW_CUTOUT - data.length; i > 0; i-- ){
                 reverse_count[i-1] = -(i-1)
             }
             return reverse_count
@@ -266,7 +300,7 @@ class App extends React.PureComponent{
     updateTrafficLight = (state, score) => {
         var lights = []
         //if still in training set light to yellow
-        if (state == 0){
+        if (state === 0){
             lights = [false, true, false]
             this.setState({alarm: 0})
         }
@@ -297,6 +331,7 @@ class App extends React.PureComponent{
         //if recieved message stats update plot
         socket.on('stats', function(data) {
             //set active ids
+            console.log(data)
             this.setState({
                 data : data,
                 active_ids: {
@@ -304,19 +339,18 @@ class App extends React.PureComponent{
                     'mlp': data['ids_info']['mlp']['active']
                 }
             });
-            console.log(data)
-            //check for alarm
             //update plot data 
-            this.prepareSysPlot(data['time'], data['syscall_info'])
+            this.prepareSysPlot(
+                data['time'], 
+                data['syscall_info'])
+            this.prepareIDSPlot(
+                data['time'], 
+                data['ids_info']
+            )
             if(this.state.active_ids['stide']){
                 this.updateTrafficLight(
                     data['ids_info']['stide']['state'],
                     data['ids_info']['stide']['score']
-                )
-                this.prepareIDSPlot(
-                    data['time'], 
-                    data['ids_info']['stide'],
-                    "stide"
                 )
                 // update ngram table if stide is active
                 this.ngramTable.current.update_list(
@@ -336,11 +370,7 @@ class App extends React.PureComponent{
                     data['ids_info']['stide']['int_to_sys'])
             }
             if(this.state.active_ids['mlp']){
-                this.prepareIDSPlot(
-                    data['time'],
-                    data['ids_info']['mlp'],
-                    "mlp"
-                ) 
+                
             }
             //update syscall distribution
             this.updateSyscallDistribution(
@@ -350,12 +380,13 @@ class App extends React.PureComponent{
                 data['userAction'])
             //Add incident to  table if alarm state of ids plot is reached
             // -> depends on set threshold in plot
+            var key
             if (this.state.alarm === 1){
                 if (this.state.active_ids['stide']){
-                    var key = "stide"
+                    key = "stide"
                 }
                 else {
-                    var key = "mlp"
+                    key = "mlp"
                 }
                 console.log(data['analysis'])
                 if (data['analysis']['alarm_content'].length > 0) {
@@ -417,11 +448,15 @@ class App extends React.PureComponent{
                     </div>
                     <div className="item-plot">
                         <IDSPlot className="ids-plot"
+                            type={this.state.ids_plot.type}
                             time={this.state.ids_plot.ids_score.x}
                             score={this.state.ids_plot.ids_score.y}
+                            score2={this.state.ids_plot.ids_score.y_2}
                             alarm={this.state.alarm}
                             threshold={this.state.slider.threshold}
                             index={this.state.index}
+                            multiple_active={this.state.ids_plot.multiple_active}
+                             
                         />
                     </div>
                     <div className="item">

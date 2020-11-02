@@ -3,6 +3,7 @@ import time
 import logging
 import subprocess
 import psutil
+import pprint
 
 from flask import Flask
 from flask_socketio import SocketIO, emit
@@ -236,6 +237,7 @@ class Backend:
                                     self.data_handling.get_int_to_sys()
                             }
                         }
+                        print(stats['ids_info']['stide'])
                     mlp = self.data_handling.ids_wrapper.active_ids['mlp']
                     if mlp is not None:
                         stats['ids_info'] = {
@@ -245,6 +247,7 @@ class Backend:
                                 'state': self.data_handling.ids_info['mlp']['state'],
                             }
                         }
+                        print(stats['ids_info']['mlp'])
                     if mlp is None:
                         stats['ids_info']['mlp'] = {
                             'active': False
@@ -275,6 +278,8 @@ class Backend:
                 except Exception:
                     print("userCount info failed")
 
+                pp = pprint.PrettyPrinter(indent=4)
+                #pp.pprint(stats['ids_info'])
                 time_since_start += 1
                 self.socketio.emit('stats', stats)
                 time.sleep(delay)

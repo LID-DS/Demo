@@ -71,9 +71,7 @@ export default class Training_info extends React.PureComponent {
     }
 
     saveChosenIDS = () => {
-        console.log([this.state.stide_active, this.state.mlp_active] )
         this.props.onChildClick([this.state.stide_active, this.state.mlp_active] )
-        console.log([this.state.stide_active, this.state.mlp_active] )
     }
 
     render(){
@@ -100,7 +98,11 @@ export default class Training_info extends React.PureComponent {
                         <span className="checkmark"></span>
                     </label>
                 </form>
-                <button onClick={this.saveChosenIDS}> Confirm </button>
+                <button 
+                    className="button-basic"
+                    onClick={this.saveChosenIDS}> 
+                    Confirm 
+                </button>
             </div>
         )
     }
