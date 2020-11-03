@@ -193,17 +193,17 @@ class App extends React.PureComponent{
         fill with leading zeros if needed
     */
     prepareIDSPlot = (time, ids_info) => {
-        let multiple = true 
+        let multiple = ids_info['stide']['active'] && ids_info['mlp']['active']?true:false
         let x = this.state.original_data.x
         var cutout_ids = []
         var cutout_x = x.slice(Math.max(x.length - PLOT_WINDOW_CUTOUT, 1))
         cutout_x = this.adjustTimeArray(cutout_x)
+        
         if(ids_info['stide']['active']){
             let ids_score = this.state.original_data.ids_score
             ids_score.push(ids_info['stide']['score'])
             cutout_ids = ids_score.slice(Math.max(ids_score.length - PLOT_WINDOW_CUTOUT, 1))
             cutout_ids = this.fillWithLeadingZeros(cutout_ids)
-            multiple = !multiple
             this.setState({
                 ids_plot: {
                     type: 'stide',
@@ -227,7 +227,6 @@ class App extends React.PureComponent{
                 )
             )
             cutout_ids = this.fillWithLeadingZeros(cutout_ids)
-            multiple = !multiple
             this.setState({
                 ids_plot: {
                     type: 'mlp',

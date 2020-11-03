@@ -82,6 +82,13 @@ class IDSWrapper:
         """
         receive active ids information of frontend
         """
+        # if both are true check if one has to be started
+        if active_ids["stide"] and active_ids["mlp"]:
+            if active_ids["stide"] and not self.active_ids["stide"]:
+                self.init_stide()
+            if active_ids["mlp"] and not self.active_ids["mlp"]:
+                self.init_mlp()
+            return
         # do nothing if active_ids["stide"] is true and stide was active
         if active_ids["stide"] and self.active_ids["stide"]:
             pass
@@ -91,7 +98,6 @@ class IDSWrapper:
         # if param is false stop sending syscalls to stide
         elif not active_ids["stide"]:
             self.active_ids["stide"] = None
-            print("stide down")
         # do nothing if active_ids["mlp"] is true and mlp was active
         if active_ids["mlp"] and self.active_ids["mlp"]:
             pass
@@ -101,8 +107,6 @@ class IDSWrapper:
         # if param is false stop sending syscalls to mlp
         elif not active_ids["mlp"]:
             self.active_ids["mlp"] = None
-        print(self.active_ids)
-
 
     def send_to_ids(self, syscall):
         """
@@ -113,36 +117,38 @@ class IDSWrapper:
             if ids_score is not None: 
                 self.score_list.append(ids_score)
             ids_info = { 
-                    #'score' : self.get_ids_score_last_second(),
-                    'state' : self.stide._model_state.value,
-                    'training_size' : self.stide._training_size,
-                    'current_ngrams' : self.stide._normal_ngrams["training_size"],
-                    }
+                'state' : self.stide._model_state.value,
+                'training_size' : self.stide._training_size,
+                'current_ngrams' : self.stide._normal_ngrams["training_size"],
+            }
             self.global_ids_info["stide"] = ids_info
-            #print(ids_info['score'])
         if self.active_ids["mlp"] is not None:
             ids_score = 0.03
             if ids_score is not None:
                 self.score_list.append(ids_score)
             ids_info = {
-                    #'score' : self.get_ids_score_last_second(),
-                    'state' : 1,
-                    }
+                'state' : 1,
+            }
             self.global_ids_info["mlp"] = ids_info
         return self.global_ids_info
 
-    def get_ids_score_last_second(self):
+    def get_score_last_second(self):
         """
         return score of all active ids
         """
+        # if both ids are active
+        if self.active_ids['stide'] is not None and self.active_ids['mlp'] is not None:
+            print("Check")
+            return 0
         # if list is not empty return highest score
-        if self.score_list:
+        elif self.score_list:
             # sort list and return highest score
             sorted_ids_scores = sorted(
-                    self.score_list,
-                    reverse=True)
+                self.score_list,
+                reverse=True)
             self.score_list = list()
             highest_score = sorted_ids_scores[0]
+            self.global_ids_info[self.key]['score'] = highest_score
             return highest_score
         return 0
 
