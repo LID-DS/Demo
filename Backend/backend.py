@@ -165,9 +165,9 @@ class Backend:
     def data_update(self):
         """
         collect data of syscall_data_handling and ids
-        send collected data with delay of delay = 1 seconds to react frontend
+        send collected data with delay of delay = 1000 milliseconds to react frontend
         """
-        #Structure:
+        #Structure of sent data:
         stats = {
             'time': 0,
             'syscall_info': {
@@ -200,15 +200,25 @@ class Backend:
                 'alarm_content': ""
             }
         }
-        delay = 1
-        # TODO time steps more sophisticated
+        # delay in ms of sent data
+        delay = 1000 
+        current_millis = lambda: int(round(time.time() * 1000))
+        start_millis = current_millis()
+        last_millis = start_millis
         time_since_start = 0
         stats = {}
+        #TODO wait for Frontend to be connected more sophisticated
+        time.sleep(5)
+        self.socketio.emit('start', None)
         while True:
+            if current_millis() - last_millis >= 1000:
+                last_millis = current_millis()
+            else:
+                continue
             try:
                 try:
                     # time_first_call
-                    stats['time'] = time_since_start
+                    stats['time'] = int((last_millis - start_millis)/1000)
                 except Exception:
                     print("get time failed")
                 try:
@@ -221,14 +231,29 @@ class Backend:
                 except Exception:
                     print("Systemcall info failed!")
                 try:
+                    #TODO if both are active only score of stide is accessed
+                    #TODO score list is empty
                     stide = self.data_handling.ids_wrapper.active_ids["stide"]
+                    mlp = self.data_handling.ids_wrapper.active_ids['mlp']
+                    # calc score of last second (saved in data_handling)
+                    self.data_handling.ids_wrapper.get_score_last_second()
+                    ids_info = self.data_handling.ids_wrapper.global_ids_info
                     if stide is not None:
+                        if 'stide' in ids_info:
+                            if 'score' in ids_info['stide']:
+                                score = ids_info['stide']['score']
+                            else:
+                                score = 0
+                        else: 
+                            score = 0
                         stats['ids_info'] = {
                             'stide': {
                                 'active': True,
-                                'score': self.data_handling.ids_wrapper.get_ids_score_last_second(),
-                                'state': self.data_handling.ids_info['stide']['state'],
-                                'training_size': self.data_handling.ids_info['stide']['training_size'],
+                                'score': score,
+                                'state': 
+                                    self.data_handling.ids_info['stide']['state'],
+                                'training_size': 
+                                    self.data_handling.ids_info['stide']['training_size'],
                                 'current_ngrams': 
                                     self.data_handling.ids_info['stide']['current_ngrams'],
                                 'top_ngrams': 
@@ -237,17 +262,19 @@ class Backend:
                                     self.data_handling.get_int_to_sys()
                             }
                         }
-                        print(stats['ids_info']['stide'])
-                    mlp = self.data_handling.ids_wrapper.active_ids['mlp']
                     if mlp is not None:
-                        stats['ids_info'] = {
-                            'mlp': {
-                                'active': True,
-                                'score': self.data_handling.ids_wrapper.get_ids_score_last_second(),
-                                'state': self.data_handling.ids_info['mlp']['state'],
-                            }
+                        if 'mlp' in ids_info:
+                            if 'score' in ids_info['mlp']:
+                                score = ids_info['mlp']['score']
+                            else:
+                                score = 0
+                        else: 
+                            score = 0
+                        stats['ids_info']['mlp'] = {
+                            'active': True,
+                            'score': score, 
+                            'state': self.data_handling.ids_info['mlp']['state']
                         }
-                        print(stats['ids_info']['mlp'])
                     if mlp is None:
                         stats['ids_info']['mlp'] = {
                             'active': False
@@ -278,11 +305,10 @@ class Backend:
                 except Exception:
                     print("userCount info failed")
 
-                pp = pprint.PrettyPrinter(indent=4)
+                #pp = pprint.PrettyPrinter(indent=4)
                 #pp.pprint(stats['ids_info'])
                 time_since_start += 1
                 self.socketio.emit('stats', stats)
-                time.sleep(delay)
 
             except Exception:
                 print("Error building stats")

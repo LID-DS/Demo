@@ -15,6 +15,10 @@ class IDSWrapper:
                 "stide": None,
                 "mlp" : None} 
         self.global_ids_info = {} 
+        self.score_list = {
+                'stide': [],
+                'mlp' : []
+        }
         if mlp: self.init_mlp()
         if stide: self.init_stide()
 
@@ -60,7 +64,7 @@ class IDSWrapper:
             'training_size': self.stide._training_size,
             'current_ngrams': 0 
         }
-        self.score_list = []
+        self.score_list['stide'] = []
         print("Stide initialized")
 
     def init_mlp(self, trained_model=None):
@@ -75,7 +79,7 @@ class IDSWrapper:
                 'score': 0,
                 'state': 0
                 }
-        self.score_list = []
+        self.score_list['mlp'] = []
         print("MLP initialized")
 
     def set_active_ids(self, active_ids):
@@ -113,22 +117,29 @@ class IDSWrapper:
         Return collected information of all active ids
         """
         if self.active_ids["stide"] is not None:
+            ids_info = {
+                'score': self.global_ids_info['stide']['score'],
+                'state': 0,
+                'training_size' : 0,
+                'current_ngrams' : 0
+            }
             ids_score = self.stide.consume_system_call(syscall)
             if ids_score is not None: 
-                self.score_list.append(ids_score)
-            ids_info = { 
-                'state' : self.stide._model_state.value,
-                'training_size' : self.stide._training_size,
-                'current_ngrams' : self.stide._normal_ngrams["training_size"],
-            }
+                self.score_list['stide'].append(ids_score)
+            ids_info['state'] = self.stide._model_state.value
+            ids_info['training_size'] = self.stide._training_size
+            ids_info['current_ngrams'] = self.stide._normal_ngrams["training_size"]
+
             self.global_ids_info["stide"] = ids_info
         if self.active_ids["mlp"] is not None:
+            ids_info = {
+                'score': self.global_ids_info['mlp']['score'],
+                'state': 0,
+            }
             ids_score = 0.03
             if ids_score is not None:
-                self.score_list.append(ids_score)
-            ids_info = {
-                'state' : 1,
-            }
+                self.score_list['mlp'].append(ids_score)
+            ids_info['state'] = 1
             self.global_ids_info["mlp"] = ids_info
         return self.global_ids_info
 
@@ -136,21 +147,22 @@ class IDSWrapper:
         """
         return score of all active ids
         """
-        # if both ids are active
-        if self.active_ids['stide'] is not None and self.active_ids['mlp'] is not None:
-            print("Check")
-            return 0
-        # if list is not empty return highest score
-        elif self.score_list:
-            # sort list and return highest score
-            sorted_ids_scores = sorted(
-                self.score_list,
-                reverse=True)
-            self.score_list = list()
-            highest_score = sorted_ids_scores[0]
-            self.global_ids_info[self.key]['score'] = highest_score
-            return highest_score
-        return 0
+        for key in self.active_ids:
+            if self.active_ids[key] is None:
+                continue 
+            #self.global_ids_info[key]['score'] = 0.049
+            # if list is not empty return highest score
+            if self.score_list[key]:
+                # sort list and return highest score
+                sorted_ids_scores = sorted(
+                    self.score_list[key],
+                    reverse=True)
+                self.score_list[key]= list()
+                highest_score = sorted_ids_scores[0]
+                self.global_ids_info[key]['score'] = highest_score
+            else:
+                self.global_ids_info[key]['score'] = 0
+
 
     def save_active_model(self):
         """

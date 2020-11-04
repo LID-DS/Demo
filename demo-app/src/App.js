@@ -198,8 +198,8 @@ class App extends React.PureComponent{
         var cutout_ids = []
         var cutout_x = x.slice(Math.max(x.length - PLOT_WINDOW_CUTOUT, 1))
         cutout_x = this.adjustTimeArray(cutout_x)
-        
-        if(ids_info['stide']['active']){
+        // check which IDS is active 
+        if(ids_info['stide']['active'] && !multiple){
             let ids_score = this.state.original_data.ids_score
             ids_score.push(ids_info['stide']['score'])
             cutout_ids = ids_score.slice(Math.max(ids_score.length - PLOT_WINDOW_CUTOUT, 1))
@@ -218,7 +218,7 @@ class App extends React.PureComponent{
                 index: this.state.index + 1
             })
         }
-        if(ids_info['mlp']['active']){
+        else if(ids_info['mlp']['active'] && !multiple){
             let ids_score = this.state.original_data.ids_score_2
             ids_score.push(ids_info['mlp']['score'])
             cutout_ids = ids_score.slice(
@@ -233,6 +233,35 @@ class App extends React.PureComponent{
                     ids_score : {
                         x: cutout_x,
                         y_2: cutout_ids,
+                        name: 'IDS score data',
+                        alarm: this.state.alarm
+                    },
+                    multiple_active: multiple
+                },
+                index: this.state.index + 1
+            })
+        }
+        else if(multiple){
+            //stide 
+            var cutout_stide = []
+            let stide_score = this.state.original_data.ids_score
+            stide_score.push(ids_info['stide']['score'])
+            cutout_stide = stide_score.slice(Math.max(stide_score.length - PLOT_WINDOW_CUTOUT, 1))
+            cutout_stide = this.fillWithLeadingZeros(cutout_stide)
+            //mlp
+            var cutout_mlp = []
+            let mlp_score = this.state.original_data.ids_score_2
+            mlp_score.push(ids_info['mlp']['score'])
+            cutout_mlp = mlp_score.slice(Math.max(mlp_score.length - PLOT_WINDOW_CUTOUT, 1))
+            cutout_mlp = this.fillWithLeadingZeros(cutout_mlp)
+            //TODO multiple error
+            this.setState({
+                ids_plot: {
+                    type: 'multiple',
+                    ids_score : {
+                        y: cutout_stide,
+                        y_2: cutout_mlp,
+                        x: cutout_x,
                         name: 'IDS score data',
                         alarm: this.state.alarm
                     },
@@ -399,6 +428,11 @@ class App extends React.PureComponent{
 
         socket.on('enum', function(data) {
             this.attackInput.current.updateEnum(false)
+        }.bind(this));
+
+        socket.on('start', function(data) {
+            window.location.reload();
+            console.log("Buddy")
         }.bind(this));
     }
 
