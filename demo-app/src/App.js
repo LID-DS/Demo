@@ -6,8 +6,8 @@ import './css/App.css';
 import SyscallPlot from './SyscallPlot';
 import IDSPlot from './IDSPlot';
 import TrainingInfo from './TrainingInfo';
-import IncidentTable from './Table_alt'
-import UserInput from './UserInput'
+import IncidentTable from './Table'
+import IDSSettings from './IDSSettings'
 import UserActionInput from './UserActionInput'
 import TrafficLight from './TrafficLight';
 import PiePlot from './PiePlot';
@@ -93,12 +93,17 @@ class App extends React.PureComponent{
        this.state.websocket.emit('training update', data) 
     }
 
-    handleSaveModel = (data) => {
-        this.state.websocket.emit('save model', null)
+    handleSaveModel = (model) => {
+        this.state.websocket.emit('save model', model)
     }
     
-    handleLoadModel = () => {
-        this.state.websocket.emit('load model', null)
+    handleLoadModel = (model) => {
+        this.state.websocket.emit('load model', model)
+    }
+
+    handleStopModel = (model) => {
+        console.log(model)
+        this.state.websocket.emit('stop model', model)
     }
     
     handleAttackInput = (form, specify) => {
@@ -296,11 +301,73 @@ class App extends React.PureComponent{
             return reverse_count
         }
     }
-    
-    handleRetrain = event => {
-        //TODO Error message if User input is no number
-        if (!isNaN(this.inputElement.value)){
-            this.state.websocket.emit('training update', this.inputElement.value)
+
+    handleIDSSetting = (type, chosenIDS, training_size) => {
+        //User can activate IDS through retrain or loading of model
+        //info of which IDS and training_size if saved
+        if(type === 'retrain'){
+            let info = {
+                type : chosenIDS,
+                training_size : training_size 
+            }
+            if (chosenIDS === 'Stide'){
+                this.setState({
+                    active_ids : {
+                        stide: true,
+                        mlp: this.state.active_ids['mlp']
+                    }
+                })
+            }
+            else if (chosenIDS === 'MLP'){
+                this.setState({
+                    active_ids : {
+                        stide: this.state.active_ids['stide'],
+                        mlp: true
+                    }
+                })
+            }
+            this.state.websocket.emit('retrain', info)
+        }
+        else if(type === 'save'){
+            this.handleSaveModel(chosenIDS)
+        }
+        else if(type === 'load'){
+            if (chosenIDS === 'Stide'){
+                this.setState({
+                    active_ids : {
+                        stide: true,
+                        mlp: this.state.active_ids['mlp']
+                    }
+                })
+            }
+            else if (chosenIDS === 'MLP'){
+                this.setState({
+                    active_ids : {
+                        stide: this.state.active_ids['stide'],
+                        mlp: true
+                    }
+                })
+            }
+            this.handleLoadModel(chosenIDS)
+        }
+        else if(type === 'stop'){
+            if (chosenIDS === 'Stide'){
+                this.setState({
+                    active_ids : {
+                        stide: false,
+                        mlp: this.state.active_ids['mlp']
+                    }
+                })
+            }
+            else if (chosenIDS === 'MLP'){
+                this.setState({
+                    active_ids : {
+                        stide: this.state.active_ids['stide'],
+                        mlp: false
+                    }
+                })
+            }
+            this.handleStopModel(chosenIDS)
         }
     }
 
@@ -312,7 +379,6 @@ class App extends React.PureComponent{
                 mlp: active_ids[1]
             }
         })
-        console.log(active_ids)
         this.state.websocket.emit(
             'choosing ids', {
                 "stide":active_ids[0], 
@@ -398,7 +464,16 @@ class App extends React.PureComponent{
                     data['ids_info']['stide']['int_to_sys'])
             }
             if(this.state.active_ids['mlp']){
-                
+                this.updateTrafficLight(
+                    data['ids_info']['mlp']['state'],
+                    data['ids_info']['mlp']['score']
+                )
+                if(!this.state.ids_plot.multiple_active){
+                    this.trainingInfo.current.update_training_info(
+                        "mlp",
+                        data['ids_info']['mlp']['state']
+                    )
+                }
             }
             //update syscall distribution
             this.updateSyscallDistribution(
@@ -432,7 +507,6 @@ class App extends React.PureComponent{
 
         socket.on('start', function(data) {
             window.location.reload();
-            console.log("Buddy")
         }.bind(this));
     }
 
@@ -505,22 +579,9 @@ class App extends React.PureComponent{
                     </div>
                     <div className="item">
                         <div className="info">
-                                <UserInput className="training-input"
-                                    inputRef={el => (this.inputElement = el)} />
-                                <button className="button-basic" 
-                                    onClick={this.handleRetrain}>
-                                    Retrain IDS-Model
-                                </button>
-                                <div>
-                                    <button className="button-basic" 
-                                        onClick={this.handleSaveModel}>
-                                        Save Trained IDS-Model
-                                    </button>
-                                    <button className="button-basic" 
-                                        onClick={this.handleLoadModel}>
-                                        Load Trained IDS-Model
-                                    </button>
-                                </div>
+                                <IDSSettings className="training-input"
+                                    onChildClick={this.handleIDSSetting}
+                                />
                         </div>
                     </div>
                     <div className="item-plot">

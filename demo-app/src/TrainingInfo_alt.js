@@ -20,11 +20,18 @@ export default class Training_info extends React.PureComponent {
             mlp_active: false,
             training_size_input: 100000
         }
+        this.handleMlpChange = this.handleMlpChange.bind(this);
+        this.handleStideChange = this.handleStideChange.bind(this);
+        this.saveChosenIDS = this.saveChosenIDS.bind(this);
     }
     
     update_training_info = (type, state, current_ngrams, training_size) => {
         
         if (type === 'stide'){
+            this.setState({
+                type: "stide",
+                stide_active : true
+            }) 
             //ids_info = ids_info['stide']
             // Invoked from IDSPlot
             var ids_state = "Training ongoing"
@@ -45,12 +52,32 @@ export default class Training_info extends React.PureComponent {
         }
         else {
            this.setState({
-               ids_info : {
-                   type: "MLP"
+               type: "MLP",
+               mlp_active : true,
+               ids_info: {
+                   type: type,
+                   state : state
                }
            }) 
         }
+    }
 
+    handleStideChange = () => {
+        this.setState({
+            stide_active: !this.state.stide_active,
+        })
+        // why inverted????
+    }
+
+    handleMlpChange = () => {
+        this.setState({
+            mlp_active: !this.state.mlp_active,
+        })
+        // why inverted????
+    }
+
+    saveChosenIDS = () => {
+        this.props.onChildClick([this.state.stide_active, this.state.mlp_active] )
     }
 
     render(){
@@ -58,6 +85,29 @@ export default class Training_info extends React.PureComponent {
             <div className="detecting">
                 <div>{this.state.type}</div>
                 <Info ids_info={this.state.ids_info}/>
+                <form>
+                    <label className="ids_chooser">
+                        Stide Algorithm
+                        <input type="checkbox" 
+                            defaultChecked={this.state.stide_active} 
+                            onChange={this.handleStideChange}
+                        />
+                        <span className="checkmark"></span>
+                    </label>
+                    <label className="ids_chooser">
+                        MLP Algorithm
+                        <input type="checkbox" 
+                            defaultChecked={this.state.mlp_active} 
+                            onChange={this.handleMlpChange}
+                        />
+                        <span className="checkmark"></span>
+                    </label>
+                </form>
+                <button 
+                    className="button-basic"
+                    onClick={this.saveChosenIDS}> 
+                    Confirm 
+                </button>
             </div>
         )
     }
@@ -65,11 +115,13 @@ export default class Training_info extends React.PureComponent {
 
 function Info(probs) {
     var ids_info = probs.ids_info    
-    var percentage = Math.round((ids_info.current_ngrams/ids_info.training_size) * 100)
+    console.log(ids_info.type === "stide")
+
     if (ids_info.state === 1) {
         return <div> {ids_info.state_string} </div>
     } 
-    else if(ids_info.state === 0 && ids_info.type === "stide"){
+    else if (ids_info.state === 0 && ids_info.type === "stide"){
+        var percentage = Math.round((ids_info.current_ngrams/ids_info.training_size) * 100)
         return (
             <div className="in-training">      
                 <div className="training-string"> {ids_info.state_string} </div>
@@ -86,7 +138,7 @@ function Info(probs) {
     }
     else {
         return (
-            <div></div>
+            <div> else </div>
         )
     }
 }

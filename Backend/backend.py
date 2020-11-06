@@ -83,21 +83,24 @@ class Backend:
         def handle_message(json, methods=['GET','POST']):
             self.data_handling.ids_wrapper.set_active_ids(json)
 
-        @self.socketio.on('training update')
+        @self.socketio.on('retrain')
         def handle_message(json, methods=['GET', 'POST']):
-            self.data_handling.ids_wrapper.init_stide(training_size=int(str(json)))
+            self.data_handling.ids_wrapper.retrain(training_size=json['training_size'], ids_type=json['type'])
 
         @self.socketio.on('load model')
         def handle_message(json, methods=['GET', 'POST']):
             """
-            if 'load model' was received from frontend
-            run _load_model of DemoStide
-            creates now instance of ids
-            reinitialize data_handling and with new ids
-            reinitialize sysdig_handling with new data_handling instance
+            load model for given ids
             """
-            #TODO multiple models returned if multiple active
-            self.data_handling.ids_wrapper.load_active_models()
+            self.data_handling.ids_wrapper.load_model(str(json))
+
+        @self.socketio.on('stop model')
+        def handle_message(json, methods=['GET', 'POST']):
+            """
+            stop given ids method 
+            """
+            print(f"stop {str(json)}")
+            self.data_handling.ids_wrapper.stop_model(str(json))
 
         @self.socketio.on('save model')
         def handle_message(json, methods=['GET', 'POST']):
@@ -105,7 +108,8 @@ class Backend:
             if 'save model' was received from frontend,
             save ids model
             """
-            self.data_handling.ids_wrapper.save_active_model()
+            print(json)
+            #self.data_handling.ids_wrapper.save_active_model()
 
         @self.socketio.on('user action')
         def handle_message(json, methods=['GET', 'POST']):

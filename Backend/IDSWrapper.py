@@ -22,27 +22,6 @@ class IDSWrapper:
         if mlp: self.init_mlp()
         if stide: self.init_stide()
 
-    def load_active_models(self):
-        if self.active_ids["stide"]:
-            trained_model = self.stide._load_model()
-            self.init_stide(trained_model=trained_model)
-        if self.active_ids["mlp"]:
-            #trained_model = self.mlp._load_model()
-            #self.init_mlp(trained_model=trained_model)
-            print("load pretrained mlp model")
-
-    def retrain_active_ids(self, training_size=None, trained_model=None):
-        if self.active_ids['stide'] is not None:
-            if trained_model is None:
-                self.init_stide(training_size)
-            else:
-                self.init_stide(trained_model)
-        if self.active_ids['mlp'] is not None:
-            if trained_model is None:
-                self.init_mlp()
-            else:
-                self.init_mlp(trained_model)
-
     def init_stide(self, training_size=None, trained_model=None):
         """
         Initialisation of stide algorithm
@@ -67,7 +46,7 @@ class IDSWrapper:
         self.score_list['stide'] = []
         print("Stide initialized")
 
-    def init_mlp(self, trained_model=None):
+    def init_mlp(self, trained_model=None, training_size=None):
         """
         Initialisation of mlp algorithm
         """
@@ -81,6 +60,41 @@ class IDSWrapper:
                 }
         self.score_list['mlp'] = []
         print("MLP initialized")
+
+    def load_model(self, ids_type):
+        if ids_type == 'Stide':
+            trained_model = self.stide._load_model()
+            self.init_stide(trained_model=trained_model)
+        if ids_type == 'MLP':
+            #trained_model = self.mlp._load_model()
+            #self.init_mlp(trained_model=trained_model)
+            print("load pretrained mlp model")
+
+    def stop_model(self, ids_type):
+        print(f"stop model {ids_type}")
+        if ids_type == 'Stide':
+            self.active_ids['stide'] = None
+        elif ids_type == 'MLP':
+            self.active_ids['mlp'] = None
+
+    def retrain(self, training_size=None, trained_model=None, ids_type=None):
+        if ids_type is not None: 
+            if ids_type == "Stide":
+                self.init_stide(training_size)
+            elif ids_type == "MLP":
+                self.init_mlp(training_size=training_size)
+
+        elif self.active_ids['stide'] is not None:
+            if trained_model is None:
+                self.init_stide(training_size)
+            else:
+                self.init_stide(trained_model)
+        elif self.active_ids['mlp'] is not None:
+            if trained_model is None:
+                self.init_mlp()
+            else:
+                self.init_mlp(trained_model=trained_model)
+
 
     def set_active_ids(self, active_ids):
         """

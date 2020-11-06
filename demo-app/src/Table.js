@@ -1,6 +1,4 @@
 import React from 'react';
-import { Column, Table } from 'react-virtualized';
-import 'react-virtualized/styles.css';
 import './css/Table.css'
 import Popup from './Popup'
 
@@ -12,70 +10,102 @@ export default class Incident_Table extends React.PureComponent {
             incident_list:[{
                 id: null,
                 time:null,
-                score:null
+                score:null,
+                content:null
             }],
-            filename_list: [] 
+            file_list: [],
+            open_popup:false,
+            selected_incident:0
         }
     }
 
-    add_incident = (time, score, filename_list) => {
-        this.setState({
-            filename_list: filename_list
-        })
+    add_incident = (time, score, content) => {
         var current_list = this.state.incident_list
         var new_id = current_list[this.state.incident_list.length - 1]["id"] + 1
-        current_list.push({id: new_id, time: time, score: score})
+        current_list.push({id: new_id, time: time, score: score, content: content})
+        this.setState({
+            file_list: current_list
+        })
         this.setState((prevState, props) => {
             return {
                 incident_list: [...prevState.incident_list]
             }
         })
     }
+    
+    setIncidentForPopup = (id) => {
+        this.setState({
+            open_popup:true,
+            selected_incident:id 
+        })
+    }
 
+    closeIncidentPopup = () => {
+        this.setState({
+            open_popup:false
+        })
+    }
 
-    render() {
-	return (
+    renderTableData() {
+      return this.state.incident_list.map((incident, index) => {
+         const { id, time, score } = incident //destructuring
+         return (
+            <tr key={id} onClick={() => this.setIncidentForPopup(id)}>
+               <td>{id}</td>
+               <td>{time}</td>
+               <td>{score}</td>
+            </tr>
+         )
+      })
+    }
+
+    renderTableHeader() {
+        let header = Object.keys(this.state.incident_list[0])
+        return header.map((key, index) => {
+            return <th key={index}>{key.toUpperCase()}</th>
+        })
+    }
+        
+
+   render() {
+      return (
         <div>
-            <div>
-                <Table
-                    ref={(ref) => this.tableRef = ref}
-                    width={400}
-                    height={400}
-                    headerHeight={40}
-                    rowHeight={30}
-                    rowCount={this.state.incident_list.length}
-                    rowGetter={({ index }) => this.state.incident_list[index]}
-                    isScrolling={true}
-                    onRowClick={({index}) => { console.log("click row") }}
-                    onRowDoubleClick={({index}) => { console.log("click row double") }}
-                    onRowMouseOver={({index}) => { console.log("mouse over") }}
-                    onHeaderClick={({index}) => {console.log("header")}}
-                    onRowRightClick={({index}) => { console.log("right click row") }}
-                    onColumnClick={({index}) => { console.log("column click") }}
-                    distance={10} 
-                >
-                    <Column
-                    label='ID'
-                    dataKey='id'
-                    width={100}
-                    />
-                    <Column
-                    width={100}
-                    label='Time'
-                    dataKey='time'
-                    />
-                    <Column
-                    width={100}
-                    label='Score'
-                    dataKey='score'
-                    />
-                </Table>
-            </div>
-            <div>
-                <Popup filename_list={this.state.filename_list}/>
-            </div>
+            <div className='table-container'>
+                <h1 className='title'>Incidents</h1>
+                <table className='incident'>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>TIME</th>
+                            <th>SCORE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {this.renderTableData()}
+                    </tbody>
+                </table>
         </div>
-	);
+        <div>
+          <ShowPopup popup={this.state.open_popup} file={this.state.file_list[this.state.selected_incident]} close={this.closeIncidentPopup}/>
+        </div>
+          </div>
+      )
+   }
+}
+
+function ShowPopup(props){
+    if (props.popup) {
+        return (
+            <div>
+                <Popup content={props.file} close_popup={props.close}/>
+            </div>
+        )
+    } 
+    else {
+        return (
+            <div>
+            </div>
+        )
     }
 }
- 
+
