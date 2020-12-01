@@ -197,7 +197,7 @@ class User:
 
         product_paths = "/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-search-result/div/div/div[2]/mat-grid-list/div/mat-grid-tile[{}]/figure/mat-card/div[{}]/button"
         # product 7,9,11 have extra banner, so different xpath 
-        if product_number in [8,9,11]:
+        if product_number in [7,9,10]:
             extra_info = 3
         else:
             extra_info = 2
@@ -206,16 +206,17 @@ class User:
 
     def get_product_feedback_field(self, product_number):
 
-        product_path = '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-search-result/div/div/div[2]/mat-grid-list/div/mat-grid-tile[{}]/figure/mat-card/div[{}]' 
-        # product 7,9,11 have extra banner -> different xpath
-        if product_number in [8,9,11]:
+        # product 7,9,10 have extra banner -> different xpath
+        if product_number in [7,9,10]:
             extra_info = 2
         else: 
             extra_info = 1
+        product_path = f'/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-search-result/div/div/div[2]/mat-grid-list/div/mat-grid-tile[{product_number + 1}]/figure/mat-card/div[{extra_info}]' 
         try: 
-            product_button = self.driver.find_element_by_xpath(product_path.format(product_number + 1, extra_info))
+            product_button = self.driver.find_element_by_xpath(product_path)
             product_button.click()
         except:
+            print(f"Error clicking Item {product_number} to extract feedback text area")
             return None
 
         try:
@@ -233,8 +234,8 @@ class User:
 
         for selection in selected_products:
             #if last row middle product is chosen
-            #wait for popup to close or else it is obscured
             if selection == 10:
+                #wait for popup to close or else it is obscured
                 time.sleep(8)
             else: time.sleep(1)
             try: 
@@ -243,7 +244,7 @@ class User:
                 self.driver.execute_script("arguments[0].scrollIntoView();", basket_button)
                 basket_button.click()
             except:
-                print("User {}: Error putting item {} into basket -> skipping item".format(self.user_number, selection))
+                print(f"User {self.user_number}: Error putting item {selection} into basket -> skipping item")
                 self.logout()
                 time.sleep(1)
                 self.login()
@@ -296,6 +297,7 @@ class User:
         for item in random_items:
             # dont continue if user should not run
             if not self.is_running: 
+                self.clean_up_and_quit(user_manager)
                 return 
             #print("User: " + str(self.user_number) + " " + "Put item into basket")
             self.put_products_in_basket([item])
@@ -553,11 +555,11 @@ class UserManager:
             print("No active users")
             return
         if user:
-            print("Remove specific usernumber {}".format(user.user_number))# - len(self.removing_users)))
+            print("Remove specific usernumber {}".format(user.user_number))
             user_to_remove = user
         else:
-            print("Remove usernumber {}".format(len(self.active_users) - 1))# - len(self.removing_users)))
-            user_to_remove = self.active_users[len(self.active_users) - 1]# - len(self.removing_users)]
+            print("Remove usernumber {}".format(len(self.active_users) - 1))
+            user_to_remove = self.active_users[len(self.active_users) - 1]
         self.removing_users.append(user_to_remove)
         self.active_users.remove(user_to_remove)
         test = user_to_remove.suicide()

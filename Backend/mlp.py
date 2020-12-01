@@ -6,13 +6,37 @@ from tensorflow import keras
 from tensorflow.keras import initializers
 from tensorflow.keras.constraints import max_norm
 
-from algorithms.TimedStopping import TimedStopping
-from helper.Constants import DataStream
-from helper.Constants import FastStreamIndex
+#from algorithms.TimedStopping import TimedStopping
+#from helper.Constants import DataStream
+#from helper.Constants import FastStreamIndex
 from helper.Constants import ModelState
 from syscalls_to_vec_mlp.SyscallsToVec import Mode
 
+#TODO Auslagern
+class ModelState(Enum):
+    """
+    this enum class gives constants for model states
+    """
+    # the model is in training state
+    Training = 0
+    # the model is in detection state
+    Detection = 1
+
+class Index(IntEnum):
+    """
+    this enum class gives the indices of each field in the data
+    """
+    # event direction
+    EventDirection = 5
+    # the thread id
+    ThreadID = 4
+    # the actual system call
+    SystemCall = 6
+
+
 class MLP:
+
+
     def __init__(self, syscall_map, ngram_length=7, window_length=1000, thread_aware=True):
         """
         create the MLP classifier (Multi Layer Perceptron)
@@ -83,14 +107,17 @@ class MLP:
         # special cases:
         # - End Of File: (DataStream.EndOfFile, None, None)
         # - Attack Starts: (DataStream.AttackStarts, relative_time_stamp, None) (start of the attack to the second)
-        if syscall_number == DataStream.EndOfFile:
-            self._eof()
-            return DataStream.EndOfFile
+        #if syscall_number == DataStream.EndOfFile:
+            #self._eof()
+            #return DataStream.EndOfFile
 
-        if syscall_number == DataStream.AttackStarts:
-            return DataStream.AttackStarts
+        #if syscall_number == DataStream.AttackStarts:
+            #return DataStream.AttackStarts
 
         # get the thread id and check/prepare buffers
+
+        #TODO Event direction
+        #if syscall[Index.EventDirection] == ">":
         thread_id = 0
         if self._thread_aware:
             thread_id = syscall[FastStreamIndex.ThreadID]        
@@ -220,8 +247,8 @@ class MLP:
         # finally fit the mlp
         print(f"matrix.shape = {training_matrix.shape} --> {training_matrix.size}")
         callback_early_stopping = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=10, restore_best_weights=True)        
-        callback_timed_stopping = TimedStopping(seconds=5*60*60,verbose=1) # stop after 5h = 5 * 60 * 60 seconds
-        self.mlp.fit(training_matrix, label_matrix, batch_size=128, epochs=1000, validation_split=0.0, callbacks=[callback_early_stopping, callback_timed_stopping], verbose=2)
+        #callback_timed_stopping = TimedStopping(seconds=5*60*60,verbose=1) # stop after 5h = 5 * 60 * 60 seconds
+        self.mlp.fit(training_matrix, label_matrix, batch_size=128, epochs=1000, validation_split=0.0, callbacks=[callback_early_stopping], verbose=2)
 
         # initialize the mismatch buffer here
         self._mismatch_buffer = deque(iterable=[0] * self._window_length, maxlen=self._window_length)

@@ -235,8 +235,6 @@ class Backend:
                 except Exception:
                     print("Systemcall info failed!")
                 try:
-                    #TODO if both are active only score of stide is accessed
-                    #TODO score list is empty
                     stide = self.data_handling.ids_wrapper.active_ids["stide"]
                     mlp = self.data_handling.ids_wrapper.active_ids['mlp']
                     # calc score of last second (saved in data_handling)
@@ -292,7 +290,9 @@ class Backend:
                 try:
                     stats['analysis'] = {
                         'alarm_content': 
-                            self.data_handling.get_alarm_content()
+                            self.data_handling.get_alarm_content(), 
+                        'highest_score_alarm':
+                            self.data_handling.ids_wrapper.stide.highest_score_of_alarm
                     }
                 except Exception:
                     print("Analysis info failed!")

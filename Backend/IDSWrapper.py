@@ -29,7 +29,7 @@ class IDSWrapper:
         self.key = "stide"
         # use default values
         if training_size is None and trained_model is None:
-            self.stide = DemoModelStide(ngram_length=7, window_length=3, training_size=10000000) 
+            self.stide = DemoModelStide(ngram_length=7, window_length=1000, training_size=10000000) 
         # use predefined training size
         elif not training_size is None:
             self.stide = DemoModelStide(ngram_length=7, window_length=3, training_size=training_size) 
@@ -53,6 +53,7 @@ class IDSWrapper:
         self.key = "mlp"
         syscall_map = SyscallsToVec()
         self.mlp = "smth"#MLP(syscall_map)
+        #MLP(syscall_map)
         self.active_ids["mlp"] = self.mlp
         self.global_ids_info["mlp"] = {
                 'score': 0,

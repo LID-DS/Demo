@@ -64,6 +64,7 @@ class App extends React.PureComponent{
                 threshold: IDS_THRESHOLD
             },
             alarm: 0,
+            alarm_of: '',
             syscall_type_dist: {
                 complete: {} ,
                 top: {},
@@ -391,23 +392,48 @@ class App extends React.PureComponent{
         this.state.websocket.emit('user action', userAction)
     }
 
-    updateTrafficLight = (state, score) => {
+    updateTrafficLight = (state_mlp, score_mlp, state_stide, score_stide) => {
         var lights = []
         //if still in training set light to yellow
-        if (state === 0){
+        if (state_mlp === 0 && state_stide === 0){
             lights = [false, true, false]
+            this.setState({alarm: 0})
+        }
+        else if (state_mlp === undefined && state_stide === 0){
+            lights = [false, true, false]
+            this.setState({alarm: 0})
+        }
+        else if (state_mlp === 0 && state_stide === undefined){
+            lights = [false, true, false]
+            this.setState({alarm: 0})
+        }
+        else if (state_mlp === undefined && state_stide === undefined){
+            lights = [false, false, false]
             this.setState({alarm: 0})
         }
         // when alarm triggered
         //  update traffic light
         //  set alarm state
-        else if (score > this.state.slider.threshold){
+        else if (score_mlp > this.state.slider.threshold){
             lights = [true, false, false]
-            this.setState({alarm: 1})
+            this.setState({
+                alarm: 1,
+                alarm_of: 'mlp'
+            })
+        }
+        else if (score_stide > this.state.slider.threshold){
+            lights = [true, false, false]
+            this.setState({
+                alarm: 1,
+                alarm_of: 'stide'
+            })
         }
         else {
             lights = [false, false, true]
-            this.setState({alarm: 0})
+            this.setState({
+                alarm: 0,
+                alarm_of: ''
+            })
         }
         this.trafficLight.current.updateLight(lights)
     }
@@ -425,7 +451,7 @@ class App extends React.PureComponent{
         //if recieved message stats update plot
         socket.on('stats', function(data) {
             //set active ids
-            console.log(data)
+            //console.log(data)
             this.setState({
                 data : data,
                 active_ids: {
@@ -442,10 +468,6 @@ class App extends React.PureComponent{
                 data['ids_info']
             )
             if(this.state.active_ids['stide']){
-                this.updateTrafficLight(
-                    data['ids_info']['stide']['state'],
-                    data['ids_info']['stide']['score']
-                )
                 // update ngram table if stide is active
                 this.ngramTable.current.update_list(
                     data['ids_info']['stide']['top_ngrams'])
@@ -464,10 +486,6 @@ class App extends React.PureComponent{
                     data['ids_info']['stide']['int_to_sys'])
             }
             if(this.state.active_ids['mlp']){
-                this.updateTrafficLight(
-                    data['ids_info']['mlp']['state'],
-                    data['ids_info']['mlp']['score']
-                )
                 if(!this.state.ids_plot.multiple_active){
                     this.trainingInfo.current.update_training_info(
                         "mlp",
@@ -475,6 +493,12 @@ class App extends React.PureComponent{
                     )
                 }
             }
+            this.updateTrafficLight(
+                data['ids_info']['mlp']['state'],
+                data['ids_info']['mlp']['score'],
+                data['ids_info']['stide']['state'],
+                data['ids_info']['stide']['score']
+            )
             //update syscall distribution
             this.updateSyscallDistribution(
                 data['syscall_info']['distribution_all']['sorted_syscalls'])
@@ -496,7 +520,8 @@ class App extends React.PureComponent{
                     this.incidentTable.current.add_incident(
                         data['time'], 
                         data['ids_info'][key]['score'], 
-                        data['analysis']['alarm_content'])
+                        data['analysis']['alarm_content'],
+                        key)
                 }
             }
         }.bind(this));
@@ -560,6 +585,7 @@ class App extends React.PureComponent{
                             score={this.state.ids_plot.ids_score.y}
                             score2={this.state.ids_plot.ids_score.y_2}
                             alarm={this.state.alarm}
+                            alarm_of={this.state.alarm_of}
                             threshold={this.state.slider.threshold}
                             index={this.state.index}
                             multiple_active={this.state.ids_plot.multiple_active}

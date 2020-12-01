@@ -77,13 +77,13 @@ export default class IDSSettings extends React.PureComponent{
                         </button>
                     </div>
                     <div>
-                        <button className="button-basic" 
-                            onClick={this.handleLoadModel}>
-                            Load Trained IDS-Model
-                        </button>
                         <button className="button-basic"
                             onClick={this.handleStopModel}>
                             Stop Model
+                        </button>
+                        <button className="button-basic" 
+                            onClick={this.handleLoadModel}>
+                            Load Trained IDS-Model
                         </button>
                     </div>
                 </div>

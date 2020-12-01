@@ -100,6 +100,8 @@ function PlotRenderer(data) {
             //console.log(data.data)
             let stide_score = data.score
             let mlp_score = data.score2
+            console.log(data.alarm_of==='stide')
+            console.log(data.alarm)
             return (
                 <Plot
                     className="ids-plot"
@@ -110,7 +112,7 @@ function PlotRenderer(data) {
                             mode: 'markers',
                             type: 'scatter',
                             marker: {
-                                color: colors[data.alarm ? 1 : 0 ]
+                                color: colors[data.alarm_of==='stide' && data.alarm ? 1 : 0 ]
                             },
                             name: 'Stide'
                         },
@@ -120,7 +122,7 @@ function PlotRenderer(data) {
                             mode: 'markers',
                             type: 'scatter',
                             marker: {
-                                color: colors[data.alarm ? 1 : 3 ]
+                                color: colors[data.alarm_of==='mlp' && data.alarm ? 1 : 3 ]
                             },
                             name: 'MLP'
                         }

@@ -101,9 +101,14 @@ class Analysis:
             self.save_tracked_window()
             self.deque_alarm = collections.deque() 
             self.deque_alarm.append([ngram_tuple, score, mismatch_value])
+            #keep track of highest score of consecutive alarm
+            self.highest_score = score
         elif consecutive_alarm and not ngram_tuple is None:
             # add last syscall of ngram
             self.deque_alarm.append([(ngram_tuple[len(ngram_tuple)-1]), score, mismatch_value])
+            #keep track of highest score of consecutive alarm
+            if score > self.highest_score:
+                self.highest_score = score
         elif ngram_tuple is None:
             print("saving queue with length {} in file".format(len(self.deque_alarm)))
             print(str(self.alarm_count))
@@ -120,27 +125,10 @@ class Analysis:
                         " " + str(entry[2]) + 
                         "\n") 
             self.alarm_count += 1
+            tmp = self.highest_score
+            self.highest_score = 0
+            return tmp
 
-    def handle_alarm(self, ngram_tuple, score):
-        """
-        add ngram_tuple which triggered an alarm 
-        to list of consecutive alarms
-        if alarms stop, model sends consecutive=False
-        :param ngram_tuple: ngram_tuple handled by ids
-        :param consecutive: if consecutive ended
-        """
-        if ngram_tuple != None:
-            self.consecutive_alarm_list.append([ngram_tuple, score])
-        else:
-            print("consecutive end")
-            new_filename = "alarm_info/" + \
-                str(date.today()) + "_" + \
-                time.strftime("%I:%M:%S") + "_" + \
-                ".txt"
-            with open(new_filename, "a") as f:
-                for ngram_tuple in self.consecutive_alarm_list:
-                    f.write(
-                        str(ngram_tuple[0]) + str(ngram_tuple[1])) + "\n"
 
     def get_last_alarm_content(self):
         if self.last_alarm_queue:
@@ -149,5 +137,3 @@ class Analysis:
             return tmp
         else:
             return ""
-
-

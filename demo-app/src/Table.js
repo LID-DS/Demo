@@ -11,6 +11,7 @@ export default class Incident_Table extends React.PureComponent {
                 id: null,
                 time:null,
                 score:null,
+                ids_type:null,
                 content:null
             }],
             file_list: [],
@@ -19,10 +20,16 @@ export default class Incident_Table extends React.PureComponent {
         }
     }
 
-    add_incident = (time, score, content) => {
+    add_incident = (time, score, content, ids_type) => {
         var current_list = this.state.incident_list
         var new_id = current_list[this.state.incident_list.length - 1]["id"] + 1
-        current_list.push({id: new_id, time: time, score: score, content: content})
+        current_list.push({
+            id: new_id, 
+            time: time, 
+            score: score,
+            ids_type: ids_type,
+            content: content
+        })
         this.setState({
             file_list: current_list
         })
@@ -48,12 +55,13 @@ export default class Incident_Table extends React.PureComponent {
 
     renderTableData() {
       return this.state.incident_list.map((incident, index) => {
-         const { id, time, score } = incident //destructuring
+         const { id, time, score, type } = incident //destructuring
          return (
             <tr key={id} onClick={() => this.setIncidentForPopup(id)}>
                <td>{id}</td>
                <td>{time}</td>
                <td>{score}</td>
+               <td>{type}</td>
             </tr>
          )
       })
@@ -78,6 +86,7 @@ export default class Incident_Table extends React.PureComponent {
                             <th>ID</th>
                             <th>TIME</th>
                             <th>SCORE</th>
+                            <th>TYPE</th>
                         </tr>
                     </thead>
                     <tbody>

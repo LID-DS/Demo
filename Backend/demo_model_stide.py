@@ -30,6 +30,8 @@ class ModelState(Enum):
 
 
 class DemoModelStide:
+
+
     def __init__(
             self,
             ngram_length=7,
@@ -47,6 +49,7 @@ class DemoModelStide:
         self._alarm_threshold = 0.05
         self._consecutive_alarm = False
         self.iteration_counter = 0
+        self.highest_score_of_alarm = 0
         ###
         self._ngram_length = ngram_length
         self._window_length = window_length
@@ -193,7 +196,8 @@ class DemoModelStide:
         elif self._consecutive_alarm:
             print("ending alarm")
             self.analysis.alarm = False
-            self.analysis.save_current_window(
+            self.highest_score_of_alarm = \
+                self.analysis.save_current_window(
                     ngram_tuple=None,
                     score=None,
                     mismatch_value=None,
