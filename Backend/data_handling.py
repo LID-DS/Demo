@@ -25,12 +25,11 @@ class DataHandling:
                 collection of ids information (score, state...)
         :params: pid of node process to monitor
         """
-        #self.ids = DemoModelStide(ngram_length=7,training_size=INITIAL_TRAINING_SIZE)
         self.sysdig_handling = SysdigHandling(
                 data_handling=self,
                 pid=pid)
         self.ids_wrapper = IDSWrapper(
-                stide=True, 
+                stide=True,
                 mlp=False)
         self.syscall_sum = 0
         self.start_time = 0
@@ -41,13 +40,7 @@ class DataHandling:
         self.syscall_type_dict_bucket = {}
         self.syscall_type_dict = {}
         self.syscall_type_dict_last_second = {}
-        #self.ids_info = {
-        #    'score': 0,
-        #    'score_list': [],
-        #    'state': self.ids._model_state.value,
-        #    'training_size': self.ids._training_size,
-        #    'current_ngrams': 0,
-        #}
+        self.uid = 0
 
     def update_statistic(self, syscall):
         """
@@ -68,33 +61,8 @@ class DataHandling:
         self.calc_calls_per_bucket(syscall)
         self.calc_syscall_type_distribution()
         # hand over system call to IDS
-        #ids_info = {
-        #    'score': self.ids.consume_system_call(syscall),
-        #    'state': self.ids._model_state.value,
-        #    'training_size': self.ids._training_size,
-        #    'current_ngrams': self.ids._normal_ngrams["training_size"]
-        #}
         self.ids_info = self.ids_wrapper.send_to_ids(syscall)
-        #self.handle_ids_info(syscall)
 
-    def handle_ids_info(self, syscall):
-        """
-        Add ids scores until next statistic update
-        than score list is reset
-        """
-        #print("NEW WAY")
-        #print(self.ids_info)
-        #if not ids_info['score'] is None:
-            #self.ids_info['score_list'].append(ids_info['score'])
-        #self.ids_info = {
-            #'score': ids_info['score'],
-            #'score_list': self.ids_info['score_list'],
-            #'state': ids_info['state'],
-            #'training_size': ids_info['training_size'],
-            #'current_ngrams': ids_info['current_ngrams']
-        #}
-        #print("OLD WAY")
-        #print(self.ids_info)
 
     def get_alarm_content(self):
         """
@@ -170,7 +138,6 @@ class DataHandling:
                 self.syscall_type_dict.items(),
                 reverse=True,
                 key=lambda x: x[1])
-
         for elem in sorted_tuples:
             tmp_dict = {}
             tmp_dict[elem[0]] = elem[1]
@@ -193,6 +160,7 @@ class DataHandling:
         syscall_counter = 0
         for syscall_bucket in self.deque_syscall_per_bucket:
             syscall_counter += syscall_bucket[0]
+        self.deque_syscall_per_bucket.clear()
         return syscall_counter
 
     def get_top_ngrams(self):
@@ -201,9 +169,7 @@ class DataHandling:
         """
         # get current normal ngrams of ids
         ngram_dict = self.ids_wrapper.stide._normal_ngrams
-
         # TODO converting list to dict and than dict to list, really?
-
         # sort dict so highest is in first position
         top_ngrams = dict(
             sorted(
@@ -214,7 +180,6 @@ class DataHandling:
         )
         # remove first entry which stores only training_size
         del top_ngrams['training_size']
-
         if len(ngram_dict) > MAX_TOP_NGRAMS + 1:
             rest_ngrams = sorted(
                     ngram_dict.items(),
@@ -230,7 +195,6 @@ class DataHandling:
             top_list.append(temp)
         if len(self.ids_wrapper.stide._normal_ngrams) > MAX_TOP_NGRAMS + 1:
             top_list.append(['others', sum_of_other_ngrams])
-
         return top_list
 
     def get_int_to_sys(self):
@@ -259,7 +223,6 @@ class DataHandling:
         syscall_type = syscall[6]
         if self.start_time == 0:
             self.start_time = int(rawtime_of_syscall)
-
         # count all syscall occurences per bucket_update_delay
         # additionaly count different types of calls
         if int(rawtime_of_syscall) - self.start_time < self.bucket_update_delay:
@@ -270,10 +233,10 @@ class DataHandling:
                 self.syscall_type_dict_bucket[syscall_type] += 1
             else:
                 self.syscall_type_dict_bucket[syscall_type] = 1
-
         # if bucket is full it will be stored in deque
         else:
-            deque_entry = [self.bucket_counter, self.start_time]
+            deque_entry = [self.bucket_counter, self.start_time, self.uid]
+            self.uid += 1
             self.deque_syscall_per_bucket.append(deque_entry)
             self.deque_syscall_type_per_second.append(
                     self.syscall_type_dict_bucket)

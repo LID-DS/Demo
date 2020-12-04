@@ -41,11 +41,11 @@ class MLP:
         """
         create the MLP classifier (Multi Layer Perceptron)
         gets n-grams of system calls as input
-        example: 
+        example:
         n = 4
         n-gram x = [x_0,x_1,x_2,x_3]
         uses the first part [x_0,x_1,x_2] as input to the network
-        uses the second part [x_3] as expected Label as output of the network        
+        uses the second part [x_3] as expected Label as output of the network
 
         :param ngram_length: the ngram length to use - so minimum n = 2
         :param window_length: the sliding window size
@@ -62,7 +62,7 @@ class MLP:
         # training matrix size
         self.number_of_cols = 0
         self.number_of_rows = 0
-        
+
         # the normal db
         self._normal_ngrams = {}
 
@@ -78,19 +78,19 @@ class MLP:
 
         # dict for mismatches, uses a deque of fixed length to calculate moving average mismatch values
         # self._mismatch_buffers = deque(maxlen=self._window_length)
-        self._mismatch_buffer = {}        
+        self._mismatch_buffer = {}
         self._moving_sum_value = 0
-        
+
         self._thread_aware = thread_aware
 
         self.syscall_map = syscall_map
-        self._num_syscalls = 0        
+        self._num_syscalls = 0
         self._num_threads_seen = 0
         self._num_files_seen = 0
         self._mode = syscall_map._mode
 
         self._last_seen_ngram = None
-     
+
     def consume_system_call(self, syscall):
         """
         this method takes system calls and builds ngrams with them

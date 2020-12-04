@@ -29,7 +29,7 @@ class Backend:
         else:
             webshop_pid = None
         """
-        setup data_handling to 
+        setup data_handling to
             setup of sysdig handling to record system calls for specified pid
             compute syscall statistics
             evaluate syscalls with IDS
@@ -72,10 +72,8 @@ class Backend:
         """
         log = logging.getLogger('werkzeug')
         log.setLevel(logging.ERROR)
-
         self.app = Flask(__name__)
         self.app.logger.disabled = True
-
         self.app.config['SECRET_KEY'] = 'secret!'
         self.socketio = SocketIO(self.app, cors_allowed_origins='*')
 
@@ -205,7 +203,7 @@ class Backend:
             }
         }
         # delay in ms of sent data
-        delay = 1000 
+        delay = 1000
         current_millis = lambda: int(round(time.time() * 1000))
         start_millis = current_millis()
         last_millis = start_millis
@@ -215,7 +213,7 @@ class Backend:
         time.sleep(5)
         self.socketio.emit('start', None)
         while True:
-            if current_millis() - last_millis >= 1000:
+            if current_millis() - last_millis >= delay:
                 last_millis = current_millis()
             else:
                 continue
@@ -238,43 +236,38 @@ class Backend:
                     stide = self.data_handling.ids_wrapper.active_ids["stide"]
                     mlp = self.data_handling.ids_wrapper.active_ids['mlp']
                     # calc score of last second (saved in data_handling)
-                    self.data_handling.ids_wrapper.get_score_last_second()
+                    #self.data_handling.ids_wrapper.get_score_last_second()
                     ids_info = self.data_handling.ids_wrapper.global_ids_info
                     if stide is not None:
                         if 'stide' in ids_info:
-                            if 'score' in ids_info['stide']:
-                                score = ids_info['stide']['score']
-                            else:
-                                score = 0
-                        else: 
+                            score = self.data_handling.ids_wrapper.get_score_last_second('stide')
+                        else:
                             score = 0
                         stats['ids_info'] = {
                             'stide': {
                                 'active': True,
                                 'score': score,
-                                'state': 
+                                'state':
                                     self.data_handling.ids_info['stide']['state'],
-                                'training_size': 
+                                'training_size':
                                     self.data_handling.ids_info['stide']['training_size'],
-                                'current_ngrams': 
+                                'current_ngrams':
                                     self.data_handling.ids_info['stide']['current_ngrams'],
-                                'top_ngrams': 
+                                'top_ngrams':
                                     self.data_handling.get_top_ngrams(),
-                                'int_to_sys': 
+                                'int_to_sys':
                                     self.data_handling.get_int_to_sys()
                             }
                         }
                     if mlp is not None:
                         if 'mlp' in ids_info:
-                            if 'score' in ids_info['mlp']:
-                                score = ids_info['mlp']['score']
-                            else:
-                                score = 0
-                        else: 
+                            #score = ids_info['mlp']['score']
+                            score = self.data_handling.ids_wrapper.get_score_last_second('mlp')
+                        else:
                             score = 0
                         stats['ids_info']['mlp'] = {
                             'active': True,
-                            'score': score, 
+                            'score': score,
                             'state': self.data_handling.ids_info['mlp']['state']
                         }
                     if mlp is None:
@@ -289,10 +282,10 @@ class Backend:
                     print("IDS info failed!")
                 try:
                     stats['analysis'] = {
-                        'alarm_content': 
-                            self.data_handling.get_alarm_content(), 
+                        'alarm_content':
+                            self.data_handling.get_alarm_content(),
                         'highest_score_alarm':
-                            self.data_handling.ids_wrapper.stide.highest_score_of_alarm
+                            self.data_handling.ids_wrapper.stide.analysis.highest_score
                     }
                 except Exception:
                     print("Analysis info failed!")
@@ -308,12 +301,10 @@ class Backend:
                     }
                 except Exception:
                     print("userCount info failed")
-
                 #pp = pprint.PrettyPrinter(indent=4)
                 #pp.pprint(stats['ids_info'])
                 time_since_start += 1
                 self.socketio.emit('stats', stats)
-
             except Exception:
                 print("Error building stats")
                 print(stats)

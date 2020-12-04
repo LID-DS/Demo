@@ -6,15 +6,15 @@ class IDSWrapper:
 
     def __init__(self, stide: bool, mlp:bool):
         """
-        Handling of chosen IDS 
+        Handling of chosen IDS
         multiple IDSs possible
         Instances of different IDS are passed as list
         """
         self.key = ""
         self.active_ids = {
                 "stide": None,
-                "mlp" : None} 
-        self.global_ids_info = {} 
+                "mlp" : None}
+        self.global_ids_info = {}
         self.score_list = {
                 'stide': [],
                 'mlp' : []
@@ -29,10 +29,13 @@ class IDSWrapper:
         self.key = "stide"
         # use default values
         if training_size is None and trained_model is None:
-            self.stide = DemoModelStide(ngram_length=7, window_length=1000, training_size=10000000) 
+            self.stide = DemoModelStide(
+                    ngram_length=7,
+                    window_length=1000,
+                    training_size=10000000)
         # use predefined training size
         elif not training_size is None:
-            self.stide = DemoModelStide(ngram_length=7, window_length=3, training_size=training_size) 
+            self.stide = DemoModelStide(ngram_length=7, window_length=3, training_size=training_size)
         # use already trained model
         elif not trained_model is None:
             self.stide = DemoModelStide(trained_model=trained_model)
@@ -41,7 +44,7 @@ class IDSWrapper:
             'score': 0,
             'state': self.stide._model_state.value,
             'training_size': self.stide._training_size,
-            'current_ngrams': 0 
+            'current_ngrams': 0
         }
         self.score_list['stide'] = []
         print("Stide initialized")
@@ -79,12 +82,11 @@ class IDSWrapper:
             self.active_ids['mlp'] = None
 
     def retrain(self, training_size=None, trained_model=None, ids_type=None):
-        if ids_type is not None: 
+        if ids_type is not None:
             if ids_type == "Stide":
                 self.init_stide(training_size)
             elif ids_type == "MLP":
                 self.init_mlp(training_size=training_size)
-
         elif self.active_ids['stide'] is not None:
             if trained_model is None:
                 self.init_stide(training_size)
@@ -131,6 +133,10 @@ class IDSWrapper:
         """
         Return collected information of all active ids
         """
+        #print(self.active_ids["stide"] is not None, self.active_ids["mlp"] is not None )
+        #print(self.active_ids['stide']['score'])
+        #self.get_score_last_second()
+        #print(self.active_ids['stide']['score'])
         if self.active_ids["stide"] is not None:
             ids_info = {
                 'score': self.global_ids_info['stide']['score'],
@@ -139,12 +145,11 @@ class IDSWrapper:
                 'current_ngrams' : 0
             }
             ids_score = self.stide.consume_system_call(syscall)
-            if ids_score is not None: 
+            if ids_score is not None:
                 self.score_list['stide'].append(ids_score)
             ids_info['state'] = self.stide._model_state.value
             ids_info['training_size'] = self.stide._training_size
             ids_info['current_ngrams'] = self.stide._normal_ngrams["training_size"]
-
             self.global_ids_info["stide"] = ids_info
         if self.active_ids["mlp"] is not None:
             ids_info = {
@@ -158,25 +163,24 @@ class IDSWrapper:
             self.global_ids_info["mlp"] = ids_info
         return self.global_ids_info
 
-    def get_score_last_second(self):
+    def get_score_last_second(self, key):
         """
         return score of all active ids
         """
-        for key in self.active_ids:
-            if self.active_ids[key] is None:
-                continue 
-            #self.global_ids_info[key]['score'] = 0.049
-            # if list is not empty return highest score
-            if self.score_list[key]:
-                # sort list and return highest score
-                sorted_ids_scores = sorted(
-                    self.score_list[key],
-                    reverse=True)
-                self.score_list[key]= list()
-                highest_score = sorted_ids_scores[0]
-                self.global_ids_info[key]['score'] = highest_score
-            else:
-                self.global_ids_info[key]['score'] = 0
+        #self.global_ids_info[key]['score'] = 0.049
+        # if list is not empty return highest score
+        if self.score_list[key]:
+            # sort list and return highest score
+            sorted_ids_scores = sorted(
+                self.score_list[key],
+                reverse=True)
+            self.score_list[key]= list()
+            highest_score = sorted_ids_scores[0]
+            return highest_score
+        else:
+            if key == 'mlp':
+                print("WEIRD CASE")
+            return 0
 
 
     def save_active_model(self):

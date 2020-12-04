@@ -1,9 +1,11 @@
-from datetime import date
-from shutil import copyfile
 import os
 import time
+import threading
 import collections
 import data_handling
+from datetime import date
+from shutil import copyfile
+
 
 class Analysis:
     """
@@ -23,6 +25,36 @@ class Analysis:
         self.alarm_count = 0
         self.last_alarm_content = ""
         self.last_alarm_queue = collections.deque()
+        self._consecutive_alarm = False
+        self.iteration_counter = 0
+        self.highest_score = 0
+
+    def analyse(self, ngram_tuple, mv_sum, alarm_threshold, right_value):
+        if mv_sum < alarm_threshold:
+            # keep track of current moving window for later analysis
+            self.track_mv_window(ngram_tuple)
+        if mv_sum >= alarm_threshold:
+            self.alarm = True
+            if not self._consecutive_alarm:
+                self.highest_score = 0
+                self.iteration_counter = 0
+                print("new alarm")
+                save_window_thread = threading.Thread(target=self.save_current_window, args=[[ngram_tuple, mv_sum, right_value, self._consecutive_alarm]])
+                save_window_thread.start()
+                self._consecutive_alarm = True
+            else:
+                self.iteration_counter += 1
+                if self.iteration_counter == 100:
+                    print("consecutive alarm")
+                    self.iteration_counter = 0
+                save_window_thread = threading.Thread(target=self.save_current_window, args=[[ngram_tuple, mv_sum, right_value, self._consecutive_alarm]])
+                save_window_thread.start()
+        elif self._consecutive_alarm:
+            print("ending alarm")
+            self.analysis.alarm = False
+            save_window_thread = threading.Thread(target=self.save_current_window, args=[[None, None, None, False]])
+            save_window_thread.start()
+            self._consecutive_alarm = False
 
     def save_raw_syscall(self, syscall, syscall_num):
         """
@@ -39,7 +71,6 @@ class Analysis:
         if len(syscall[7]) > 0:
             for evt in syscall[7]:
                 evt_string = evt_string + str(evt)
-        
         syscall =   rawtime + " | " +       \
                     latency + " | " +       \
                     threadID + " | " +      \
@@ -91,7 +122,7 @@ class Analysis:
 
     def save_current_window(self, ngram_tuple, score, mismatch_value, consecutive_alarm):
         """
-        if it is a consecutive alarm save to queue 
+        if it is a consecutive alarm save to queue
         else save current window of ngrams to new file with timestamp
         and score as name
         """
@@ -99,7 +130,7 @@ class Analysis:
         # create queue and save tracked moving window 
         if not consecutive_alarm and not ngram_tuple is None:
             self.save_tracked_window()
-            self.deque_alarm = collections.deque() 
+            self.deque_alarm = collections.deque()
             self.deque_alarm.append([ngram_tuple, score, mismatch_value])
             #keep track of highest score of consecutive alarm
             self.highest_score = score
@@ -121,14 +152,10 @@ class Analysis:
                 for entry in self.deque_alarm:
                     f.write(
                         str(entry[0]) +
-                        " " + str(entry[1]) + 
-                        " " + str(entry[2]) + 
-                        "\n") 
+                        " " + str(entry[1]) +
+                        " " + str(entry[2]) +
+                        "\n")
             self.alarm_count += 1
-            tmp = self.highest_score
-            self.highest_score = 0
-            return tmp
-
 
     def get_last_alarm_content(self):
         if self.last_alarm_queue:

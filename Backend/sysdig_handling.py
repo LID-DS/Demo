@@ -5,7 +5,7 @@ import threading
 import time
 import psutil
 
-IN_DOCKER = False 
+IN_DOCKER = False
 
 class SysdigHandling:
 
@@ -92,8 +92,8 @@ class SysdigHandling:
         parsed_syscall = [8]
         if IN_DOCKER:
             parsed_syscall[0:7] = syscall[0:7]
-        else: 
-            parsed_syscall[0] = 0  
+        else:
+            parsed_syscall[0] = 0
             parsed_syscall[1:7] = syscall[0:6]
         list_of_arguments = syscall[7:]
         parsed_syscall.append(list_of_arguments)
@@ -107,8 +107,8 @@ class SysdigHandling:
         with self.start_sysdig_and_read_data(pid) as sysdig_out:
             for line in sysdig_out.stdout:
                 parsed_syscall = self.syscall_parser(line)
-                if self.filter_syscall(parsed_syscall):
-                    self.deque_syscall.append(parsed_syscall)
+                #if self.filter_syscall(parsed_syscall):
+                self.deque_syscall.append(parsed_syscall)
 
     def read_syscall(self):
         """
@@ -122,7 +122,7 @@ class SysdigHandling:
                 # send to data_handling
                 self.data_handling.update_statistic(syscall)
             else:
-                time.sleep(0.1)
+                time.sleep(0.001)
 
     def filter_syscall(self, parsed_syscall):
         """

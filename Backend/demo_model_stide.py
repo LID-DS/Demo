@@ -6,7 +6,6 @@ import pickle
 from analyse_alarm import Analysis
 
 
-
 class Index(IntEnum):
     """
     this enum class gives the indices of each field in the data
@@ -169,42 +168,12 @@ class DemoModelStide:
             self._moving_sum_value - left_value + right_value
         ###
         mv_sum = self._moving_sum_value / self._window_length
-        if mv_sum < self._alarm_threshold:
-            # keep track of current moving window for later analysis
-            self.analysis.track_mv_window(ngram_tuple)
-        if mv_sum >= self._alarm_threshold:
-            self.analysis.alarm = True 
-            if not self._consecutive_alarm:
-                self.iteration_counter = 0
-                print("new alarm")
-                self.analysis.save_current_window(
-                        ngram_tuple=ngram_tuple,
-                        score=mv_sum,
-                        mismatch_value=right_value,
-                        consecutive_alarm=self._consecutive_alarm)
-                self._consecutive_alarm = True
-            else:
-                self.iteration_counter += 1
-                if self.iteration_counter == 100:
-                    print("consecutive alarm")
-                    self.iteration_counter = 0
-                self.analysis.save_current_window(
-                        ngram_tuple=ngram_tuple,
-                        score=mv_sum,
-                        mismatch_value=right_value,
-                        consecutive_alarm=self._consecutive_alarm)
-        elif self._consecutive_alarm:
-            print("ending alarm")
-            self.analysis.alarm = False
-            self.highest_score_of_alarm = \
-                self.analysis.save_current_window(
-                    ngram_tuple=None,
-                    score=None,
-                    mismatch_value=None,
-                    consecutive_alarm=False)
-            self._consecutive_alarm = False
+        # keep track of window and check for consecutive alarms
+        #self.analysis.analyse(ngram_tuple, mv_sum, self._alarm_threshold, right_value)
+        #analysis = threading.Thread(target=self.analysis.analyse, args=[[ngram_tuple, mv_sum, self._alarm_threshold, right_value]])
+
         ###
-        return self._moving_sum_value / self._window_length
+        return mv_sum
 
     def consume_system_call(self, syscall):
         """
@@ -288,11 +257,10 @@ class DemoModelStide:
             int_to_syscall to convert integers to syscall strings and back.
         """
         if self._model_state == ModelState.Detection:
-            ngram_path = "Models/Stide/save_ngrams.p" 
-            sys_to_int_path = "Models/Stide/save_sys_to_int.p" 
-            int_to_sys_path = "Models/Stide/save_int_to_sys.p" 
+            ngram_path = "Models/Stide/save_ngrams.p"
+            sys_to_int_path = "Models/Stide/save_sys_to_int.p"
+            int_to_sys_path = "Models/Stide/save_int_to_sys.p"
             paths = [ngram_path, sys_to_int_path, int_to_sys_path]
-           
             for path in paths:
                 if not os.path.exists(os.path.dirname(path)):
                     try:
