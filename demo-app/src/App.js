@@ -516,13 +516,14 @@ class App extends React.PureComponent{
                     key = "mlp"
                 }
                 console.log(data['analysis'])
-                if (data['analysis']['alarm_content'].length > 0) {
-                    this.incidentTable.current.add_incident(
-                        data['time'], 
-                        data['ids_info'][key]['score'], 
-                        data['analysis']['alarm_content'],
-                        key)
-                }
+                //if (data['analysis']['alarm_content'].length > 0) {
+                 //   console.log("ALARM")
+                this.incidentTable.current.add_incident(
+                    data['time'], 
+                    data['analysis']['highest_score_alarm'], 
+                    data['analysis']['alarm_content'],
+                    key)
+                //}
             }
         }.bind(this));
 

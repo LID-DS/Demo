@@ -106,7 +106,6 @@ function ShowPopup(props){
     if (props.popup) {
         return (
             <div>
-                <Popup content={props.file} close_popup={props.close}/>
             </div>
         )
     } 
