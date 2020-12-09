@@ -2,7 +2,7 @@ import sys
 import time
 import random
 import threading
-import os 
+import os
 import time
 import requests
 from selenium import webdriver
@@ -10,17 +10,16 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
- 
 
 MAX_LOGOUT_FAILS = 5
 MAX_USERS = 4
 
 class User:
-    
-    def __init__(self, email, password, security_question, user_number, visible=False): 
+
+    def __init__(self, email, password, security_question, user_number, visible=False):
         #configurations for headless browsing
         self.chrome_options = Options()
-        if not visible: 
+        if not visible:
             #no Browser window
             self.chrome_options.add_argument("--headless")
         else:
@@ -33,7 +32,7 @@ class User:
         self.driver.delete_all_cookies()
         self.email = email
         self.password = password
-        self.security_question = security_question   
+        self.security_question = security_question
         self.user_number = user_number
         self.logout_count = 0
         # to stop thread
@@ -47,7 +46,7 @@ class User:
 
     def reset(self):
         self.__init__(self.email, self.password, self.security_question, self.user_number)
-    
+
     def register(self):
 
         #Open the website
@@ -55,16 +54,20 @@ class User:
         time.sleep(2)
         try:
             #get rid of pop up window 
-            self.driver.find_element_by_xpath('/html/body/div[3]/div[2]/div/mat-dialog-container/app-welcome-banner/div/div[2]/button[2]').click()
+            self.driver.find_element_by_xpath(
+                """/html/body/div[3]/div[2]/
+                div/mat-dialog-container/
+                app-welcome-banner/div/
+                div[2]/button[2]""").click()
         except:
             print("User " + str(self.user_number) + ": Error removing welcome banner")
             #rerun registration process 
             if random.randint(0,1) >= 1:
                 self.register()
-            else: 
+            else:
                 print("User " + str(self.user_number) + ": Error removing welcome banner -> not retrying")
                 return
-        try: 
+        try:
             #find email box
             reg_email_box = self.driver.find_element_by_xpath(
                     '//div[contains(@id, "registration-form")]//input[@id="emailControl"]')
@@ -85,7 +88,13 @@ class User:
         #select security question
         try:
             self.driver.find_element_by_xpath(
-                '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-register/div/mat-card/div[2]/div[1]/mat-form-field[1]/div/div[1]/div[3]').click()
+                """/html/body/app-root/div/
+                mat-sidenav-container/
+                mat-sidenav-content/
+                app-register/div/mat-card/
+                div[2]/div[1]/
+                mat-form-field[1]/
+                div/div[1]/div[3]""").click()
             self.driver.find_element_by_xpath(
                 '//div[contains(@id, "cdk-overlay-2")]//mat-option[@id="mat-option-0"]').click()
         except:
@@ -107,16 +116,15 @@ class User:
 
 
     def login(self):
-        
-        #print("User: " + str(self.user_number) + " " + 'Try logging in')
+
         #Open the website
         self.driver.get('http://localhost:3000/#/login')
         try:
             #get rid of pop up window by clicking in top right corner
-            self.driver.find_element_by_xpath('//div[contains(@class,"cdk-overlay-pane")]//button[@aria-label="Close Welcome Banner"]').click()
+            self.driver.find_element_by_xpath(
+                '//div[contains(@class,"cdk-overlay-pane")]//button[@aria-label="Close Welcome Banner"]').click()
         except:
             pass
-            #print("User: " + str(self.user_number) + " " + 'No Welcome Banner')
         #Login with given credentials
         try:
             #find email box
@@ -128,7 +136,8 @@ class User:
             #enter password
             pass_box.send_keys(self.password)
             #find login button
-            login_button = self.driver.find_element_by_xpath('//div[contains(@id, "login-form")]//button[@id="loginButton"]')
+            login_button = self.driver.find_element_by_xpath(
+                '//div[contains(@id, "login-form")]//button[@id="loginButton"]')
             #click button
             try:
                 login_button.click()
@@ -145,30 +154,26 @@ class User:
         try:
             self.driver.find_element_by_xpath('//div[contains(@aria-describedby, "cookieconsent:desc")]//a[@aria-label="dismiss cookie message"]').click()
         except:
-            #print("User: " + str(self.user_number) + " " + 'No cookie banner')
             pass
         return True
 
 
     def logout(self):
-     
-        #print("User: " + str(self.user_number) + " " + 'Logout')
+
         self.logout_count += 1
         if (self.logout_count < MAX_LOGOUT_FAILS):
-            try:    
+            try:
                 account_button = self.driver.find_element_by_id('navbarAccount')
                 account_button.click()
                 logout_button = self.driver.find_element_by_id('navbarLogoutButton')
                 logout_button.click()
             except:
-                #print("User: " + str(self.user_number) + " " + "Logout failed, retrying")
                 self.reload()
                 self.logout()
         else:
-            #print("User: " + str(self.user_number) + " " + 'max retries for relogin reached \n reinitialize User')
             self.driver.quit()
             self.reset()
-            
+
 
     def select_products(self, selected_products, add_to_basket, leave_feedback):
 
@@ -209,10 +214,10 @@ class User:
         # product 7,9,10 have extra banner -> different xpath
         if product_number in [7,9,10]:
             extra_info = 2
-        else: 
+        else:
             extra_info = 1
-        product_path = f'/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-search-result/div/div/div[2]/mat-grid-list/div/mat-grid-tile[{product_number + 1}]/figure/mat-card/div[{extra_info}]' 
-        try: 
+        product_path = f'/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-search-result/div/div/div[2]/mat-grid-list/div/mat-grid-tile[{product_number + 1}]/figure/mat-card/div[{extra_info}]'
+        try:
             product_button = self.driver.find_element_by_xpath(product_path)
             product_button.click()
         except:
@@ -284,8 +289,12 @@ class User:
             '//*[@id="submitButton"]').click()
         time.sleep(2)
 
-    def go_shopping(self, max_products):
-
+    def go_shopping(self, max_products, user_manager):
+        """
+        putting items into basket
+        :params: max_products to put in basket
+        :params: user_manager for clean_up handling
+        """
         #print("User: " + str(self.user_number) + " " + "Go shopping")
         # choose how many items user puts in basket
         how_many_items_in_basket = random.randint(0,max_products)
@@ -293,12 +302,12 @@ class User:
         # randomly select what items are chosen 
         # with p=0.5 leave feedback of chosen product
         for i in range(0,how_many_items_in_basket + 1):
-            random_items.append(random.randint(0,11)) 
+            random_items.append(random.randint(0,11))
         for item in random_items:
             # dont continue if user should not run
-            if not self.is_running: 
+            if not self.is_running:
                 self.clean_up_and_quit(user_manager)
-                return 
+                return
             #print("User: " + str(self.user_number) + " " + "Put item into basket")
             self.put_products_in_basket([item])
             if (random.randint(0,4) >  2):
@@ -308,15 +317,23 @@ class User:
                 self.leave_feedback([item])
 
     def checkout(self):
-        
+
         basket_button = self.driver.find_element_by_xpath(
-                '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-navbar/mat-toolbar/mat-toolbar-row/button[4]')
+            """/html/body/app-root/div/
+            mat-sidenav-container/
+            mat-sidenav-content/
+            app-navbar/mat-toolbar/
+            mat-toolbar-row/button[4]""")
         basket_button.click()
-        try: 
+        try:
             #TODO test not working
             #wait for basket to load
             time.sleep(5)
-            checkout_button = self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-basket/mat-card/button')
+            checkout_button = self.driver.find_element_by_xpath(
+                """/html/body/app-root/
+                div/mat-sidenav-container/
+                mat-sidenav-content/app-basket/
+                mat-card/button""")
             checkout_button.click()
         except NoSuchElementException:
             print("User " + str(self.user_number) + ": has nothing in cart to checkout")
@@ -324,92 +341,280 @@ class User:
         # check if address has to be added -> check if radiobutton for address exists
         try:
             time.sleep(2)
-            self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-address-select/div/app-address/mat-card/mat-table/mat-row/mat-cell[1]/mat-radio-button').click()
-            address_radio_button = self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-address-select/div/app-address/mat-card/mat-table/mat-row/mat-cell[1]/mat-radio-button')
+            self.driver.find_element_by_xpath(
+                """/html/body/app-root/
+                div/mat-sidenav-container/
+                mat-sidenav-content/
+                app-address-select/div
+                /app-address/mat-card
+                /mat-table/mat-row/
+                mat-cell[1]/mat-radio-button""").click()
+            address_radio_button = self.driver.find_element_by_xpath(
+                """/html/body/app-root/div/
+                mat-sidenav-container/
+                mat-sidenav-content/
+                app-address-select/div/
+                app-address/mat-card/
+                mat-table/mat-row/mat-cell[1]/
+                mat-radio-button""")
             address_radio_button.click()
             time.sleep(2)
             # continue with chosen address
-            continue_button = self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-address-select/div/app-address/mat-card/button')
-            continue_button.click() 
+            continue_button = self.driver.find_element_by_xpath(
+                """/html/body/app-root/div/
+                mat-sidenav-container/
+                mat-sidenav-content/
+                app-address-select/div/
+                app-address/mat-card/button""")
+            continue_button.click()
         except NoSuchElementException:
             print("User " + str(self.user_number) + ": No address set")
             try:
                 time.sleep(2)
                 self.driver.find_element_by_xpath(
-                        '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-address-select/div/app-address/mat-card/div/button').click()
+                    """/html/body/app-root/
+                    div/mat-sidenav-container/
+                    mat-sidenav-content/
+                    app-address-select/div/
+                    app-address/mat-card/
+                    div/button""").click()
                 time.sleep(0.2)
                 self.driver.find_element_by_xpath(
-                        '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-address-create/div/mat-card/div[1]/mat-form-field[1]/div/div[1]/div[3]/input').send_keys("Land")
+                    """/html/body/app-root/
+                    div/mat-sidenav-container/
+                    mat-sidenav-content/
+                    app-address-create/div/
+                    mat-card/div[1]/
+                    mat-form-field[1]/div/
+                    div[1]/div[3]/
+                    input""").send_keys("Land")
                 time.sleep(0.2)
-                self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-address-create/div/mat-card/div[1]/mat-form-field[2]/div/div[1]/div[3]/input').send_keys("Name")
+                self.driver.find_element_by_xpath(
+                    """/html/body/app-root/div/
+                    mat-sidenav-container/
+                    mat-sidenav-content/
+                    app-address-create/
+                    div/mat-card/div[1]/
+                    mat-form-field[2]/div/
+                    div[1]/div[3]/
+                    input""").send_keys("Name")
                 time.sleep(0.2)
-                self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-address-create/div/mat-card/div[1]/mat-form-field[3]/div/div[1]/div[3]/input').send_keys("1234567")
+                self.driver.find_element_by_xpath(
+                    """/html/body/app-root/
+                    div/mat-sidenav-container/
+                    mat-sidenav-content/
+                    app-address-create/div/
+                    mat-card/div[1]/
+                    mat-form-field[3]/div/
+                    div[1]/div[3]/
+                    input""").send_keys("1234567")
                 time.sleep(0.2)
-                self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-address-create/div/mat-card/div[1]/mat-form-field[4]/div/div[1]/div[3]/input').send_keys("72072")
+                self.driver.find_element_by_xpath(
+                    """/html/body/app-root/
+                    div/mat-sidenav-container/
+                    mat-sidenav-content/
+                    app-address-create/div/
+                    mat-card/div[1]/
+                    mat-form-field[4]/div/
+                    div[1]/div[3]/
+                    input""").send_keys("72072")
                 time.sleep(0.2)
-                self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-address-create/div/mat-card/div[1]/mat-form-field[5]/div/div[1]/div[3]/textarea').send_keys("Street")
+                self.driver.find_element_by_xpath(
+                    """/html/body/app-root/
+                    div/mat-sidenav-container/
+                    mat-sidenav-content/
+                    app-address-create/div/
+                    mat-card/div[1]/
+                    mat-form-field[5]/div/
+                    div[1]/div[3]/
+                    textarea""").send_keys("Street")
                 time.sleep(0.2)
-                self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-address-create/div/mat-card/div[1]/mat-form-field[6]/div/div[1]/div[3]/input').send_keys("Stadt")
+                self.driver.find_element_by_xpath(
+                    """/html/body/app-root/
+                    div/mat-sidenav-container/
+                    mat-sidenav-content/
+                    app-address-create/div/
+                    mat-card/div[1]/
+                    mat-form-field[6]/div/
+                    div[1]/div[3]/
+                    input""").send_keys("Stadt")
                 time.sleep(0.2)
-                self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-address-create/div/mat-card/div[1]/mat-form-field[7]/div/div[1]/div[3]/input').send_keys("Bundesland")
+                self.driver.find_element_by_xpath(
+                    """/html/body/app-root/div/
+                    mat-sidenav-container/
+                    mat-sidenav-content/
+                    app-address-create/div/
+                    mat-card/div[1]/
+                    mat-form-field[7]/div/
+                    div[1]/div[3]/
+                    input""").send_keys("Bundesland")
                 time.sleep(0.2)
-                self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-address-create/div/mat-card/div[2]/button[2]').click()
+                self.driver.find_element_by_xpath(
+                    """/html/body/app-root/
+                    div/mat-sidenav-container/
+                    mat-sidenav-content/
+                    app-address-create/div/
+                    mat-card/div[2]/
+                    button[2]""").click()
                 time.sleep(2)
                 #select address
-                self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-address-select/div/app-address/mat-card/mat-table/mat-row/mat-cell[1]/mat-radio-button').click()
+                self.driver.find_element_by_xpath(
+                    """/html/body/app-root/div/
+                    mat-sidenav-container/
+                    mat-sidenav-content/
+                    app-address-select/div/
+                    app-address/mat-card/
+                    mat-table/mat-row/
+                    mat-cell[1]/
+                    mat-radio-button""").click()
                 time.sleep(2)
                 # continue with chosen address
-                continue_button = self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-address-select/div/app-address/mat-card/button')
-                continue_button.click() 
+                continue_button = self.driver.find_element_by_xpath(
+                    """/html/body/app-root/
+                    div/mat-sidenav-container/
+                    mat-sidenav-content/
+                    app-address-select/div/
+                    app-address/mat-card/button""")
+                continue_button.click()
             except NoSuchElementException:
                 print("User " + str(self.user_number) + ": Error adding address")
                 return
         try:
             time.sleep(2)
             # choose delivery method
-            self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-delivery-method/mat-card/div[3]/mat-table/mat-row[3]/mat-cell[1]/mat-radio-button').click()
+            self.driver.find_element_by_xpath(
+                """/html/body/app-root/
+                div/mat-sidenav-container/
+                mat-sidenav-content/
+                app-delivery-method/
+                mat-card/div[3]/mat-table/
+                mat-row[3]/mat-cell[1]/
+                mat-radio-button""").click()
             # confirm delivery method
-            self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-delivery-method/mat-card/div[4]/button[2]/span').click()
+            self.driver.find_element_by_xpath(
+                """/html/body/app-root/div
+                /mat-sidenav-container/
+                mat-sidenav-content/
+                app-delivery-method/
+                mat-card/div[4]/
+                button[2]/span""").click()
         except NoSuchElementException:
             print("User " + str(self.user_number) + ": Error chosing delivery method")
             return
         try:
             # check if credit card information was added previously
-            self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div[1]/mat-table/mat-row/mat-cell[1]/mat-radio-button')
+            self.driver.find_element_by_xpath(
+                """/html/body/app-root/div/
+                mat-sidenav-container/
+                mat-sidenav-content/
+                app-payment/mat-card/
+                div/app-payment-method/
+                div/div[1]/mat-table/
+                mat-row/mat-cell[1]/
+                mat-radio-button""")
         except NoSuchElementException:
-            try: 
+            try:
                 print("User " + str(self.user_number) + ": Add new card information")
                 time.sleep(1)
                 # add credit card information
-                self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div/mat-expansion-panel/mat-expansion-panel-header').click()
+                self.driver.find_element_by_xpath(
+                    """/html/body/app-root/div/
+                    mat-sidenav-container/
+                    mat-sidenav-content/
+                    app-payment/mat-card/
+                    div/app-payment-method/
+                    div/div/mat-expansion-panel/
+                    mat-expansion-panel-header""").click()
                 time.sleep(1)
-                self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div/mat-expansion-panel/div/div/div/mat-form-field[1]/div/div[1]/div[3]/input').send_keys('Name')
+                self.driver.find_element_by_xpath(
+                    """/html/body/app-root/div/
+                    mat-sidenav-container/
+                    mat-sidenav-content/
+                    app-payment/mat-card/
+                    div/app-payment-method/
+                    div/div/mat-expansion-panel/
+                    div/div/div/mat-form-field[1]/
+                    div/div[1]/div[3]/input""").send_keys('Name')
                 time.sleep(1)
-                self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div/mat-expansion-panel/div/div/div/mat-form-field[2]/div/div[1]/div[3]/input').send_keys('1234567891011121')
+                self.driver.find_element_by_xpath(
+                    """/html/body/app-root/div/
+                    mat-sidenav-container/
+                    mat-sidenav-content/
+                    app-payment/mat-card/
+                    div/app-payment-method/
+                    div/div/mat-expansion-panel/
+                    div/div/div/mat-form-field[2]/
+                    div/div[1]/div[3]/
+                    input""").send_keys('1234567891011121')
                 time.sleep(1)
-                month_option = self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div/mat-expansion-panel/div/div/div/mat-form-field[3]/div/div[1]/div[3]/select/option').click()
+                month_option = self.driver.find_element_by_xpath(
+                    """/html/body/app-root/div/
+                    mat-sidenav-container/
+                    mat-sidenav-content/
+                    app-payment/mat-card/
+                    div/app-payment-method/
+                    div/div/mat-expansion-panel/
+                    div/div/div/mat-form-field[3]/
+                    div/div[1]/div[3]/select/
+                    option""").click()
                 time.sleep(1)
-                self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div/mat-expansion-panel/div/div/div/mat-form-field[4]/div/div[1]/div[3]/select/option[1]').click()
+                self.driver.find_element_by_xpath(
+                    """/html/body/app-root/div/
+                    mat-sidenav-container/
+                    mat-sidenav-content/
+                    app-payment/mat-card/
+                    div/app-payment-method/
+                    div/div/mat-expansion-panel/
+                    div/div/div/mat-form-field[4]/
+                    div/div[1]/div[3]/select/
+                    option[1]""").click()
                 time.sleep(1)
-                self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div/mat-expansion-panel/div/div/button').click()
-                time.sleep(1)
-            except NoSuchElementException:
-                print("User " + str(self.user_number) + ": Error choosing credit card information")
-                return 
-            try:
-                time.sleep(1)
-                #choose added credit card
-                self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/app-payment-method/div/div[1]/mat-table/mat-row/mat-cell[1]/mat-radio-button').click()
+                self.driver.find_element_by_xpath(
+                    """/html/body/app-root/div/
+                    mat-sidenav-container/
+                    mat-sidenav-content/
+                    app-payment/mat-card/
+                    div/app-payment-method/
+                    div/div/mat-expansion-panel/
+                    div/div/button""").click()
                 time.sleep(1)
             except NoSuchElementException:
                 print("User " + str(self.user_number) + ": Error choosing credit card information")
                 return
-        try: 
+            try:
+                time.sleep(1)
+                #choose added credit card
+                self.driver.find_element_by_xpath(
+                    """/html/body/app-root/div/
+                    mat-sidenav-container/
+                    mat-sidenav-content/
+                    app-payment/mat-card/
+                    div/app-payment-method/
+                    div/div[1]/mat-table/
+                    mat-row/mat-cell[1]/mat-radio-
+                    button""").click()
+                time.sleep(1)
+            except NoSuchElementException:
+                print("User " + str(self.user_number) + ": Error choosing credit card information")
+                return
+        try:
             # continue
-            self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-payment/mat-card/div/div[2]/button[2]').click()
+            self.driver.find_element_by_xpath(
+                """/html/body/app-root/div/
+                mat-sidenav-container/
+                mat-sidenav-content/
+                app-payment/mat-card/
+                div/div[2]/button[
+                2]""").click()
             time.sleep(2)
             # checkout
-            self.driver.find_element_by_xpath('/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-order-summary/mat-card/div[2]/mat-card/button').click()
+            self.driver.find_element_by_xpath(
+                """/html/body/app-root/div/
+                mat-sidenav-container/
+                mat-sidenav-content/
+                app-order-summary/
+                mat-card/div[2]/
+                mat-card/button""").click()
             time.sleep(2)
         except NoSuchElementException:
             print("User " + str(self.user_number) + ": error finishing checkout")
@@ -417,13 +622,13 @@ class User:
 
     def reload(self):
         self.driver.refresh()
-            
+
     def action(self, user_manager):
         """
-        register and 
+        register and
         loop
         --> login user
-        --> go shopping(includes leaving feedback) 
+        --> go shopping(includes leaving feedback)
         --> complain with uploading zip
         --> logout
         """
@@ -431,7 +636,7 @@ class User:
         if not self.register():
             print("error creating user -> skipping")
             user_manager.remove_user(self)
-            return 
+            return
         time.sleep(0.1)
         while(self.is_running):
             # -->
@@ -446,7 +651,7 @@ class User:
                 return 
             # -->
             # includes leaving feedback
-            self.go_shopping(max_products=10)
+            self.go_shopping(max_products=10, user_manager=user_manager)
             time.sleep(1)
             #-->
             # leave complaint 
@@ -490,12 +695,15 @@ class User:
         """
         self.is_finished = True
         print("User {}: was removed".format(self.user_number))
-        user_manager.removing_users.remove(self)
+        try:
+            user_manager.removing_users.remove(self)
+        except:
+            print(f'could not remove user {self.user_number} of list {user_manager.removing_users}')
         self.driver.quit()
         print("Users in active List: {}".format(len(user_manager.active_users)))
         print("Users in removing List: {}".format(len(user_manager.removing_users)))
 
-        
+
 class UserManager:
     """
     Controlling class of Users
@@ -508,12 +716,12 @@ class UserManager:
     """
     def __init__(self):
         self.active_users = []
-        self.sequence_running = False 
+        self.sequence_running = False
         self.removing_users = []
-    
+
     def checkSite(self):
         """
-        check if juice-shop is online 
+        check if juice-shop is online
         """
         site_offline = True
         while site_offline:
@@ -521,10 +729,10 @@ class UserManager:
                 requests.get('http://localhost:3000')
                 site_offline=False
             except:
-                print("Juice Shop is offline") 
+                print("Juice Shop is offline")
             time.sleep(5)
-    
-    def add_user(self, visible=False): 
+
+    def add_user(self, visible=False):
         """
         create user with email, password, security question
         """
@@ -534,11 +742,11 @@ class UserManager:
         self.checkSite()
         password = "testpassword"
         security_question = "middlename"
-        email = "mail{}{}@test.com".format(len(self.active_users), random.randint(0,9999999999)) 
+        email = "mail{}{}@test.com".format(len(self.active_users), random.randint(0,9999999999))
         new_user = User(email, password, security_question, user_number=len(self.active_users), visible=visible)
         self.active_users.append(new_user)
         print("User {}: was added".format(new_user.user_number))
-        try:    
+        try:
             user_thread = threading.Thread(target=new_user.action, args=([self]))
             user_thread.start()
         except Exception:
@@ -571,7 +779,6 @@ class UserManager:
         """
         set is_running flag to false of all users with using suicide function
         """
-        #print("Remove usernumber {}".format(len(self.active_users) - 1 - len(self.removing_users)))
         print("Removing all users")
         for i in range(0,len(self.active_users)):
             self.remove_user()
@@ -581,6 +788,7 @@ class UserManager:
         automated sequence of adding & removing users
         loop until stop_sequence button is pressed
             add a random number[1:MAX_USERS] of users
+            start actions of active users
             delete random number of users
         """
         print("Training sequence has started")
@@ -609,7 +817,7 @@ class UserManager:
                     self.remove_all_user()
                     return None
             # remove random number of users 
-            random_count = random.randint(0,len(self.active_users))  
+            random_count = random.randint(0,len(self.active_users))
             print("Removing {} users".format(random_count))
             print("Users in active List: {}".format(len(self.active_users)))
             print("Users in removing List: {}".format(len(self.removing_users)))
@@ -631,8 +839,12 @@ class UserManager:
         return None
 
     def stop_training_sequence(self):
+        """
+        for easy reading
+        """
         self.sequence_running = False
 
+#For testing only
 if __name__ == "__main__":
     userManager = UserManager()
     userManager.add_user(True)

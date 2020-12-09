@@ -100,8 +100,6 @@ function PlotRenderer(data) {
             //console.log(data.data)
             let stide_score = data.score
             let mlp_score = data.score2
-            console.log(data.alarm_of==='stide')
-            console.log(data.alarm)
             return (
                 <Plot
                     className="ids-plot"

@@ -1,5 +1,5 @@
 from demo_model_stide import DemoModelStide
-#from mlp import MLP
+from mlp import MLP
 from syscalls_to_vec_mlp import SyscallsToVec
 
 class IDSWrapper:
@@ -31,7 +31,7 @@ class IDSWrapper:
         if training_size is None and trained_model is None:
             self.stide = DemoModelStide(
                     ngram_length=7,
-                    window_length=1000,
+                    window_length=3,
                     training_size=10000000)
         # use predefined training size
         elif not training_size is None:
@@ -55,7 +55,7 @@ class IDSWrapper:
         """
         self.key = "mlp"
         syscall_map = SyscallsToVec()
-        self.mlp = "smth"#MLP(syscall_map)
+        self.mlp = MLP(syscall_map)
         #MLP(syscall_map)
         self.active_ids["mlp"] = self.mlp
         self.global_ids_info["mlp"] = {
@@ -157,6 +157,9 @@ class IDSWrapper:
                 'state': 0,
             }
             ids_score = 0.03
+            #ids_score = self.mlp.consume_system_call(syscall)
+            if len(self.mlp._normal_ngrams) >= 1000:
+                self.mlp.switch_to_detection()
             if ids_score is not None:
                 self.score_list['mlp'].append(ids_score)
             ids_info['state'] = 1
@@ -178,8 +181,6 @@ class IDSWrapper:
             highest_score = sorted_ids_scores[0]
             return highest_score
         else:
-            if key == 'mlp':
-                print("WEIRD CASE")
             return 0
 
 
