@@ -226,7 +226,6 @@ class User:
 
         try:
             #select feedback window
-            #feedback_path = '//*[@id="mat-input-{}"]'
             feedback_path = "//textarea[@aria-label='Text field to review a product']"
             feedback_input = self.driver.find_element_by_xpath(feedback_path)
             self.feedback_path_count += 1
@@ -659,7 +658,7 @@ class User:
                 self.complain()
             # -->
             # checkout cart which was filled in go_shopping()
-            if random.randint(0,6) >= 3:
+            if random.randint(0,9) >= 3:
                 if self.checkout() == 1:
                     print("User {}: Paid for products".format(self.user_number))
             # logout after shopping
@@ -679,7 +678,7 @@ class User:
                 self.driver = webdriver.Chrome(options=self.chrome_options)
         if not self.is_finished:
             self.clean_up_and_quit(user_manager)
-    
+
     def suicide(self):
         """
         stop user actions
